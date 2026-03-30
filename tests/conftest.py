@@ -153,3 +153,73 @@ async def async_client(db_session: AsyncSession, mock_minio) -> AsyncGenerator[A
     ) as client:
         yield client
     fastapi_app.dependency_overrides.clear()
+
+
+@pytest.fixture
+async def valid_template(async_client: AsyncClient, admin_token: str) -> dict:
+    """Create a complete valid template with start -> manual -> end flow.
+
+    Returns dict with keys: template_id, start_id, manual_id, end_id, flow1_id, flow2_id
+    """
+    headers = {"Authorization": f"Bearer {admin_token}"}
+
+    # Create template
+    resp = await async_client.post(
+        "/api/v1/templates/",
+        json={"name": "Test Workflow", "description": "Test template"},
+        headers=headers,
+    )
+    template_id = resp.json()["data"]["id"]
+
+    # Add start activity
+    resp = await async_client.post(
+        f"/api/v1/templates/{template_id}/activities",
+        json={"name": "Start", "activity_type": "start"},
+        headers=headers,
+    )
+    start_id = resp.json()["data"]["id"]
+
+    # Add manual activity
+    resp = await async_client.post(
+        f"/api/v1/templates/{template_id}/activities",
+        json={
+            "name": "Review",
+            "activity_type": "manual",
+            "performer_type": "user",
+            "performer_id": "some-user-id",
+        },
+        headers=headers,
+    )
+    manual_id = resp.json()["data"]["id"]
+
+    # Add end activity
+    resp = await async_client.post(
+        f"/api/v1/templates/{template_id}/activities",
+        json={"name": "End", "activity_type": "end"},
+        headers=headers,
+    )
+    end_id = resp.json()["data"]["id"]
+
+    # Add flows: start -> manual -> end
+    resp = await async_client.post(
+        f"/api/v1/templates/{template_id}/flows",
+        json={"source_activity_id": start_id, "target_activity_id": manual_id},
+        headers=headers,
+    )
+    flow1_id = resp.json()["data"]["id"]
+
+    resp = await async_client.post(
+        f"/api/v1/templates/{template_id}/flows",
+        json={"source_activity_id": manual_id, "target_activity_id": end_id},
+        headers=headers,
+    )
+    flow2_id = resp.json()["data"]["id"]
+
+    return {
+        "template_id": template_id,
+        "start_id": start_id,
+        "manual_id": manual_id,
+        "end_id": end_id,
+        "flow1_id": flow1_id,
+        "flow2_id": flow2_id,
+    }
