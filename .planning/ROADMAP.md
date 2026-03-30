@@ -70,9 +70,9 @@ Plans:
   5. Installing a template creates an immutable version; editing creates a new version without affecting the installed one
 **Plans**: 3 plans
 Plans:
-- [x] 02-01-PLAN.md — Document models, MinIO client, config, Pydantic schemas
-- [x] 02-02-PLAN.md — Document service layer and HTTP router
-- [ ] 02-03-PLAN.md — Integration tests for DOC-01 through DOC-08
+- [ ] 03-01-PLAN.md — Model updates (TriggerType enum, relationships, method_name) and Pydantic schemas
+- [ ] 03-02-PLAN.md — Template service layer (CRUD, validation, install, versioning) and HTTP router
+- [ ] 03-03-PLAN.md — Integration tests for TMPL-01 through TMPL-11
 
 ### Phase 4: Process Engine Core
 **Goal**: The process engine can start workflow instances from templates and automatically advance them through sequential and parallel paths, creating work items for manual activities
@@ -214,7 +214,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> ... -> 11
 |-------|----------------|--------|-----------|
 | 1. Foundation & User Management | 0/3 | Planning complete | - |
 | 2. Document Management | 3/3 | Complete   | 2026-03-30 |
-| 3. Workflow Template Design (API) | 0/TBD | Not started | - |
+| 3. Workflow Template Design (API) | 0/3 | Planning complete | - |
 | 4. Process Engine Core | 0/TBD | Not started | - |
 | 5. Work Items & Inbox | 0/TBD | Not started | - |
 | 6. Advanced Routing & Alias Sets | 0/TBD | Not started | - |
