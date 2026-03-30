@@ -218,13 +218,117 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (Populated by roadmap) | | |
+| FOUND-01 | Phase 1 | Pending |
+| FOUND-02 | Phase 1 | Pending |
+| FOUND-03 | Phase 1 | Pending |
+| USER-01 | Phase 1 | Pending |
+| USER-02 | Phase 1 | Pending |
+| USER-03 | Phase 1 | Pending |
+| USER-04 | Phase 1 | Pending |
+| USER-05 | Phase 10 | Pending |
+| DOC-01 | Phase 2 | Pending |
+| DOC-02 | Phase 2 | Pending |
+| DOC-03 | Phase 2 | Pending |
+| DOC-04 | Phase 2 | Pending |
+| DOC-05 | Phase 2 | Pending |
+| DOC-06 | Phase 2 | Pending |
+| DOC-07 | Phase 2 | Pending |
+| DOC-08 | Phase 2 | Pending |
+| LIFE-01 | Phase 7 | Pending |
+| LIFE-02 | Phase 7 | Pending |
+| LIFE-03 | Phase 7 | Pending |
+| LIFE-04 | Phase 7 | Pending |
+| TMPL-01 | Phase 3 | Pending |
+| TMPL-02 | Phase 3 | Pending |
+| TMPL-03 | Phase 3 | Pending |
+| TMPL-04 | Phase 3 | Pending |
+| TMPL-05 | Phase 3 | Pending |
+| TMPL-06 | Phase 3 | Pending |
+| TMPL-07 | Phase 3 | Pending |
+| TMPL-08 | Phase 3 | Pending |
+| TMPL-09 | Phase 3 | Pending |
+| TMPL-10 | Phase 3 | Pending |
+| TMPL-11 | Phase 3 | Pending |
+| ALIAS-01 | Phase 6 | Pending |
+| ALIAS-02 | Phase 6 | Pending |
+| ALIAS-03 | Phase 6 | Pending |
+| PERF-01 | Phase 5 | Pending |
+| PERF-02 | Phase 5 | Pending |
+| PERF-03 | Phase 5 | Pending |
+| PERF-04 | Phase 6 | Pending |
+| PERF-05 | Phase 6 | Pending |
+| EXEC-01 | Phase 4 | Pending |
+| EXEC-02 | Phase 4 | Pending |
+| EXEC-03 | Phase 4 | Pending |
+| EXEC-04 | Phase 4 | Pending |
+| EXEC-05 | Phase 4 | Pending |
+| EXEC-06 | Phase 4 | Pending |
+| EXEC-07 | Phase 4 | Pending |
+| EXEC-08 | Phase 6 | Pending |
+| EXEC-09 | Phase 6 | Pending |
+| EXEC-10 | Phase 6 | Pending |
+| EXEC-11 | Phase 6 | Pending |
+| EXEC-12 | Phase 4 | Pending |
+| EXEC-13 | Phase 4 | Pending |
+| EXEC-14 | Phase 4 | Pending |
+| INBOX-01 | Phase 5 | Pending |
+| INBOX-02 | Phase 5 | Pending |
+| INBOX-03 | Phase 5 | Pending |
+| INBOX-04 | Phase 5 | Pending |
+| INBOX-05 | Phase 5 | Pending |
+| INBOX-06 | Phase 5 | Pending |
+| INBOX-07 | Phase 5 | Pending |
+| INBOX-08 | Phase 10 | Pending |
+| QUEUE-01 | Phase 10 | Pending |
+| QUEUE-02 | Phase 10 | Pending |
+| QUEUE-03 | Phase 10 | Pending |
+| QUEUE-04 | Phase 10 | Pending |
+| AUTO-01 | Phase 9 | Pending |
+| AUTO-02 | Phase 9 | Pending |
+| AUTO-03 | Phase 9 | Pending |
+| AUTO-04 | Phase 9 | Pending |
+| AUTO-05 | Phase 9 | Pending |
+| MGMT-01 | Phase 10 | Pending |
+| MGMT-02 | Phase 10 | Pending |
+| MGMT-03 | Phase 10 | Pending |
+| MGMT-04 | Phase 10 | Pending |
+| MGMT-05 | Phase 10 | Pending |
+| ACL-01 | Phase 7 | Pending |
+| ACL-02 | Phase 7 | Pending |
+| ACL-03 | Phase 7 | Pending |
+| ACL-04 | Phase 7 | Pending |
+| AUDIT-01 | Phase 1 | Pending |
+| AUDIT-02 | Phase 1 | Pending |
+| AUDIT-03 | Phase 1 | Pending |
+| AUDIT-04 | Phase 1 | Pending |
+| AUDIT-05 | Phase 10 | Pending |
+| DESIGN-01 | Phase 8 | Pending |
+| DESIGN-02 | Phase 8 | Pending |
+| DESIGN-03 | Phase 8 | Pending |
+| DESIGN-04 | Phase 8 | Pending |
+| DESIGN-05 | Phase 8 | Pending |
+| DESIGN-06 | Phase 8 | Pending |
+| DESIGN-07 | Phase 8 | Pending |
+| BAM-01 | Phase 11 | Pending |
+| BAM-02 | Phase 11 | Pending |
+| BAM-03 | Phase 11 | Pending |
+| BAM-04 | Phase 11 | Pending |
+| BAM-05 | Phase 11 | Pending |
+| INTG-01 | Phase 9 | Pending |
+| INTG-02 | Phase 9 | Pending |
+| INTG-03 | Phase 9 | Pending |
+| QUERY-01 | Phase 11 | Pending |
+| QUERY-02 | Phase 11 | Pending |
+| QUERY-03 | Phase 11 | Pending |
+| EXAMPLE-01 | Phase 11 | Pending |
+| EXAMPLE-02 | Phase 11 | Pending |
+| EXAMPLE-03 | Phase 11 | Pending |
 
 **Coverage:**
-- v1 requirements: 80 total
-- Mapped to phases: 0
-- Unmapped: 80
+- v1 requirements: 105 total
+- Mapped to phases: 105
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-30*
-*Last updated: 2026-03-30 after initial definition*
+*Last updated: 2026-03-30 after roadmap creation*
