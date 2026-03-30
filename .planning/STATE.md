@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-01-PLAN.md
-last_updated: "2026-03-30T12:54:30.370Z"
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-03-30T12:59:53.901Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 11
   completed_phases: 2
   total_plans: 9
-  completed_plans: 7
+  completed_plans: 8
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 ## Current Position
 
 Phase: 03 (workflow-template-design-api) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-03-30
 
@@ -58,6 +58,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 02 P02 | 4m | 2 tasks | 3 files |
 | Phase 02 P03 | 6m | 2 tasks | 2 files |
 | Phase 03 P01 | 3min | 2 tasks | 6 files |
+| Phase 03 P02 | 4min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,9 @@ Recent decisions affecting current work:
 - [Phase 02]: SHA-256 dedup returns None on unchanged content rather than raising error
 - [Phase 02]: Patch MinIO mocks on both source module and consumer module to handle Python import binding
 - [Phase 03]: Manual Alembic migration created when Docker/PostgreSQL unavailable; TriggerType enum follows lowercase naming convention (triggertype)
+- [Phase 03]: Service layer raises ValueError for business rules; router maps to HTTP 400
+- [Phase 03]: Active templates immutable; update auto-creates new version via copy-on-write
+- [Phase 03]: Condition expression validation cross-references template variable names
 
 ### Pending Todos
 
@@ -93,6 +97,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T12:54:30.364Z
-Stopped at: Completed 03-01-PLAN.md
+Last session: 2026-03-30T12:59:53.896Z
+Stopped at: Completed 03-02-PLAN.md
 Resume file: None

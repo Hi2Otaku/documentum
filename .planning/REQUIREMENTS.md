@@ -48,9 +48,9 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **TMPL-05**: User can define process variables (string, int, boolean, date types) on a template
 - [x] **TMPL-06**: User can configure trigger conditions on activities: AND-join (all incoming) or OR-join (any incoming)
 - [x] **TMPL-07**: User can configure conditional routing with expressions based on process variables
-- [ ] **TMPL-08**: User can validate a template (check connectivity, performer assignment, unreachable activities)
-- [ ] **TMPL-09**: User can install (activate) a validated template, making it available for use
-- [ ] **TMPL-10**: Installed templates are versioned — editing creates a new version without affecting running instances
+- [x] **TMPL-08**: User can validate a template (check connectivity, performer assignment, unreachable activities)
+- [x] **TMPL-09**: User can install (activate) a validated template, making it available for use
+- [x] **TMPL-10**: Installed templates are versioned — editing creates a new version without affecting running instances
 - [x] **TMPL-11**: Template supports Start Activity and End Activity markers
 
 ### Alias Sets
@@ -245,9 +245,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TMPL-05 | Phase 3 | Complete |
 | TMPL-06 | Phase 3 | Complete |
 | TMPL-07 | Phase 3 | Complete |
-| TMPL-08 | Phase 3 | Pending |
-| TMPL-09 | Phase 3 | Pending |
-| TMPL-10 | Phase 3 | Pending |
+| TMPL-08 | Phase 3 | Complete |
+| TMPL-09 | Phase 3 | Complete |
+| TMPL-10 | Phase 3 | Complete |
 | TMPL-11 | Phase 3 | Complete |
 | ALIAS-01 | Phase 6 | Pending |
 | ALIAS-02 | Phase 6 | Pending |
