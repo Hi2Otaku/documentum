@@ -12,7 +12,10 @@ Any workflow use case described in the Documentum specification (sequential, par
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ Docker Compose stack with FastAPI, PostgreSQL, Redis, MinIO, Celery — Phase 1
+- ✓ Database schema for 5 core Documentum object types with audit columns — Phase 1
+- ✓ User/group/role management with JWT authentication — Phase 1
+- ✓ Audit trail: full before/after state logging on every mutation — Phase 1
 
 ### Active
 
@@ -88,4 +91,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-30 after initialization*
+*Last updated: 2026-03-30 after Phase 1 completion*
