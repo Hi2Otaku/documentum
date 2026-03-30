@@ -216,9 +216,6 @@ async def start_workflow(
     # 7. Flush to get all IDs
     await db.flush()
 
-    # Attach instance variables for advancement loop
-    instance.process_variables = instance_variables
-
     # 8. Find start activity template
     start_template = None
     for at in template.activity_templates:
@@ -237,6 +234,7 @@ async def start_workflow(
         template_to_instance,
         user_id,
         performer_overrides=performer_overrides,
+        instance_variables=instance_variables,
     )
 
     # 10. Create audit record
@@ -269,6 +267,7 @@ async def _advance_from_activity(
     template_to_instance: dict[uuid.UUID, ActivityInstance],
     user_id: str,
     performer_overrides: dict[str, str] | None = None,
+    instance_variables: list[ProcessVariable] | None = None,
 ) -> None:
     """Iterative advancement loop using token-based Petri-net model.
 
@@ -279,8 +278,9 @@ async def _advance_from_activity(
     now = datetime.now(timezone.utc)
 
     # Mark completed activity
-    _enforce_activity_transition(completed_activity.state, ActivityState.ACTIVE)
-    completed_activity.state = ActivityState.ACTIVE
+    if completed_activity.state == ActivityState.DORMANT:
+        _enforce_activity_transition(completed_activity.state, ActivityState.ACTIVE)
+        completed_activity.state = ActivityState.ACTIVE
     _enforce_activity_transition(completed_activity.state, ActivityState.COMPLETE)
     completed_activity.state = ActivityState.COMPLETE
     completed_activity.completed_at = now
@@ -288,7 +288,8 @@ async def _advance_from_activity(
         completed_activity.started_at = now
 
     # Build variable context for condition evaluation
-    var_context = _build_variable_context(workflow.process_variables)
+    variables = instance_variables if instance_variables is not None else workflow.process_variables
+    var_context = _build_variable_context(variables)
 
     # Build activity template map for lookups
     activity_template_map: dict[uuid.UUID, ActivityTemplate] = {
@@ -560,7 +561,7 @@ async def complete_work_item(
             ProcessVariable.is_deleted == False,  # noqa: E712
         )
     )
-    workflow.process_variables = list(pv_result.scalars().all())
+    current_variables = list(pv_result.scalars().all())
 
     # 6. Advance from completed activity
     activity_instance = work_item.activity_instance
@@ -571,6 +572,7 @@ async def complete_work_item(
         template,
         template_to_instance,
         user_id,
+        instance_variables=current_variables,
     )
 
     # 7. Audit
@@ -604,6 +606,7 @@ async def get_workflow(
             selectinload(WorkflowInstance.activity_instances).selectinload(
                 ActivityInstance.activity_template
             ),
+            selectinload(WorkflowInstance.work_items),
             selectinload(WorkflowInstance.process_variables),
             selectinload(WorkflowInstance.workflow_packages),
         )

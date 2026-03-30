@@ -377,10 +377,14 @@ async def add_flow(
                 f"Activity {activity_id} not found in template {template_id}"
             )
 
-    # Serialize condition_expression if it's a dict
+    # Store condition_expression as string
+    # If already a string (AST expression), store directly; if dict, serialize to JSON
     condition_str = None
     if data.condition_expression is not None:
-        condition_str = json.dumps(data.condition_expression)
+        if isinstance(data.condition_expression, dict):
+            condition_str = json.dumps(data.condition_expression)
+        else:
+            condition_str = str(data.condition_expression)
 
     flow = FlowTemplate(
         process_template_id=template_id,
@@ -751,11 +755,24 @@ async def validate_template(
             })
 
     # 9. INVALID_CONDITION: Validate condition_expression structure
+    #    Supports both AST-based string expressions (e.g., "amount > 1000")
+    #    and legacy JSON-based conditions (e.g., {"field": "amount", "operator": ">"}).
     variable_names = {v.name for v in variables}
     for f in flows:
         if f.condition_expression:
+            cond = f.condition_expression
+            # Try AST-based expression validation first (Phase 4 format)
+            if isinstance(cond, str):
+                try:
+                    from app.services.expression_evaluator import validate_expression
+                    validate_expression(cond)
+                    # AST validation passed; expression is valid
+                    continue
+                except ValueError:
+                    # Not a valid AST expression; try JSON fallback
+                    pass
+
             try:
-                cond = f.condition_expression
                 if isinstance(cond, str):
                     cond = json.loads(cond)
 
@@ -787,7 +804,7 @@ async def validate_template(
             except (json.JSONDecodeError, TypeError):
                 errors.append({
                     "code": "INVALID_CONDITION",
-                    "message": f"Condition expression on flow {f.id} is not valid JSON",
+                    "message": f"Condition expression on flow {f.id} is not valid",
                     "entity_type": "flow_template",
                     "entity_id": str(f.id),
                 })

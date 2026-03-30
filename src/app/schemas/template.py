@@ -89,12 +89,32 @@ class FlowTemplateCreate(BaseModel):
     source_activity_id: uuid.UUID
     target_activity_id: uuid.UUID
     flow_type: FlowType = FlowType.NORMAL
-    condition_expression: dict[str, Any] | None = None
+    condition_expression: str | dict[str, Any] | None = None
+
+    @field_validator("condition_expression", mode="before")
+    @classmethod
+    def serialize_condition_expression(cls, v: Any) -> str | None:
+        """Store condition expression as string. Accepts both AST expressions
+        (e.g., 'amount > 1000') and JSON dict conditions (serialized to JSON string)."""
+        if v is None:
+            return None
+        if isinstance(v, dict):
+            return json.dumps(v)
+        return str(v)
 
 
 class FlowTemplateUpdate(BaseModel):
     flow_type: FlowType | None = None
-    condition_expression: dict[str, Any] | None = None
+    condition_expression: str | dict[str, Any] | None = None
+
+    @field_validator("condition_expression", mode="before")
+    @classmethod
+    def serialize_condition_expression(cls, v: Any) -> str | None:
+        if v is None:
+            return None
+        if isinstance(v, dict):
+            return json.dumps(v)
+        return str(v)
 
 
 class FlowTemplateResponse(BaseModel):
@@ -103,7 +123,7 @@ class FlowTemplateResponse(BaseModel):
     source_activity_id: uuid.UUID
     target_activity_id: uuid.UUID
     flow_type: FlowType
-    condition_expression: dict[str, Any] | None
+    condition_expression: str | dict[str, Any] | None
     created_at: datetime
     updated_at: datetime
     is_deleted: bool
@@ -112,11 +132,21 @@ class FlowTemplateResponse(BaseModel):
 
     @field_validator("condition_expression", mode="before")
     @classmethod
-    def deserialize_condition_expression(cls, v: Any) -> dict[str, Any] | None:
+    def deserialize_condition_expression(cls, v: Any) -> str | dict[str, Any] | None:
+        """Return condition expression as-is if string (AST expression),
+        or deserialize from JSON string to dict if it looks like JSON."""
         if v is None:
             return None
+        if isinstance(v, dict):
+            return v
         if isinstance(v, str):
-            return json.loads(v)
+            try:
+                parsed = json.loads(v)
+                if isinstance(parsed, dict):
+                    return parsed
+            except (json.JSONDecodeError, TypeError):
+                pass
+            return v
         return v
 
 
