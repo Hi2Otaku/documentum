@@ -1,0 +1,84 @@
+import uuid
+from datetime import datetime
+from typing import Any
+
+from pydantic import BaseModel, ConfigDict
+
+from app.models.enums import ActivityState, WorkflowState, WorkItemState
+
+
+class WorkflowStartRequest(BaseModel):
+    template_id: uuid.UUID
+    document_ids: list[uuid.UUID] = []
+    performer_overrides: dict[str, str] = {}  # activity_template_id str -> user_id str
+    initial_variables: dict[str, Any] = {}
+
+
+class CompleteWorkItemRequest(BaseModel):
+    output_variables: dict[str, Any] = {}
+
+
+class UpdateVariableRequest(BaseModel):
+    value: Any
+
+
+class ActivityInstanceResponse(BaseModel):
+    id: uuid.UUID
+    workflow_instance_id: uuid.UUID
+    activity_template_id: uuid.UUID
+    state: ActivityState
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+
+class WorkItemResponse(BaseModel):
+    id: uuid.UUID
+    activity_instance_id: uuid.UUID
+    performer_id: uuid.UUID | None = None
+    state: WorkItemState
+    instructions: str | None = None
+    due_date: datetime | None = None
+    priority: int
+    completed_at: datetime | None = None
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ProcessVariableResponse(BaseModel):
+    id: uuid.UUID
+    name: str
+    variable_type: str
+    string_value: str | None = None
+    int_value: int | None = None
+    bool_value: bool | None = None
+    date_value: datetime | None = None
+    model_config = ConfigDict(from_attributes=True)
+
+
+class WorkflowInstanceResponse(BaseModel):
+    id: uuid.UUID
+    process_template_id: uuid.UUID
+    state: WorkflowState
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    supervisor_id: uuid.UUID | None = None
+    created_at: datetime
+    updated_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+
+class WorkflowDetailResponse(BaseModel):
+    id: uuid.UUID
+    process_template_id: uuid.UUID
+    state: WorkflowState
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    supervisor_id: uuid.UUID | None = None
+    activity_instances: list[ActivityInstanceResponse] = []
+    work_items: list[WorkItemResponse] = []
+    process_variables: list[ProcessVariableResponse] = []
+    created_at: datetime
+    updated_at: datetime
+    model_config = ConfigDict(from_attributes=True)
