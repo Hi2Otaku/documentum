@@ -3,6 +3,7 @@ import uuid
 from fastapi import HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.core.security import hash_password
 from app.models.user import Group, Role, User
@@ -246,7 +247,9 @@ async def add_users_to_group(
 ) -> Group:
     """Add users to a group. Raises 404 if group or any user not found."""
     result = await db.execute(
-        select(Group).where(
+        select(Group)
+        .options(selectinload(Group.users))
+        .where(
             Group.id == group_id,
             Group.is_deleted == False,  # noqa: E712
         )
@@ -347,7 +350,21 @@ async def assign_role_to_user(
     acting_user_id: str | None,
 ) -> User:
     """Assign a role to a user. Raises 404 if user or role not found."""
-    user = await get_user(db, user_id_param)
+    # Eagerly load roles to avoid lazy-loading in async context
+    result = await db.execute(
+        select(User)
+        .options(selectinload(User.roles))
+        .where(
+            User.id == user_id_param,
+            User.is_deleted == False,  # noqa: E712
+        )
+    )
+    user = result.scalar_one_or_none()
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
 
     result = await db.execute(
         select(Role).where(
