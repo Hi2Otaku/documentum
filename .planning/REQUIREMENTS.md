@@ -23,14 +23,14 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Document Management
 
-- [ ] **DOC-01**: User can upload documents (any file type) to the repository
-- [ ] **DOC-02**: System tracks document versions with major (1.0, 2.0) and minor (1.1, 1.2) numbering
-- [ ] **DOC-03**: User can check out a document (locks it for editing)
+- [x] **DOC-01**: User can upload documents (any file type) to the repository
+- [x] **DOC-02**: System tracks document versions with major (1.0, 2.0) and minor (1.1, 1.2) numbering
+- [x] **DOC-03**: User can check out a document (locks it for editing)
 - [ ] **DOC-04**: User can check in a document (creates new version, releases lock)
 - [ ] **DOC-05**: Admin can force-unlock a checked-out document
 - [ ] **DOC-06**: User can view and download any version of a document
-- [ ] **DOC-07**: Documents have extensible metadata (title, author, custom properties)
-- [ ] **DOC-08**: Documents are stored in MinIO with metadata in PostgreSQL
+- [x] **DOC-07**: Documents have extensible metadata (title, author, custom properties)
+- [x] **DOC-08**: Documents are stored in MinIO with metadata in PostgreSQL
 
 ### Document Lifecycle
 
@@ -226,14 +226,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | USER-03 | Phase 1 | Complete |
 | USER-04 | Phase 1 | Complete |
 | USER-05 | Phase 10 | Pending |
-| DOC-01 | Phase 2 | Pending |
-| DOC-02 | Phase 2 | Pending |
-| DOC-03 | Phase 2 | Pending |
+| DOC-01 | Phase 2 | Complete |
+| DOC-02 | Phase 2 | Complete |
+| DOC-03 | Phase 2 | Complete |
 | DOC-04 | Phase 2 | Pending |
 | DOC-05 | Phase 2 | Pending |
 | DOC-06 | Phase 2 | Pending |
-| DOC-07 | Phase 2 | Pending |
-| DOC-08 | Phase 2 | Pending |
+| DOC-07 | Phase 2 | Complete |
+| DOC-08 | Phase 2 | Complete |
 | LIFE-01 | Phase 7 | Pending |
 | LIFE-02 | Phase 7 | Pending |
 | LIFE-03 | Phase 7 | Pending |

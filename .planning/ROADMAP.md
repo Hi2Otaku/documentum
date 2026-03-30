@@ -54,7 +54,7 @@ Plans:
   5. Documents have extensible metadata (title, author, custom properties) that can be set and queried via the API
 **Plans**: 3 plans
 Plans:
-- [ ] 02-01-PLAN.md — Document models, MinIO client, config, Pydantic schemas
+- [x] 02-01-PLAN.md — Document models, MinIO client, config, Pydantic schemas
 - [ ] 02-02-PLAN.md — Document service layer and HTTP router
 - [ ] 02-03-PLAN.md — Integration tests for DOC-01 through DOC-08
 
