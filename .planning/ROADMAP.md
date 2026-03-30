@@ -13,7 +13,7 @@ This roadmap delivers a near-complete clone of OpenText Documentum's Workflow Ma
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 1: Foundation & User Management** - Docker Compose stack, database schema, user/group/role management, and cross-cutting audit trail
-- [ ] **Phase 2: Document Management** - File upload, versioning, check-in/check-out, and MinIO storage
+- [x] **Phase 2: Document Management** - File upload, versioning, check-in/check-out, and MinIO storage (completed 2026-03-30)
 - [ ] **Phase 3: Workflow Template Design (API)** - Process template CRUD with activities, flows, variables, triggers, validation, and versioning
 - [ ] **Phase 4: Process Engine Core** - Workflow execution runtime with sequential/parallel routing, state machine, and work item creation
 - [ ] **Phase 5: Work Items & Inbox** - User inbox with task completion, rejection, comments, and basic performer assignment
@@ -56,7 +56,7 @@ Plans:
 Plans:
 - [x] 02-01-PLAN.md — Document models, MinIO client, config, Pydantic schemas
 - [x] 02-02-PLAN.md — Document service layer and HTTP router
-- [ ] 02-03-PLAN.md — Integration tests for DOC-01 through DOC-08
+- [x] 02-03-PLAN.md — Integration tests for DOC-01 through DOC-08
 
 ### Phase 3: Workflow Template Design (API)
 **Goal**: Users can create complete workflow templates through the API, including activities, flows, variables, triggers, and validation, with templates versioned so running instances are never affected by edits
@@ -71,7 +71,7 @@ Plans:
 **Plans**: 3 plans
 Plans:
 - [x] 02-01-PLAN.md — Document models, MinIO client, config, Pydantic schemas
-- [ ] 02-02-PLAN.md — Document service layer and HTTP router
+- [x] 02-02-PLAN.md — Document service layer and HTTP router
 - [ ] 02-03-PLAN.md — Integration tests for DOC-01 through DOC-08
 
 ### Phase 4: Process Engine Core
@@ -86,7 +86,7 @@ Plans:
   5. Process variables can be read and written by activities during execution and used in routing condition expressions
 **Plans**: 3 plans
 Plans:
-- [ ] 02-01-PLAN.md — Document models, MinIO client, config, Pydantic schemas
+- [x] 02-01-PLAN.md — Document models, MinIO client, config, Pydantic schemas
 - [ ] 02-02-PLAN.md — Document service layer and HTTP router
 - [ ] 02-03-PLAN.md — Integration tests for DOC-01 through DOC-08
 
@@ -213,7 +213,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> ... -> 11
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & User Management | 0/3 | Planning complete | - |
-| 2. Document Management | 0/3 | Planning complete | - |
+| 2. Document Management | 3/3 | Complete   | 2026-03-30 |
 | 3. Workflow Template Design (API) | 0/TBD | Not started | - |
 | 4. Process Engine Core | 0/TBD | Not started | - |
 | 5. Work Items & Inbox | 0/TBD | Not started | - |
