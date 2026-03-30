@@ -15,10 +15,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### User Management
 
-- [ ] **USER-01**: Admin can create user accounts with username and password
-- [ ] **USER-02**: User can log in and receive a session token
-- [ ] **USER-03**: Admin can create groups and assign users to groups
-- [ ] **USER-04**: Admin can define roles (e.g., Reviewer, Approver, Director)
+- [x] **USER-01**: Admin can create user accounts with username and password
+- [x] **USER-02**: User can log in and receive a session token
+- [x] **USER-03**: Admin can create groups and assign users to groups
+- [x] **USER-04**: Admin can define roles (e.g., Reviewer, Approver, Director)
 - [ ] **USER-05**: User can mark themselves as unavailable and designate a delegate
 
 ### Document Management
@@ -127,10 +127,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Audit Trail
 
-- [ ] **AUDIT-01**: Every workflow action is logged: who, what, when, decision, and affected objects
-- [ ] **AUDIT-02**: Audit records include: task assignment, task completion, task rejection, workflow state changes
-- [ ] **AUDIT-03**: Audit records include: document upload, version creation, check-in/out, lifecycle transitions
-- [ ] **AUDIT-04**: Audit trail is append-only and cannot be modified or deleted
+- [x] **AUDIT-01**: Every workflow action is logged: who, what, when, decision, and affected objects
+- [x] **AUDIT-02**: Audit records include: task assignment, task completion, task rejection, workflow state changes
+- [x] **AUDIT-03**: Audit records include: document upload, version creation, check-in/out, lifecycle transitions
+- [x] **AUDIT-04**: Audit trail is append-only and cannot be modified or deleted
 - [ ] **AUDIT-05**: Admin can query audit trail by user, workflow, document, date range, or action type
 
 ### Visual Workflow Designer
@@ -221,10 +221,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FOUND-01 | Phase 1 | Complete |
 | FOUND-02 | Phase 1 | Complete |
 | FOUND-03 | Phase 1 | Complete |
-| USER-01 | Phase 1 | Pending |
-| USER-02 | Phase 1 | Pending |
-| USER-03 | Phase 1 | Pending |
-| USER-04 | Phase 1 | Pending |
+| USER-01 | Phase 1 | Complete |
+| USER-02 | Phase 1 | Complete |
+| USER-03 | Phase 1 | Complete |
+| USER-04 | Phase 1 | Complete |
 | USER-05 | Phase 10 | Pending |
 | DOC-01 | Phase 2 | Pending |
 | DOC-02 | Phase 2 | Pending |
@@ -297,10 +297,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ACL-02 | Phase 7 | Pending |
 | ACL-03 | Phase 7 | Pending |
 | ACL-04 | Phase 7 | Pending |
-| AUDIT-01 | Phase 1 | Pending |
-| AUDIT-02 | Phase 1 | Pending |
-| AUDIT-03 | Phase 1 | Pending |
-| AUDIT-04 | Phase 1 | Pending |
+| AUDIT-01 | Phase 1 | Complete |
+| AUDIT-02 | Phase 1 | Complete |
+| AUDIT-03 | Phase 1 | Complete |
+| AUDIT-04 | Phase 1 | Complete |
 | AUDIT-05 | Phase 10 | Pending |
 | DESIGN-01 | Phase 8 | Pending |
 | DESIGN-02 | Phase 8 | Pending |
