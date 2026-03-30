@@ -27,14 +27,14 @@ Any workflow use case described in the Documentum specification (sequential, par
 - [ ] Alias sets for flexible performer mapping without hardcoding users
 - ✓ Flow routing: sequential, parallel, conditional (template-level definition) — Phase 3
 - [ ] Reject flows allowing documents to loop back to previous activities
-- [ ] Workflow instance lifecycle: Dormant → Running → Halted → Failed → Finished
+- ✓ Workflow instance lifecycle: Dormant → Running → Halted → Failed → Finished — Phase 4
 - [ ] Work items appearing in user inboxes (dmi_queue_item equivalent)
 - [ ] Document management: upload, versioning, packages attached to workflows
 - [ ] Delegation: users mark unavailable, tasks auto-route to delegates
 - [ ] Work queues: shared task pools where any qualified user can claim tasks
 - ✓ Trigger conditions: AND-join and OR-join for activities with multiple incoming flows — Phase 3
 - ✓ Process variables: read/write by activities, usable in routing conditions — Phase 3
-- [ ] Process Engine: background runtime executing workflow instances
+- ✓ Process Engine: synchronous workflow execution with sequential/parallel routing — Phase 4
 - [ ] Workflow Agent: background daemon executing auto activities
 - [ ] Lifecycle management: document states (Draft → Review → Approved → Archived) with workflow-triggered transitions
 - [ ] Audit trail: full logging of who did what, when, with what decision
