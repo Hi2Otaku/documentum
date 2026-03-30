@@ -38,7 +38,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   5. Every create/update/delete operation produces an append-only audit record with who, what, when, and affected object
 **Plans:** 3 plans
 Plans:
-- [ ] 01-01-PLAN.md — Infrastructure, Docker Compose, FastAPI app, all SQLAlchemy models, Alembic setup
+- [x] 01-01-PLAN.md — Infrastructure, Docker Compose, FastAPI app, all SQLAlchemy models, Alembic setup
 - [ ] 01-02-PLAN.md — Auth (JWT), user/group/role CRUD APIs, audit trail service integration
 - [ ] 01-03-PLAN.md — Integration tests for all Phase 1 requirements
 

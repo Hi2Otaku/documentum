@@ -9,9 +9,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Foundation
 
-- [ ] **FOUND-01**: System runs via Docker Compose with FastAPI, PostgreSQL, Redis, MinIO, and Celery workers
-- [ ] **FOUND-02**: Database schema implements the 5 core Documentum object types: Process, Activity, Flow, Package, WorkItem
-- [ ] **FOUND-03**: All schema tables include created_at, updated_at, and created_by audit columns
+- [x] **FOUND-01**: System runs via Docker Compose with FastAPI, PostgreSQL, Redis, MinIO, and Celery workers
+- [x] **FOUND-02**: Database schema implements the 5 core Documentum object types: Process, Activity, Flow, Package, WorkItem
+- [x] **FOUND-03**: All schema tables include created_at, updated_at, and created_by audit columns
 
 ### User Management
 
@@ -218,9 +218,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FOUND-01 | Phase 1 | Pending |
-| FOUND-02 | Phase 1 | Pending |
-| FOUND-03 | Phase 1 | Pending |
+| FOUND-01 | Phase 1 | Complete |
+| FOUND-02 | Phase 1 | Complete |
+| FOUND-03 | Phase 1 | Complete |
 | USER-01 | Phase 1 | Pending |
 | USER-02 | Phase 1 | Pending |
 | USER-03 | Phase 1 | Pending |
