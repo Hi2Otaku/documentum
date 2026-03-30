@@ -7,6 +7,10 @@ class Settings(BaseSettings):
     secret_key: str
     admin_username: str = "admin"
     admin_password: str = "admin"
+    minio_endpoint: str = "localhost:9000"
+    minio_access_key: str = "minioadmin"
+    minio_secret_key: str = "minioadmin"
+    minio_secure: bool = False
     debug: bool = False
     api_v1_prefix: str = "/api/v1"
     access_token_expire_minutes: int = 30

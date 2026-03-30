@@ -46,6 +46,13 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning("Could not seed admin user (DB may not be ready): %s", e)
 
+    try:
+        from app.core.minio_client import ensure_documents_bucket
+
+        await ensure_documents_bucket()
+    except Exception as e:
+        logger.warning("Could not ensure MinIO documents bucket (MinIO may not be ready): %s", e)
+
     yield
     # Shutdown: dispose of the engine connection pool
     await engine.dispose()
