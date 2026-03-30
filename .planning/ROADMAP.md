@@ -72,7 +72,7 @@ Plans:
 Plans:
 - [x] 03-01-PLAN.md — Model updates (TriggerType enum, relationships, method_name) and Pydantic schemas
 - [x] 03-02-PLAN.md — Template service layer (CRUD, validation, install, versioning) and HTTP router
-- [ ] 03-03-PLAN.md — Integration tests for TMPL-01 through TMPL-11
+- [x] 03-03-PLAN.md — Integration tests for TMPL-01 through TMPL-11
 
 ### Phase 4: Process Engine Core
 **Goal**: The process engine can start workflow instances from templates and automatically advance them through sequential and parallel paths, creating work items for manual activities
