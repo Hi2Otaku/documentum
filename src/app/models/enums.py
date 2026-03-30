@@ -20,6 +20,11 @@ class FlowType(str, enum.Enum):
     REJECT = "reject"
 
 
+class TriggerType(str, enum.Enum):
+    AND_JOIN = "and_join"
+    OR_JOIN = "or_join"
+
+
 class WorkflowState(str, enum.Enum):
     DORMANT = "dormant"
     RUNNING = "running"

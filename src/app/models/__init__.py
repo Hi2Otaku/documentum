@@ -1,5 +1,5 @@
 from app.models.base import Base, BaseModel
-from app.models.enums import ActivityType, FlowType, PerformerType, ProcessState, WorkflowState, WorkItemState
+from app.models.enums import ActivityType, FlowType, PerformerType, ProcessState, TriggerType, WorkflowState, WorkItemState
 from app.models.user import Group, Role, User, user_groups, user_roles
 from app.models.audit import AuditLog
 from app.models.document import Document, DocumentVersion
@@ -21,6 +21,7 @@ __all__ = [
     "FlowType",
     "PerformerType",
     "ProcessState",
+    "TriggerType",
     "WorkflowState",
     "WorkItemState",
     "User",

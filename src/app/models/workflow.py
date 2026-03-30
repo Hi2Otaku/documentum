@@ -4,7 +4,7 @@ from sqlalchemy import Boolean, DateTime, Enum, Float, ForeignKey, Integer, Stri
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import BaseModel
-from app.models.enums import ActivityType, FlowType, ProcessState, WorkflowState, WorkItemState
+from app.models.enums import ActivityType, FlowType, ProcessState, TriggerType, WorkflowState, WorkItemState
 
 
 class ProcessTemplate(BaseModel):
@@ -22,6 +22,8 @@ class ProcessTemplate(BaseModel):
     installed_at: Mapped[None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     activity_templates: Mapped[list["ActivityTemplate"]] = relationship(back_populates="process_template")
+    flow_templates: Mapped[list["FlowTemplate"]] = relationship(back_populates="process_template")
+    process_variables: Mapped[list["ProcessVariable"]] = relationship(back_populates="process_template")
 
 
 class ActivityTemplate(BaseModel):
@@ -37,7 +39,12 @@ class ActivityTemplate(BaseModel):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     performer_type: Mapped[str | None] = mapped_column(String(50), nullable=True)
     performer_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    trigger_type: Mapped[str] = mapped_column(String(20), default="or_join", nullable=False)
+    trigger_type: Mapped[TriggerType] = mapped_column(
+        Enum(TriggerType, name="triggertype"),
+        default=TriggerType.OR_JOIN,
+        nullable=False,
+    )
+    method_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     position_x: Mapped[float | None] = mapped_column(Float, nullable=True)
     position_y: Mapped[float | None] = mapped_column(Float, nullable=True)
 
@@ -60,6 +67,10 @@ class FlowTemplate(BaseModel):
         Enum(FlowType, name="flowtype"), default=FlowType.NORMAL, nullable=False
     )
     condition_expression: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    process_template: Mapped["ProcessTemplate"] = relationship(back_populates="flow_templates")
+    source_activity: Mapped["ActivityTemplate"] = relationship(foreign_keys=[source_activity_id])
+    target_activity: Mapped["ActivityTemplate"] = relationship(foreign_keys=[target_activity_id])
 
 
 class WorkflowInstance(BaseModel):
@@ -125,6 +136,8 @@ class ProcessVariable(BaseModel):
     int_value: Mapped[int | None] = mapped_column(Integer, nullable=True)
     bool_value: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     date_value: Mapped[None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    process_template: Mapped["ProcessTemplate"] = relationship(back_populates="process_variables")
 
 
 class WorkflowPackage(BaseModel):
