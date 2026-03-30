@@ -55,7 +55,7 @@ Plans:
 **Plans**: 3 plans
 Plans:
 - [x] 02-01-PLAN.md — Document models, MinIO client, config, Pydantic schemas
-- [ ] 02-02-PLAN.md — Document service layer and HTTP router
+- [x] 02-02-PLAN.md — Document service layer and HTTP router
 - [ ] 02-03-PLAN.md — Integration tests for DOC-01 through DOC-08
 
 ### Phase 3: Workflow Template Design (API)
@@ -70,7 +70,7 @@ Plans:
   5. Installing a template creates an immutable version; editing creates a new version without affecting the installed one
 **Plans**: 3 plans
 Plans:
-- [ ] 02-01-PLAN.md — Document models, MinIO client, config, Pydantic schemas
+- [x] 02-01-PLAN.md — Document models, MinIO client, config, Pydantic schemas
 - [ ] 02-02-PLAN.md — Document service layer and HTTP router
 - [ ] 02-03-PLAN.md — Integration tests for DOC-01 through DOC-08
 
