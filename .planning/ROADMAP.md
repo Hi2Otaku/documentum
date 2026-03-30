@@ -40,7 +40,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 Plans:
 - [x] 01-01-PLAN.md — Infrastructure, Docker Compose, FastAPI app, all SQLAlchemy models, Alembic setup
 - [x] 01-02-PLAN.md — Auth (JWT), user/group/role CRUD APIs, audit trail service integration
-- [ ] 01-03-PLAN.md — Integration tests for all Phase 1 requirements
+- [x] 01-03-PLAN.md — Integration tests for all Phase 1 requirements
 
 ### Phase 2: Document Management
 **Goal**: Users can upload, version, lock, and retrieve documents through the system with files stored in MinIO and metadata in PostgreSQL
