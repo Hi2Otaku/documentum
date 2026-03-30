@@ -102,23 +102,6 @@ async def regular_token(regular_user: User) -> str:
     return create_access_token({"sub": str(regular_user.id), "username": regular_user.username})
 
 
-@pytest.fixture
-async def async_client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
-    """Create test HTTP client with overridden DB dependency."""
-
-    async def override_get_db():
-        yield db_session
-
-    fastapi_app.dependency_overrides[get_db] = override_get_db
-    async with AsyncClient(
-        transport=ASGITransport(app=fastapi_app),
-        base_url="http://test",
-        follow_redirects=True,
-    ) as client:
-        yield client
-    fastapi_app.dependency_overrides.clear()
-
-
 @pytest.fixture(autouse=True)
 def mock_minio(monkeypatch):
     """Replace MinIO operations with in-memory dict storage for all tests."""
@@ -139,8 +122,34 @@ def mock_minio(monkeypatch):
     async def mock_ensure_bucket():
         pass  # No-op in tests
 
+    # Patch on the source module
     monkeypatch.setattr("app.core.minio_client.upload_object", mock_upload)
     monkeypatch.setattr("app.core.minio_client.download_object", mock_download)
     monkeypatch.setattr("app.core.minio_client.delete_object", mock_delete)
     monkeypatch.setattr("app.core.minio_client.ensure_documents_bucket", mock_ensure_bucket)
+    # Patch on the consumer module (already-bound references from import)
+    monkeypatch.setattr("app.services.document_service.upload_object", mock_upload)
+    monkeypatch.setattr("app.services.document_service.download_object", mock_download)
+    monkeypatch.setattr("app.services.document_service.delete_object", mock_delete)
     return storage
+
+
+@pytest.fixture
+async def async_client(db_session: AsyncSession, mock_minio) -> AsyncGenerator[AsyncClient, None]:
+    """Create test HTTP client with overridden DB dependency.
+
+    Depends on mock_minio to ensure MinIO functions are patched before the
+    app lifespan runs (which calls ensure_documents_bucket on startup).
+    """
+
+    async def override_get_db():
+        yield db_session
+
+    fastapi_app.dependency_overrides[get_db] = override_get_db
+    async with AsyncClient(
+        transport=ASGITransport(app=fastapi_app),
+        base_url="http://test",
+        follow_redirects=True,
+    ) as client:
+        yield client
+    fastapi_app.dependency_overrides.clear()
