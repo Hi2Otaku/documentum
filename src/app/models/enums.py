@@ -40,6 +40,14 @@ class WorkItemState(str, enum.Enum):
     COMPLETE = "complete"
 
 
+class ActivityState(str, enum.Enum):
+    DORMANT = "dormant"
+    ACTIVE = "active"
+    PAUSED = "paused"
+    COMPLETE = "complete"
+    ERROR = "error"
+
+
 class PerformerType(str, enum.Enum):
     USER = "user"
     GROUP = "group"

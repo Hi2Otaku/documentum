@@ -4,7 +4,7 @@ from sqlalchemy import Boolean, DateTime, Enum, Float, ForeignKey, Integer, Stri
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import BaseModel
-from app.models.enums import ActivityType, FlowType, ProcessState, TriggerType, WorkflowState, WorkItemState
+from app.models.enums import ActivityState, ActivityType, FlowType, ProcessState, TriggerType, WorkflowState, WorkItemState
 
 
 class ProcessTemplate(BaseModel):
@@ -88,6 +88,17 @@ class WorkflowInstance(BaseModel):
         Uuid(), ForeignKey("users.id"), nullable=True
     )
 
+    process_template: Mapped["ProcessTemplate"] = relationship(foreign_keys=[process_template_id])
+    activity_instances: Mapped[list["ActivityInstance"]] = relationship(back_populates="workflow_instance", foreign_keys="[ActivityInstance.workflow_instance_id]")
+    work_items: Mapped[list["WorkItem"]] = relationship(
+        primaryjoin="WorkflowInstance.id == ActivityInstance.workflow_instance_id",
+        secondary="activity_instances",
+        secondaryjoin="ActivityInstance.id == WorkItem.activity_instance_id",
+        viewonly=True,
+    )
+    process_variables: Mapped[list["ProcessVariable"]] = relationship(back_populates="workflow_instance", foreign_keys="[ProcessVariable.workflow_instance_id]")
+    workflow_packages: Mapped[list["WorkflowPackage"]] = relationship(back_populates="workflow_instance")
+
 
 class ActivityInstance(BaseModel):
     __tablename__ = "activity_instances"
@@ -98,9 +109,17 @@ class ActivityInstance(BaseModel):
     activity_template_id: Mapped[uuid.UUID] = mapped_column(
         Uuid(), ForeignKey("activity_templates.id"), nullable=False
     )
-    state: Mapped[str] = mapped_column(String(50), default="dormant", nullable=False)
+    state: Mapped[ActivityState] = mapped_column(
+        Enum(ActivityState, name="activitystate"),
+        default=ActivityState.DORMANT,
+        nullable=False,
+    )
     started_at: Mapped[None] = mapped_column(DateTime(timezone=True), nullable=True)
     completed_at: Mapped[None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    workflow_instance: Mapped["WorkflowInstance"] = relationship(back_populates="activity_instances", foreign_keys=[workflow_instance_id])
+    activity_template: Mapped["ActivityTemplate"] = relationship(foreign_keys=[activity_template_id])
+    work_items: Mapped[list["WorkItem"]] = relationship(back_populates="activity_instance")
 
 
 class WorkItem(BaseModel):
@@ -120,6 +139,14 @@ class WorkItem(BaseModel):
     priority: Mapped[int] = mapped_column(Integer, default=5, nullable=False)
     completed_at: Mapped[None] = mapped_column(DateTime(timezone=True), nullable=True)
 
+    activity_instance: Mapped["ActivityInstance"] = relationship(back_populates="work_items", foreign_keys=[activity_instance_id])
+    workflow_instance: Mapped["WorkflowInstance"] = relationship(
+        primaryjoin="WorkItem.activity_instance_id == ActivityInstance.id",
+        secondary="activity_instances",
+        secondaryjoin="ActivityInstance.workflow_instance_id == WorkflowInstance.id",
+        viewonly=True,
+    )
+
 
 class ProcessVariable(BaseModel):
     __tablename__ = "process_variables"
@@ -138,6 +165,7 @@ class ProcessVariable(BaseModel):
     date_value: Mapped[None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     process_template: Mapped["ProcessTemplate"] = relationship(back_populates="process_variables")
+    workflow_instance: Mapped["WorkflowInstance | None"] = relationship(back_populates="process_variables", foreign_keys=[workflow_instance_id])
 
 
 class WorkflowPackage(BaseModel):
@@ -151,3 +179,23 @@ class WorkflowPackage(BaseModel):
     activity_instance_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid(), ForeignKey("activity_instances.id"), nullable=True
     )
+
+    workflow_instance: Mapped["WorkflowInstance"] = relationship(back_populates="workflow_packages", foreign_keys=[workflow_instance_id])
+
+
+class ExecutionToken(BaseModel):
+    __tablename__ = "execution_tokens"
+
+    workflow_instance_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(), ForeignKey("workflow_instances.id"), nullable=False, index=True
+    )
+    flow_template_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(), ForeignKey("flow_templates.id"), nullable=False
+    )
+    source_activity_instance_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(), ForeignKey("activity_instances.id"), nullable=False
+    )
+    target_activity_template_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(), ForeignKey("activity_templates.id"), nullable=False
+    )
+    is_consumed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)

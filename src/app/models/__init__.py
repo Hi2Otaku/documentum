@@ -1,11 +1,12 @@
 from app.models.base import Base, BaseModel
-from app.models.enums import ActivityType, FlowType, PerformerType, ProcessState, TriggerType, WorkflowState, WorkItemState
+from app.models.enums import ActivityState, ActivityType, FlowType, PerformerType, ProcessState, TriggerType, WorkflowState, WorkItemState
 from app.models.user import Group, Role, User, user_groups, user_roles
 from app.models.audit import AuditLog
 from app.models.document import Document, DocumentVersion
 from app.models.workflow import (
     ActivityInstance,
     ActivityTemplate,
+    ExecutionToken,
     FlowTemplate,
     ProcessTemplate,
     ProcessVariable,
@@ -17,6 +18,7 @@ from app.models.workflow import (
 __all__ = [
     "Base",
     "BaseModel",
+    "ActivityState",
     "ActivityType",
     "FlowType",
     "PerformerType",
@@ -38,6 +40,7 @@ __all__ = [
     "WorkItem",
     "ProcessVariable",
     "WorkflowPackage",
+    "ExecutionToken",
     "Document",
     "DocumentVersion",
 ]
