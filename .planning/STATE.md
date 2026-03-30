@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-03-30T14:26:01.456Z"
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-03-30T14:31:12.507Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 11
   completed_phases: 3
   total_plans: 12
-  completed_plans: 10
+  completed_plans: 11
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 ## Current Position
 
 Phase: 04 (process-engine-core) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-03-30
 
@@ -61,6 +61,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 03 P02 | 4min | 2 tasks | 3 files |
 | Phase 03 P03 | 3min | 2 tasks | 2 files |
 | Phase 04 P01 | 5min | 2 tasks | 6 files |
+| Phase 04 P02 | 3min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,9 @@ Recent decisions affecting current work:
 - [Phase 03]: valid_template fixture creates full start->manual->end graph via HTTP for realistic integration testing
 - [Phase 04]: Viewonly relationships use secondary join through intermediate tables for indirect FK paths
 - [Phase 04]: Expression evaluator uses compile+eval with __builtins__={} for sandboxed execution
+- [Phase 04]: Iterative queue-based advancement loop (queue.pop(0)) instead of recursion for stack safety
+- [Phase 04]: OR-join double-activation guard checks DORMANT state before activating
+- [Phase 04]: State transition enforcement via WORKFLOW_TRANSITIONS and ACTIVITY_TRANSITIONS sets
 
 ### Pending Todos
 
@@ -102,6 +106,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T14:26:01.452Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-03-30T14:31:12.502Z
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None

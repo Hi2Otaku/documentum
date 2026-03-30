@@ -69,12 +69,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Workflow Execution
 
-- [ ] **EXEC-01**: User can start a workflow instance from an installed template
-- [ ] **EXEC-02**: User attaches documents to the workflow package at startup
-- [ ] **EXEC-03**: User assigns performers for aliases (if Alias Set is used) at startup
+- [x] **EXEC-01**: User can start a workflow instance from an installed template
+- [x] **EXEC-02**: User attaches documents to the workflow package at startup
+- [x] **EXEC-03**: User assigns performers for aliases (if Alias Set is used) at startup
 - [x] **EXEC-04**: Workflow instance transitions through states: Dormant → Running → Halted → Failed → Finished
-- [ ] **EXEC-05**: Process Engine automatically advances workflow by evaluating flows and activating next activities
-- [ ] **EXEC-06**: Sequential routing: activities execute one after another (A → B → C)
+- [x] **EXEC-05**: Process Engine automatically advances workflow by evaluating flows and activating next activities
+- [x] **EXEC-06**: Sequential routing: activities execute one after another (A → B → C)
 - [x] **EXEC-07**: Parallel routing: activities execute simultaneously after a split, with AND-join at convergence
 - [ ] **EXEC-08**: Conditional routing (performer-chosen): performer selects which path to take
 - [ ] **EXEC-09**: Conditional routing (condition-based): system evaluates expressions to determine next activity
@@ -257,12 +257,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PERF-03 | Phase 5 | Pending |
 | PERF-04 | Phase 6 | Pending |
 | PERF-05 | Phase 6 | Pending |
-| EXEC-01 | Phase 4 | Pending |
-| EXEC-02 | Phase 4 | Pending |
-| EXEC-03 | Phase 4 | Pending |
+| EXEC-01 | Phase 4 | Complete |
+| EXEC-02 | Phase 4 | Complete |
+| EXEC-03 | Phase 4 | Complete |
 | EXEC-04 | Phase 4 | Complete |
-| EXEC-05 | Phase 4 | Pending |
-| EXEC-06 | Phase 4 | Pending |
+| EXEC-05 | Phase 4 | Complete |
+| EXEC-06 | Phase 4 | Complete |
 | EXEC-07 | Phase 4 | Complete |
 | EXEC-08 | Phase 6 | Pending |
 | EXEC-09 | Phase 6 | Pending |
