@@ -72,17 +72,17 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **EXEC-01**: User can start a workflow instance from an installed template
 - [ ] **EXEC-02**: User attaches documents to the workflow package at startup
 - [ ] **EXEC-03**: User assigns performers for aliases (if Alias Set is used) at startup
-- [ ] **EXEC-04**: Workflow instance transitions through states: Dormant → Running → Halted → Failed → Finished
+- [x] **EXEC-04**: Workflow instance transitions through states: Dormant → Running → Halted → Failed → Finished
 - [ ] **EXEC-05**: Process Engine automatically advances workflow by evaluating flows and activating next activities
 - [ ] **EXEC-06**: Sequential routing: activities execute one after another (A → B → C)
-- [ ] **EXEC-07**: Parallel routing: activities execute simultaneously after a split, with AND-join at convergence
+- [x] **EXEC-07**: Parallel routing: activities execute simultaneously after a split, with AND-join at convergence
 - [ ] **EXEC-08**: Conditional routing (performer-chosen): performer selects which path to take
 - [ ] **EXEC-09**: Conditional routing (condition-based): system evaluates expressions to determine next activity
 - [ ] **EXEC-10**: Conditional routing (broadcast): all connected activities are activated simultaneously
 - [ ] **EXEC-11**: Reject flow: performer rejects task, document returns to previous activity
-- [ ] **EXEC-12**: OR-join trigger: activity starts when any one incoming flow completes
-- [ ] **EXEC-13**: Process variables can be read and written by activities during execution
-- [ ] **EXEC-14**: Process variables can be used in routing condition expressions
+- [x] **EXEC-12**: OR-join trigger: activity starts when any one incoming flow completes
+- [x] **EXEC-13**: Process variables can be read and written by activities during execution
+- [x] **EXEC-14**: Process variables can be used in routing condition expressions
 
 ### Work Items & Inbox
 
@@ -260,17 +260,17 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EXEC-01 | Phase 4 | Pending |
 | EXEC-02 | Phase 4 | Pending |
 | EXEC-03 | Phase 4 | Pending |
-| EXEC-04 | Phase 4 | Pending |
+| EXEC-04 | Phase 4 | Complete |
 | EXEC-05 | Phase 4 | Pending |
 | EXEC-06 | Phase 4 | Pending |
-| EXEC-07 | Phase 4 | Pending |
+| EXEC-07 | Phase 4 | Complete |
 | EXEC-08 | Phase 6 | Pending |
 | EXEC-09 | Phase 6 | Pending |
 | EXEC-10 | Phase 6 | Pending |
 | EXEC-11 | Phase 6 | Pending |
-| EXEC-12 | Phase 4 | Pending |
-| EXEC-13 | Phase 4 | Pending |
-| EXEC-14 | Phase 4 | Pending |
+| EXEC-12 | Phase 4 | Complete |
+| EXEC-13 | Phase 4 | Complete |
+| EXEC-14 | Phase 4 | Complete |
 | INBOX-01 | Phase 5 | Pending |
 | INBOX-02 | Phase 5 | Pending |
 | INBOX-03 | Phase 5 | Pending |

@@ -86,7 +86,7 @@ Plans:
   5. Process variables can be read and written by activities during execution and used in routing condition expressions
 **Plans:** 3 plans
 Plans:
-- [ ] 04-01-PLAN.md — Models (ActivityState, ExecutionToken, relationships), schemas, expression evaluator
+- [x] 04-01-PLAN.md — Models (ActivityState, ExecutionToken, relationships), schemas, expression evaluator
 - [ ] 04-02-PLAN.md — Engine service (instantiation, advancement, tokens) and workflow router
 - [ ] 04-03-PLAN.md — Integration tests for EXEC-01 through EXEC-14
 ### Phase 5: Work Items & Inbox

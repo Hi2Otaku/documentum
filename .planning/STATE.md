@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-stopped_at: Phase 4 plans created and verified
-last_updated: "2026-03-30T14:19:00.551Z"
+status: executing
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-03-30T14:26:01.456Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 11
   completed_phases: 3
   total_plans: 12
-  completed_plans: 9
+  completed_plans: 10
   percent: 0
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-30)
 
 **Core value:** Every workflow use case in the Documentum specification can be modeled and executed end-to-end
-**Current focus:** Phase 03 — workflow-template-design-api
+**Current focus:** Phase 04 — process-engine-core
 
 ## Current Position
 
-Phase: 4
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 04 (process-engine-core) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
 Last activity: 2026-03-30
 
 Progress: [░░░░░░░░░░] 0%
@@ -60,6 +60,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 03 P01 | 3min | 2 tasks | 6 files |
 | Phase 03 P02 | 4min | 2 tasks | 3 files |
 | Phase 03 P03 | 3min | 2 tasks | 2 files |
+| Phase 04 P01 | 5min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -88,6 +89,8 @@ Recent decisions affecting current work:
 - [Phase 03]: Active templates immutable; update auto-creates new version via copy-on-write
 - [Phase 03]: Condition expression validation cross-references template variable names
 - [Phase 03]: valid_template fixture creates full start->manual->end graph via HTTP for realistic integration testing
+- [Phase 04]: Viewonly relationships use secondary join through intermediate tables for indirect FK paths
+- [Phase 04]: Expression evaluator uses compile+eval with __builtins__={} for sandboxed execution
 
 ### Pending Todos
 
@@ -99,6 +102,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T14:19:00.546Z
-Stopped at: Phase 4 plans created and verified
-Resume file: .planning/phases/04-process-engine-core/04-01-PLAN.md
+Last session: 2026-03-30T14:26:01.452Z
+Stopped at: Completed 04-01-PLAN.md
+Resume file: None
