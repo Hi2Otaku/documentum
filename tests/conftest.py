@@ -7,6 +7,9 @@ from typing import AsyncGenerator
 os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
 os.environ.setdefault("SECRET_KEY", "test-secret-key-for-testing-only")
 os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
+os.environ.setdefault("MINIO_ENDPOINT", "localhost:9000")
+os.environ.setdefault("MINIO_ACCESS_KEY", "minioadmin")
+os.environ.setdefault("MINIO_SECRET_KEY", "minioadmin")
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -114,3 +117,30 @@ async def async_client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, 
     ) as client:
         yield client
     fastapi_app.dependency_overrides.clear()
+
+
+@pytest.fixture(autouse=True)
+def mock_minio(monkeypatch):
+    """Replace MinIO operations with in-memory dict storage for all tests."""
+    storage = {}
+
+    async def mock_upload(object_name, data, content_type="application/octet-stream"):
+        storage[object_name] = data
+        return object_name
+
+    async def mock_download(object_name):
+        if object_name not in storage:
+            raise Exception(f"NoSuchKey: {object_name}")
+        return storage[object_name]
+
+    async def mock_delete(object_name):
+        storage.pop(object_name, None)
+
+    async def mock_ensure_bucket():
+        pass  # No-op in tests
+
+    monkeypatch.setattr("app.core.minio_client.upload_object", mock_upload)
+    monkeypatch.setattr("app.core.minio_client.download_object", mock_download)
+    monkeypatch.setattr("app.core.minio_client.delete_object", mock_delete)
+    monkeypatch.setattr("app.core.minio_client.ensure_documents_bucket", mock_ensure_bucket)
+    return storage
