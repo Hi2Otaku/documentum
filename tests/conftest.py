@@ -223,3 +223,292 @@ async def valid_template(async_client: AsyncClient, admin_token: str) -> dict:
         "flow1_id": flow1_id,
         "flow2_id": flow2_id,
     }
+
+
+@pytest.fixture
+async def installed_template(
+    async_client: AsyncClient, admin_token: str, admin_user: User
+) -> dict:
+    """Create, validate, and install a template: start -> manual_review -> end.
+
+    Returns dict: template_id, start_id, manual_id, end_id, flow1_id, flow2_id
+    """
+    headers = {"Authorization": f"Bearer {admin_token}"}
+
+    # Create template
+    resp = await async_client.post(
+        "/api/v1/templates/",
+        json={"name": "Simple Workflow", "description": "Start -> Manual -> End"},
+        headers=headers,
+    )
+    assert resp.status_code == 201
+    template_id = resp.json()["data"]["id"]
+
+    # Add activities
+    resp = await async_client.post(
+        f"/api/v1/templates/{template_id}/activities",
+        json={"name": "Start", "activity_type": "start"},
+        headers=headers,
+    )
+    start_id = resp.json()["data"]["id"]
+
+    resp = await async_client.post(
+        f"/api/v1/templates/{template_id}/activities",
+        json={
+            "name": "Review",
+            "activity_type": "manual",
+            "performer_type": "user",
+            "performer_id": str(admin_user.id),
+        },
+        headers=headers,
+    )
+    manual_id = resp.json()["data"]["id"]
+
+    resp = await async_client.post(
+        f"/api/v1/templates/{template_id}/activities",
+        json={"name": "End", "activity_type": "end"},
+        headers=headers,
+    )
+    end_id = resp.json()["data"]["id"]
+
+    # Add flows
+    resp = await async_client.post(
+        f"/api/v1/templates/{template_id}/flows",
+        json={"source_activity_id": start_id, "target_activity_id": manual_id},
+        headers=headers,
+    )
+    flow1_id = resp.json()["data"]["id"]
+
+    resp = await async_client.post(
+        f"/api/v1/templates/{template_id}/flows",
+        json={"source_activity_id": manual_id, "target_activity_id": end_id},
+        headers=headers,
+    )
+    flow2_id = resp.json()["data"]["id"]
+
+    # Validate and install
+    resp = await async_client.post(
+        f"/api/v1/templates/{template_id}/validate", headers=headers
+    )
+    assert resp.status_code == 200
+    resp = await async_client.post(
+        f"/api/v1/templates/{template_id}/install", headers=headers
+    )
+    assert resp.status_code == 200
+
+    return {
+        "template_id": template_id,
+        "start_id": start_id,
+        "manual_id": manual_id,
+        "end_id": end_id,
+        "flow1_id": flow1_id,
+        "flow2_id": flow2_id,
+    }
+
+
+@pytest.fixture
+async def parallel_template(
+    async_client: AsyncClient, admin_token: str, admin_user: User
+) -> dict:
+    """Create installed parallel template: start -> reviewA + reviewB (AND-join) -> merge -> end.
+
+    Returns dict: template_id, start_id, review_a_id, review_b_id, merge_id, end_id
+    """
+    headers = {"Authorization": f"Bearer {admin_token}"}
+
+    resp = await async_client.post(
+        "/api/v1/templates/",
+        json={"name": "Parallel Workflow", "description": "AND-split/join"},
+        headers=headers,
+    )
+    template_id = resp.json()["data"]["id"]
+
+    # Activities
+    resp = await async_client.post(
+        f"/api/v1/templates/{template_id}/activities",
+        json={"name": "Start", "activity_type": "start"},
+        headers=headers,
+    )
+    start_id = resp.json()["data"]["id"]
+
+    resp = await async_client.post(
+        f"/api/v1/templates/{template_id}/activities",
+        json={
+            "name": "Review A",
+            "activity_type": "manual",
+            "performer_type": "user",
+            "performer_id": str(admin_user.id),
+        },
+        headers=headers,
+    )
+    review_a_id = resp.json()["data"]["id"]
+
+    resp = await async_client.post(
+        f"/api/v1/templates/{template_id}/activities",
+        json={
+            "name": "Review B",
+            "activity_type": "manual",
+            "performer_type": "user",
+            "performer_id": str(admin_user.id),
+        },
+        headers=headers,
+    )
+    review_b_id = resp.json()["data"]["id"]
+
+    resp = await async_client.post(
+        f"/api/v1/templates/{template_id}/activities",
+        json={
+            "name": "Merge",
+            "activity_type": "manual",
+            "performer_type": "user",
+            "performer_id": str(admin_user.id),
+            "trigger_type": "and_join",
+        },
+        headers=headers,
+    )
+    merge_id = resp.json()["data"]["id"]
+
+    resp = await async_client.post(
+        f"/api/v1/templates/{template_id}/activities",
+        json={"name": "End", "activity_type": "end"},
+        headers=headers,
+    )
+    end_id = resp.json()["data"]["id"]
+
+    # Flows: start -> reviewA, start -> reviewB (AND-split)
+    await async_client.post(
+        f"/api/v1/templates/{template_id}/flows",
+        json={"source_activity_id": start_id, "target_activity_id": review_a_id},
+        headers=headers,
+    )
+    await async_client.post(
+        f"/api/v1/templates/{template_id}/flows",
+        json={"source_activity_id": start_id, "target_activity_id": review_b_id},
+        headers=headers,
+    )
+    # reviewA -> merge, reviewB -> merge (AND-join)
+    await async_client.post(
+        f"/api/v1/templates/{template_id}/flows",
+        json={"source_activity_id": review_a_id, "target_activity_id": merge_id},
+        headers=headers,
+    )
+    await async_client.post(
+        f"/api/v1/templates/{template_id}/flows",
+        json={"source_activity_id": review_b_id, "target_activity_id": merge_id},
+        headers=headers,
+    )
+    # merge -> end
+    await async_client.post(
+        f"/api/v1/templates/{template_id}/flows",
+        json={"source_activity_id": merge_id, "target_activity_id": end_id},
+        headers=headers,
+    )
+
+    # Validate and install
+    resp = await async_client.post(
+        f"/api/v1/templates/{template_id}/validate", headers=headers
+    )
+    assert resp.status_code == 200
+    resp = await async_client.post(
+        f"/api/v1/templates/{template_id}/install", headers=headers
+    )
+    assert resp.status_code == 200
+
+    return {
+        "template_id": template_id,
+        "start_id": start_id,
+        "review_a_id": review_a_id,
+        "review_b_id": review_b_id,
+        "merge_id": merge_id,
+        "end_id": end_id,
+    }
+
+
+@pytest.fixture
+async def sequential_3step_template(
+    async_client: AsyncClient, admin_token: str, admin_user: User
+) -> dict:
+    """Installed template: start -> step1 -> step2 -> step3 -> end (3 manual steps)."""
+    headers = {"Authorization": f"Bearer {admin_token}"}
+
+    resp = await async_client.post(
+        "/api/v1/templates/",
+        json={"name": "Sequential 3-Step", "description": "A->B->C routing"},
+        headers=headers,
+    )
+    template_id = resp.json()["data"]["id"]
+
+    # Activities
+    resp = await async_client.post(
+        f"/api/v1/templates/{template_id}/activities",
+        json={"name": "Start", "activity_type": "start"},
+        headers=headers,
+    )
+    start_id = resp.json()["data"]["id"]
+
+    ids = {}
+    for step_name in ["Step 1", "Step 2", "Step 3"]:
+        resp = await async_client.post(
+            f"/api/v1/templates/{template_id}/activities",
+            json={
+                "name": step_name,
+                "activity_type": "manual",
+                "performer_type": "user",
+                "performer_id": str(admin_user.id),
+            },
+            headers=headers,
+        )
+        ids[step_name] = resp.json()["data"]["id"]
+
+    resp = await async_client.post(
+        f"/api/v1/templates/{template_id}/activities",
+        json={"name": "End", "activity_type": "end"},
+        headers=headers,
+    )
+    end_id = resp.json()["data"]["id"]
+
+    # Flows: start -> step1 -> step2 -> step3 -> end
+    await async_client.post(
+        f"/api/v1/templates/{template_id}/flows",
+        json={"source_activity_id": start_id, "target_activity_id": ids["Step 1"]},
+        headers=headers,
+    )
+    await async_client.post(
+        f"/api/v1/templates/{template_id}/flows",
+        json={
+            "source_activity_id": ids["Step 1"],
+            "target_activity_id": ids["Step 2"],
+        },
+        headers=headers,
+    )
+    await async_client.post(
+        f"/api/v1/templates/{template_id}/flows",
+        json={
+            "source_activity_id": ids["Step 2"],
+            "target_activity_id": ids["Step 3"],
+        },
+        headers=headers,
+    )
+    await async_client.post(
+        f"/api/v1/templates/{template_id}/flows",
+        json={"source_activity_id": ids["Step 3"], "target_activity_id": end_id},
+        headers=headers,
+    )
+
+    resp = await async_client.post(
+        f"/api/v1/templates/{template_id}/validate", headers=headers
+    )
+    assert resp.status_code == 200
+    resp = await async_client.post(
+        f"/api/v1/templates/{template_id}/install", headers=headers
+    )
+    assert resp.status_code == 200
+
+    return {
+        "template_id": template_id,
+        "start_id": start_id,
+        "step1_id": ids["Step 1"],
+        "step2_id": ids["Step 2"],
+        "step3_id": ids["Step 3"],
+        "end_id": end_id,
+    }

@@ -14,6 +14,7 @@ ALLOWED_NODES: set[type] = {
     ast.BinOp, ast.Add, ast.Sub, ast.Mult, ast.Div, ast.Mod,
     ast.UnaryOp, ast.USub, ast.UAdd,
     ast.Constant, ast.Name, ast.Load,
+    ast.Tuple,
 }
 
 
