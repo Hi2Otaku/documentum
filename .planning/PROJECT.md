@@ -16,6 +16,8 @@ Any workflow use case described in the Documentum specification (sequential, par
 - ✓ Database schema for 5 core Documentum object types with audit columns — Phase 1
 - ✓ User/group/role management with JWT authentication — Phase 1
 - ✓ Audit trail: full before/after state logging on every mutation — Phase 1
+- ✓ Document upload, versioning (major/minor), check-in/check-out with MinIO storage — Phase 2
+- ✓ Extensible document metadata with custom properties — Phase 2
 
 ### Active
 
@@ -91,4 +93,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-30 after Phase 1 completion*
+*Last updated: 2026-03-30 after Phase 2 completion*
