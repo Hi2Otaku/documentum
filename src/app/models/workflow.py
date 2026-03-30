@@ -1,7 +1,6 @@
 import uuid
 
-from sqlalchemy import Boolean, DateTime, Enum, Float, ForeignKey, Integer, String, Text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Boolean, DateTime, Enum, Float, ForeignKey, Integer, String, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import BaseModel
@@ -29,7 +28,7 @@ class ActivityTemplate(BaseModel):
     __tablename__ = "activity_templates"
 
     process_template_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("process_templates.id"), nullable=False
+        Uuid(), ForeignKey("process_templates.id"), nullable=False
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     activity_type: Mapped[ActivityType] = mapped_column(
@@ -49,13 +48,13 @@ class FlowTemplate(BaseModel):
     __tablename__ = "flow_templates"
 
     process_template_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("process_templates.id"), nullable=False
+        Uuid(), ForeignKey("process_templates.id"), nullable=False
     )
     source_activity_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("activity_templates.id"), nullable=False
+        Uuid(), ForeignKey("activity_templates.id"), nullable=False
     )
     target_activity_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("activity_templates.id"), nullable=False
+        Uuid(), ForeignKey("activity_templates.id"), nullable=False
     )
     flow_type: Mapped[FlowType] = mapped_column(
         Enum(FlowType, name="flowtype"), default=FlowType.NORMAL, nullable=False
@@ -67,7 +66,7 @@ class WorkflowInstance(BaseModel):
     __tablename__ = "workflow_instances"
 
     process_template_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("process_templates.id"), nullable=False
+        Uuid(), ForeignKey("process_templates.id"), nullable=False
     )
     state: Mapped[WorkflowState] = mapped_column(
         Enum(WorkflowState, name="workflowstate"), default=WorkflowState.DORMANT, nullable=False
@@ -75,7 +74,7 @@ class WorkflowInstance(BaseModel):
     started_at: Mapped[None] = mapped_column(DateTime(timezone=True), nullable=True)
     completed_at: Mapped[None] = mapped_column(DateTime(timezone=True), nullable=True)
     supervisor_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True
+        Uuid(), ForeignKey("users.id"), nullable=True
     )
 
 
@@ -83,10 +82,10 @@ class ActivityInstance(BaseModel):
     __tablename__ = "activity_instances"
 
     workflow_instance_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("workflow_instances.id"), nullable=False
+        Uuid(), ForeignKey("workflow_instances.id"), nullable=False
     )
     activity_template_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("activity_templates.id"), nullable=False
+        Uuid(), ForeignKey("activity_templates.id"), nullable=False
     )
     state: Mapped[str] = mapped_column(String(50), default="dormant", nullable=False)
     started_at: Mapped[None] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -97,10 +96,10 @@ class WorkItem(BaseModel):
     __tablename__ = "work_items"
 
     activity_instance_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("activity_instances.id"), nullable=False
+        Uuid(), ForeignKey("activity_instances.id"), nullable=False
     )
     performer_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True
+        Uuid(), ForeignKey("users.id"), nullable=True
     )
     state: Mapped[WorkItemState] = mapped_column(
         Enum(WorkItemState, name="workitemstate"), default=WorkItemState.AVAILABLE, nullable=False
@@ -115,10 +114,10 @@ class ProcessVariable(BaseModel):
     __tablename__ = "process_variables"
 
     process_template_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("process_templates.id"), nullable=True
+        Uuid(), ForeignKey("process_templates.id"), nullable=True
     )
     workflow_instance_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("workflow_instances.id"), nullable=True
+        Uuid(), ForeignKey("workflow_instances.id"), nullable=True
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     variable_type: Mapped[str] = mapped_column(String(20), nullable=False)
@@ -132,10 +131,10 @@ class WorkflowPackage(BaseModel):
     __tablename__ = "workflow_packages"
 
     workflow_instance_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("workflow_instances.id"), nullable=False
+        Uuid(), ForeignKey("workflow_instances.id"), nullable=False
     )
-    document_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
+    document_id: Mapped[uuid.UUID | None] = mapped_column(Uuid(), nullable=True)
     package_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     activity_instance_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("activity_instances.id"), nullable=True
+        Uuid(), ForeignKey("activity_instances.id"), nullable=True
     )

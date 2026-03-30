@@ -1,7 +1,6 @@
 import uuid
 
-from sqlalchemy import Boolean, Column, ForeignKey, String, Table
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Boolean, Column, ForeignKey, String, Table, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import BaseModel
@@ -9,15 +8,15 @@ from app.models.base import BaseModel
 user_groups = Table(
     "user_groups",
     BaseModel.metadata,
-    Column("user_id", UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True),
-    Column("group_id", UUID(as_uuid=True), ForeignKey("groups.id"), primary_key=True),
+    Column("user_id", Uuid(), ForeignKey("users.id"), primary_key=True),
+    Column("group_id", Uuid(), ForeignKey("groups.id"), primary_key=True),
 )
 
 user_roles = Table(
     "user_roles",
     BaseModel.metadata,
-    Column("user_id", UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True),
-    Column("role_id", UUID(as_uuid=True), ForeignKey("roles.id"), primary_key=True),
+    Column("user_id", Uuid(), ForeignKey("users.id"), primary_key=True),
+    Column("role_id", Uuid(), ForeignKey("roles.id"), primary_key=True),
 )
 
 
