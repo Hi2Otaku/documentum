@@ -70,7 +70,7 @@ Plans:
   5. Installing a template creates an immutable version; editing creates a new version without affecting the installed one
 **Plans**: 3 plans
 Plans:
-- [ ] 03-01-PLAN.md — Model updates (TriggerType enum, relationships, method_name) and Pydantic schemas
+- [x] 03-01-PLAN.md — Model updates (TriggerType enum, relationships, method_name) and Pydantic schemas
 - [ ] 03-02-PLAN.md — Template service layer (CRUD, validation, install, versioning) and HTTP router
 - [ ] 03-03-PLAN.md — Integration tests for TMPL-01 through TMPL-11
 

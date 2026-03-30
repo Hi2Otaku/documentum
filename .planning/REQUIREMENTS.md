@@ -41,17 +41,17 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Workflow Template Design
 
-- [ ] **TMPL-01**: User can create a workflow template (dm_process equivalent) with a name and description
-- [ ] **TMPL-02**: User can add Manual Activities to a template with performer assignment configuration
-- [ ] **TMPL-03**: User can add Auto Activities to a template with a Python method reference
-- [ ] **TMPL-04**: User can connect activities with Normal Flows (forward) and Reject Flows (backward)
-- [ ] **TMPL-05**: User can define process variables (string, int, boolean, date types) on a template
-- [ ] **TMPL-06**: User can configure trigger conditions on activities: AND-join (all incoming) or OR-join (any incoming)
-- [ ] **TMPL-07**: User can configure conditional routing with expressions based on process variables
+- [x] **TMPL-01**: User can create a workflow template (dm_process equivalent) with a name and description
+- [x] **TMPL-02**: User can add Manual Activities to a template with performer assignment configuration
+- [x] **TMPL-03**: User can add Auto Activities to a template with a Python method reference
+- [x] **TMPL-04**: User can connect activities with Normal Flows (forward) and Reject Flows (backward)
+- [x] **TMPL-05**: User can define process variables (string, int, boolean, date types) on a template
+- [x] **TMPL-06**: User can configure trigger conditions on activities: AND-join (all incoming) or OR-join (any incoming)
+- [x] **TMPL-07**: User can configure conditional routing with expressions based on process variables
 - [ ] **TMPL-08**: User can validate a template (check connectivity, performer assignment, unreachable activities)
 - [ ] **TMPL-09**: User can install (activate) a validated template, making it available for use
 - [ ] **TMPL-10**: Installed templates are versioned — editing creates a new version without affecting running instances
-- [ ] **TMPL-11**: Template supports Start Activity and End Activity markers
+- [x] **TMPL-11**: Template supports Start Activity and End Activity markers
 
 ### Alias Sets
 
@@ -238,17 +238,17 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LIFE-02 | Phase 7 | Pending |
 | LIFE-03 | Phase 7 | Pending |
 | LIFE-04 | Phase 7 | Pending |
-| TMPL-01 | Phase 3 | Pending |
-| TMPL-02 | Phase 3 | Pending |
-| TMPL-03 | Phase 3 | Pending |
-| TMPL-04 | Phase 3 | Pending |
-| TMPL-05 | Phase 3 | Pending |
-| TMPL-06 | Phase 3 | Pending |
-| TMPL-07 | Phase 3 | Pending |
+| TMPL-01 | Phase 3 | Complete |
+| TMPL-02 | Phase 3 | Complete |
+| TMPL-03 | Phase 3 | Complete |
+| TMPL-04 | Phase 3 | Complete |
+| TMPL-05 | Phase 3 | Complete |
+| TMPL-06 | Phase 3 | Complete |
+| TMPL-07 | Phase 3 | Complete |
 | TMPL-08 | Phase 3 | Pending |
 | TMPL-09 | Phase 3 | Pending |
 | TMPL-10 | Phase 3 | Pending |
-| TMPL-11 | Phase 3 | Pending |
+| TMPL-11 | Phase 3 | Complete |
 | ALIAS-01 | Phase 6 | Pending |
 | ALIAS-02 | Phase 6 | Pending |
 | ALIAS-03 | Phase 6 | Pending |
