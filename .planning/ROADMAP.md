@@ -36,7 +36,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Admin can create users, create groups, assign users to groups, and define roles through the API
   4. User can log in with username/password and receive a session token that authenticates subsequent API requests
   5. Every create/update/delete operation produces an append-only audit record with who, what, when, and affected object
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 01-01-PLAN.md — Infrastructure, Docker Compose, FastAPI app, all SQLAlchemy models, Alembic setup
+- [ ] 01-02-PLAN.md — Auth (JWT), user/group/role CRUD APIs, audit trail service integration
+- [ ] 01-03-PLAN.md — Integration tests for all Phase 1 requirements
 
 ### Phase 2: Document Management
 **Goal**: Users can upload, version, lock, and retrieve documents through the system with files stored in MinIO and metadata in PostgreSQL
@@ -168,7 +172,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> ... -> 11
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & User Management | 0/TBD | Not started | - |
+| 1. Foundation & User Management | 0/3 | Planning complete | - |
 | 2. Document Management | 0/TBD | Not started | - |
 | 3. Workflow Template Design (API) | 0/TBD | Not started | - |
 | 4. Process Engine Core | 0/TBD | Not started | - |
