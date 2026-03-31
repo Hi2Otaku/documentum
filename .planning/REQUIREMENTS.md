@@ -61,9 +61,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Performer Assignment
 
-- [ ] **PERF-01**: Activity can be assigned to Workflow Supervisor (workflow initiator)
-- [ ] **PERF-02**: Activity can be assigned to a Specific User
-- [ ] **PERF-03**: Activity can be assigned to users from a Group (parallel execution)
+- [x] **PERF-01**: Activity can be assigned to Workflow Supervisor (workflow initiator)
+- [x] **PERF-02**: Activity can be assigned to a Specific User
+- [x] **PERF-03**: Activity can be assigned to users from a Group (parallel execution)
 - [ ] **PERF-04**: Activity can use Multiple Sequential Performers (ordered list, can reject back)
 - [ ] **PERF-05**: Activity can use Runtime Selection (previous performer chooses next)
 
@@ -86,13 +86,13 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Work Items & Inbox
 
-- [ ] **INBOX-01**: When an activity is activated, a work item appears in the assigned performer's inbox
+- [x] **INBOX-01**: When an activity is activated, a work item appears in the assigned performer's inbox
 - [ ] **INBOX-02**: User can view their inbox with all pending tasks (filterable, sortable)
 - [ ] **INBOX-03**: User can open a work item to view attached documents and activity details
 - [ ] **INBOX-04**: User can complete (forward) a work item, advancing the workflow
 - [ ] **INBOX-05**: User can reject a work item (triggers reject flow if configured)
 - [ ] **INBOX-06**: User can add comments to a work item
-- [ ] **INBOX-07**: Work items show priority and due date indicators
+- [x] **INBOX-07**: Work items show priority and due date indicators
 - [ ] **INBOX-08**: If performer is unavailable, work item automatically routes to delegated user
 
 ### Work Queues
@@ -252,9 +252,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ALIAS-01 | Phase 6 | Pending |
 | ALIAS-02 | Phase 6 | Pending |
 | ALIAS-03 | Phase 6 | Pending |
-| PERF-01 | Phase 5 | Pending |
-| PERF-02 | Phase 5 | Pending |
-| PERF-03 | Phase 5 | Pending |
+| PERF-01 | Phase 5 | Complete |
+| PERF-02 | Phase 5 | Complete |
+| PERF-03 | Phase 5 | Complete |
 | PERF-04 | Phase 6 | Pending |
 | PERF-05 | Phase 6 | Pending |
 | EXEC-01 | Phase 4 | Complete |
@@ -271,13 +271,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EXEC-12 | Phase 4 | Complete |
 | EXEC-13 | Phase 4 | Complete |
 | EXEC-14 | Phase 4 | Complete |
-| INBOX-01 | Phase 5 | Pending |
+| INBOX-01 | Phase 5 | Complete |
 | INBOX-02 | Phase 5 | Pending |
 | INBOX-03 | Phase 5 | Pending |
 | INBOX-04 | Phase 5 | Pending |
 | INBOX-05 | Phase 5 | Pending |
 | INBOX-06 | Phase 5 | Pending |
-| INBOX-07 | Phase 5 | Pending |
+| INBOX-07 | Phase 5 | Complete |
 | INBOX-08 | Phase 10 | Pending |
 | QUEUE-01 | Phase 10 | Pending |
 | QUEUE-02 | Phase 10 | Pending |

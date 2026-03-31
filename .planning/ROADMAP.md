@@ -99,11 +99,11 @@ Plans:
   3. User can open a work item, view attached documents and activity details, and add comments
   4. User can complete (forward) a work item, which advances the workflow to the next activity
   5. Activities correctly route to the workflow supervisor, a specific user, or users from a group based on performer configuration
-**Plans**: 3 plans
+**Plans:** 3 plans
 Plans:
-- [ ] 02-01-PLAN.md — Document models, MinIO client, config, Pydantic schemas
-- [ ] 02-02-PLAN.md — Document service layer and HTTP router
-- [ ] 02-03-PLAN.md — Integration tests for DOC-01 through DOC-08
+- [x] 05-01-PLAN.md — REJECTED enum, WorkItemComment model, inbox schemas, performer resolution in engine
+- [ ] 05-02-PLAN.md — Inbox service layer and HTTP router (8 endpoints)
+- [ ] 05-03-PLAN.md — Integration tests for INBOX-01 through INBOX-07 and PERF-01 through PERF-03
 **UI hint**: yes
 
 ### Phase 6: Advanced Routing & Alias Sets
@@ -215,7 +215,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> ... -> 11
 | 2. Document Management | 3/3 | Complete   | 2026-03-30 |
 | 3. Workflow Template Design (API) | 0/3 | Planning complete | - |
 | 4. Process Engine Core | 0/3 | Planning complete | - |
-| 5. Work Items & Inbox | 0/TBD | Not started | - |
+| 5. Work Items & Inbox | 0/3 | Planning complete | - |
 | 6. Advanced Routing & Alias Sets | 0/TBD | Not started | - |
 | 7. Document Lifecycle & ACL | 0/TBD | Not started | - |
 | 8. Visual Workflow Designer | 0/TBD | Not started | - |
