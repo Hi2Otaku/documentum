@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 06-01-PLAN.md
-last_updated: "2026-03-31T07:01:49.960Z"
+stopped_at: Completed 06-02-PLAN.md
+last_updated: "2026-03-31T07:10:04.693Z"
 last_activity: 2026-03-31
 progress:
   total_phases: 11
   completed_phases: 5
   total_plans: 18
-  completed_plans: 16
+  completed_plans: 17
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 ## Current Position
 
 Phase: 06 (advanced-routing-alias-sets) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-03-31
 
@@ -67,6 +67,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 05 P02 | 2min | 2 tasks | 3 files |
 | Phase 05 P03 | 2min | 1 tasks | 1 files |
 | Phase 06 P01 | 5min | 2 tasks | 12 files |
+| Phase 06 P02 | 6min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -112,6 +113,7 @@ Recent decisions affecting current work:
 - [Phase 06]: AliasSet/AliasMapping defined before ProcessTemplate using string FK for table ordering
 - [Phase 06]: resolve_alias_snapshot returns dict[str, str] for JSON storage on WorkflowInstance
 - [Phase 06]: All Phase 6 model fields nullable with defaults for backward compatibility
+- [Phase 06]: Reject flow tokens placed as immediately consumed; selected_path cleared after first queue iteration; sequential rejection at index 0 raises ValueError
 
 ### Pending Todos
 
@@ -123,6 +125,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T07:01:49.955Z
-Stopped at: Completed 06-01-PLAN.md
+Last session: 2026-03-31T07:10:04.688Z
+Stopped at: Completed 06-02-PLAN.md
 Resume file: None
