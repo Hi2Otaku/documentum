@@ -363,6 +363,25 @@ async def _advance_from_activity(
     if completed_activity.started_at is None:
         completed_activity.started_at = now
 
+    # Lifecycle action hook (Phase 7) — per D-11: fires after completion, before advancing
+    current_at_for_lifecycle = None
+    for at in template.activity_templates:
+        if not at.is_deleted and at.id == completed_activity.activity_template_id:
+            current_at_for_lifecycle = at
+            break
+
+    if current_at_for_lifecycle and getattr(current_at_for_lifecycle, 'lifecycle_action', None):
+        try:
+            from app.services import lifecycle_service
+            await lifecycle_service.execute_lifecycle_action(
+                db, workflow, current_at_for_lifecycle.lifecycle_action, user_id
+            )
+        except Exception:
+            logger.warning(
+                "Lifecycle action failed for activity %s, continuing advancement",
+                completed_activity.id,
+            )
+
     # Build variable context for condition evaluation
     variables = instance_variables if instance_variables is not None else workflow.process_variables
     var_context = _build_variable_context(variables)
