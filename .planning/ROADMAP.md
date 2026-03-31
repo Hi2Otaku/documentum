@@ -216,7 +216,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> ... -> 11
 | 3. Workflow Template Design (API) | 0/3 | Planning complete | - |
 | 4. Process Engine Core | 0/3 | Planning complete | - |
 | 5. Work Items & Inbox | 0/3 | Planning complete | - |
-| 6. Advanced Routing & Alias Sets | 0/TBD | Not started | - |
+| 6. Advanced Routing & Alias Sets | 0/3 | Planning complete | - |
 | 7. Document Lifecycle & ACL | 0/TBD | Not started | - |
 | 8. Visual Workflow Designer | 0/TBD | Not started | - |
 | 9. Auto Activities, Workflow Agent & Integration | 0/TBD | Not started | - |
