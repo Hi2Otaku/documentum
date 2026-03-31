@@ -132,12 +132,11 @@ Plans:
   3. ACL permissions automatically change when lifecycle state changes (e.g., document becomes read-only after Approved)
   4. Permission checks are enforced on all API operations, preventing unauthorized read/write/delete
   5. All lifecycle transitions and ACL changes are recorded in the audit trail
-**Plans**: 3 plans
+**Plans:** 3 plans
 Plans:
-- [ ] 02-01-PLAN.md — Document models, MinIO client, config, Pydantic schemas
-- [ ] 02-02-PLAN.md — Document service layer and HTTP router
-- [ ] 02-03-PLAN.md — Integration tests for DOC-01 through DOC-08
-
+- [ ] 07-01-PLAN.md — Enums, models, schemas, lifecycle service, ACL service
+- [ ] 07-02-PLAN.md — Engine lifecycle hook, permission dependency, route protection
+- [ ] 07-03-PLAN.md — Integration tests for LIFE-01 through LIFE-04 and ACL-01 through ACL-04
 ### Phase 8: Visual Workflow Designer
 **Goal**: Users can design workflow templates through a web-based drag-and-drop interface instead of raw API calls
 **Depends on**: Phase 3
@@ -217,7 +216,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> ... -> 11
 | 4. Process Engine Core | 0/3 | Planning complete | - |
 | 5. Work Items & Inbox | 0/3 | Planning complete | - |
 | 6. Advanced Routing & Alias Sets | 0/3 | Planning complete | - |
-| 7. Document Lifecycle & ACL | 0/TBD | Not started | - |
+| 7. Document Lifecycle & ACL | 0/3 | Planning complete | - |
 | 8. Visual Workflow Designer | 0/TBD | Not started | - |
 | 9. Auto Activities, Workflow Agent & Integration | 0/TBD | Not started | - |
 | 10. Delegation, Work Queues & Workflow Management | 0/TBD | Not started | - |
