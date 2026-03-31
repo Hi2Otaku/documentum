@@ -66,6 +66,8 @@ async def create_acl_entry(
         created_by=user_id,
     )
     db.add(entry)
+    await db.flush()
+    await db.refresh(entry)
 
     await create_audit_record(
         db,
