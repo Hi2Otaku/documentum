@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 07-01-PLAN.md
-last_updated: "2026-03-31T08:04:19.310Z"
+stopped_at: Completed 07-02-PLAN.md
+last_updated: "2026-03-31T08:10:36.615Z"
 last_activity: 2026-03-31
 progress:
   total_phases: 11
   completed_phases: 6
   total_plans: 21
-  completed_plans: 19
+  completed_plans: 20
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 ## Current Position
 
 Phase: 07 (document-lifecycle-acl) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-03-31
 
@@ -70,6 +70,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 06 P02 | 6min | 2 tasks | 5 files |
 | Phase 06 P03 | 14min | 2 tasks | 8 files |
 | Phase 07 P01 | 4min | 2 tasks | 11 files |
+| Phase 07 P02 | 4min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -119,6 +120,8 @@ Recent decisions affecting current work:
 - [Phase 06]: routing_type/performer_list/display_label/alias_set_id were not wired from schemas to DB in Plan 06-01; fixed inline during test writing
 - [Phase 06]: Engine FINISHED guard added to advancement loop to support broadcast routing with multiple END activities
 - [Phase 07]: lifecycle_state stored directly on Document model; no-ACL fallback returns open access; ADMIN entries protected from lifecycle rule removal
+- [Phase 07]: require_permission uses dependency factory pattern for FastAPI DI ACL enforcement
+- [Phase 07]: Upload/list routes exempt from ACL; test expectations updated for ACL-aware behavior
 
 ### Pending Todos
 
@@ -130,6 +133,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T08:04:19.307Z
-Stopped at: Completed 07-01-PLAN.md
+Last session: 2026-03-31T08:10:36.611Z
+Stopped at: Completed 07-02-PLAN.md
 Resume file: None

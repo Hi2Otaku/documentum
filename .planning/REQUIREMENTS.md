@@ -35,8 +35,8 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Document Lifecycle
 
 - [x] **LIFE-01**: Documents transition through defined states: Draft → Review → Approved → Archived
-- [ ] **LIFE-02**: Lifecycle transitions can be triggered automatically by workflow activity completion
-- [ ] **LIFE-03**: Lifecycle state changes are recorded in the audit trail
+- [x] **LIFE-02**: Lifecycle transitions can be triggered automatically by workflow activity completion
+- [x] **LIFE-03**: Lifecycle state changes are recorded in the audit trail
 - [x] **LIFE-04**: ACL permissions automatically change when lifecycle state changes (e.g., read-only after Approved)
 
 ### Workflow Template Design
@@ -121,9 +121,9 @@ Requirements for initial release. Each maps to roadmap phases.
 ### ACL & Security
 
 - [x] **ACL-01**: Objects (documents, workflows) have Access Control Lists defining who can read/write/delete
-- [ ] **ACL-02**: Workflow activities can automatically modify document ACLs (e.g., remove write after approval)
-- [ ] **ACL-03**: ACL changes are recorded in the audit trail
-- [ ] **ACL-04**: Permission checks are enforced on all API operations
+- [x] **ACL-02**: Workflow activities can automatically modify document ACLs (e.g., remove write after approval)
+- [x] **ACL-03**: ACL changes are recorded in the audit trail
+- [x] **ACL-04**: Permission checks are enforced on all API operations
 
 ### Audit Trail
 
@@ -235,8 +235,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DOC-07 | Phase 2 | Complete |
 | DOC-08 | Phase 2 | Complete |
 | LIFE-01 | Phase 7 | Complete |
-| LIFE-02 | Phase 7 | Pending |
-| LIFE-03 | Phase 7 | Pending |
+| LIFE-02 | Phase 7 | Complete |
+| LIFE-03 | Phase 7 | Complete |
 | LIFE-04 | Phase 7 | Complete |
 | TMPL-01 | Phase 3 | Complete |
 | TMPL-02 | Phase 3 | Complete |
@@ -294,9 +294,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MGMT-04 | Phase 10 | Pending |
 | MGMT-05 | Phase 10 | Pending |
 | ACL-01 | Phase 7 | Complete |
-| ACL-02 | Phase 7 | Pending |
-| ACL-03 | Phase 7 | Pending |
-| ACL-04 | Phase 7 | Pending |
+| ACL-02 | Phase 7 | Complete |
+| ACL-03 | Phase 7 | Complete |
+| ACL-04 | Phase 7 | Complete |
 | AUDIT-01 | Phase 1 | Complete |
 | AUDIT-02 | Phase 1 | Complete |
 | AUDIT-03 | Phase 1 | Complete |
