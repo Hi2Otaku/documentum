@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 4: Process Engine Core** - Workflow execution runtime with sequential/parallel routing, state machine, and work item creation
 - [ ] **Phase 5: Work Items & Inbox** - User inbox with task completion, rejection, comments, and basic performer assignment
 - [ ] **Phase 6: Advanced Routing & Alias Sets** - Conditional routing, reject flows, sequential/runtime performer selection, and alias set resolution
-- [ ] **Phase 7: Document Lifecycle & ACL** - Document state machine, workflow-triggered lifecycle transitions, and object-level access control
+- [x] **Phase 7: Document Lifecycle & ACL** - Document state machine, workflow-triggered lifecycle transitions, and object-level access control (completed 2026-03-31)
 - [ ] **Phase 8: Visual Workflow Designer** - Drag-and-drop React Flow canvas for designing workflow templates
 - [ ] **Phase 9: Auto Activities, Workflow Agent & Integration** - Automated activity execution, Celery beat agent, and external REST API integration
 - [ ] **Phase 10: Delegation, Work Queues & Workflow Management** - User delegation, shared task pools, and admin workflow control
@@ -132,11 +132,11 @@ Plans:
   3. ACL permissions automatically change when lifecycle state changes (e.g., document becomes read-only after Approved)
   4. Permission checks are enforced on all API operations, preventing unauthorized read/write/delete
   5. All lifecycle transitions and ACL changes are recorded in the audit trail
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 Plans:
 - [x] 07-01-PLAN.md — Enums, models, schemas, lifecycle service, ACL service
 - [x] 07-02-PLAN.md — Engine lifecycle hook, permission dependency, route protection
-- [ ] 07-03-PLAN.md — Integration tests for LIFE-01 through LIFE-04 and ACL-01 through ACL-04
+- [x] 07-03-PLAN.md — Integration tests for LIFE-01 through LIFE-04 and ACL-01 through ACL-04
 ### Phase 8: Visual Workflow Designer
 **Goal**: Users can design workflow templates through a web-based drag-and-drop interface instead of raw API calls
 **Depends on**: Phase 3
@@ -216,7 +216,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> ... -> 11
 | 4. Process Engine Core | 0/3 | Planning complete | - |
 | 5. Work Items & Inbox | 0/3 | Planning complete | - |
 | 6. Advanced Routing & Alias Sets | 0/3 | Planning complete | - |
-| 7. Document Lifecycle & ACL | 2/3 | In Progress|  |
+| 7. Document Lifecycle & ACL | 3/3 | Complete   | 2026-03-31 |
 | 8. Visual Workflow Designer | 0/TBD | Not started | - |
 | 9. Auto Activities, Workflow Agent & Integration | 0/TBD | Not started | - |
 | 10. Delegation, Work Queues & Workflow Management | 0/TBD | Not started | - |
