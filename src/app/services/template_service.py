@@ -95,6 +95,7 @@ async def create_template(
         version=1,
         state=ProcessState.DRAFT,
         is_installed=False,
+        alias_set_id=data.alias_set_id,
         created_by=user_id,
     )
     db.add(template)

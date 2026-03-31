@@ -14,11 +14,13 @@ from app.models.enums import ActivityType, FlowType, PerformerType, ProcessState
 class ProcessTemplateCreate(BaseModel):
     name: str = Field(min_length=1, max_length=255)
     description: str | None = None
+    alias_set_id: uuid.UUID | None = None
 
 
 class ProcessTemplateUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=255)
     description: str | None = None
+    alias_set_id: uuid.UUID | None = None
 
 
 class ProcessTemplateResponse(BaseModel):

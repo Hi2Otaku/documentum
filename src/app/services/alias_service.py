@@ -55,10 +55,12 @@ async def get_alias_set(
     db: AsyncSession,
     alias_set_id: uuid.UUID,
 ) -> AliasSet:
-    """Load an alias set with its mappings. Raises ValueError if not found or deleted."""
+    """Load an alias set with its non-deleted mappings. Raises ValueError if not found or deleted."""
     result = await db.execute(
         select(AliasSet)
-        .options(selectinload(AliasSet.mappings))
+        .options(
+            selectinload(AliasSet.mappings.and_(AliasMapping.is_deleted == False))  # noqa: E712
+        )
         .where(AliasSet.id == alias_set_id, AliasSet.is_deleted == False)  # noqa: E712
     )
     alias_set = result.scalar_one_or_none()
