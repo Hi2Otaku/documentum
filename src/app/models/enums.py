@@ -54,3 +54,11 @@ class PerformerType(str, enum.Enum):
     GROUP = "group"
     SUPERVISOR = "supervisor"
     ALIAS = "alias"
+    SEQUENTIAL = "sequential"
+    RUNTIME_SELECTION = "runtime_selection"
+
+
+class RoutingType(str, enum.Enum):
+    CONDITIONAL = "conditional"
+    PERFORMER_CHOSEN = "performer_chosen"
+    BROADCAST = "broadcast"

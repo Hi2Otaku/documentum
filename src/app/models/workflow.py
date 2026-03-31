@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import Boolean, DateTime, Enum, Float, ForeignKey, Integer, String, Text, Uuid
+from sqlalchemy import Boolean, DateTime, Enum, Float, ForeignKey, Integer, JSON, String, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import BaseModel
@@ -8,10 +8,35 @@ from app.models.enums import ActivityState, ActivityType, FlowType, ProcessState
 
 # Re-export for convenient imports
 __all__ = [
+    "AliasSet", "AliasMapping",
     "ProcessTemplate", "ActivityTemplate", "FlowTemplate",
     "WorkflowInstance", "ActivityInstance", "WorkItem", "WorkItemComment",
     "ProcessVariable", "WorkflowPackage", "ExecutionToken",
 ]
+
+
+class AliasSet(BaseModel):
+    __tablename__ = "alias_sets"
+
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    mappings: Mapped[list["AliasMapping"]] = relationship(
+        back_populates="alias_set", cascade="all, delete-orphan"
+    )
+
+
+class AliasMapping(BaseModel):
+    __tablename__ = "alias_mappings"
+
+    alias_set_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(), ForeignKey("alias_sets.id"), nullable=False
+    )
+    alias_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    target_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    target_id: Mapped[uuid.UUID] = mapped_column(Uuid(), nullable=False)
+
+    alias_set: Mapped["AliasSet"] = relationship(back_populates="mappings")
 
 
 class ProcessTemplate(BaseModel):
@@ -27,6 +52,9 @@ class ProcessTemplate(BaseModel):
     )
     is_installed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     installed_at: Mapped[None] = mapped_column(DateTime(timezone=True), nullable=True)
+    alias_set_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid(), ForeignKey("alias_sets.id"), nullable=True
+    )
 
     activity_templates: Mapped[list["ActivityTemplate"]] = relationship(back_populates="process_template")
     flow_templates: Mapped[list["FlowTemplate"]] = relationship(back_populates="process_template")
@@ -54,6 +82,8 @@ class ActivityTemplate(BaseModel):
     method_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     position_x: Mapped[float | None] = mapped_column(Float, nullable=True)
     position_y: Mapped[float | None] = mapped_column(Float, nullable=True)
+    routing_type: Mapped[str | None] = mapped_column(String(50), nullable=True, default="conditional")
+    performer_list: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
     process_template: Mapped["ProcessTemplate"] = relationship(back_populates="activity_templates")
 
@@ -74,6 +104,7 @@ class FlowTemplate(BaseModel):
         Enum(FlowType, name="flowtype"), default=FlowType.NORMAL, nullable=False
     )
     condition_expression: Mapped[str | None] = mapped_column(Text, nullable=True)
+    display_label: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     process_template: Mapped["ProcessTemplate"] = relationship(back_populates="flow_templates")
     source_activity: Mapped["ActivityTemplate"] = relationship(foreign_keys=[source_activity_id])
@@ -94,6 +125,7 @@ class WorkflowInstance(BaseModel):
     supervisor_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid(), ForeignKey("users.id"), nullable=True
     )
+    alias_snapshot: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
     process_template: Mapped["ProcessTemplate"] = relationship(foreign_keys=[process_template_id])
     activity_instances: Mapped[list["ActivityInstance"]] = relationship(back_populates="workflow_instance", foreign_keys="[ActivityInstance.workflow_instance_id]")
@@ -123,6 +155,7 @@ class ActivityInstance(BaseModel):
     )
     started_at: Mapped[None] = mapped_column(DateTime(timezone=True), nullable=True)
     completed_at: Mapped[None] = mapped_column(DateTime(timezone=True), nullable=True)
+    current_performer_index: Mapped[int | None] = mapped_column(Integer, nullable=True, default=0)
 
     workflow_instance: Mapped["WorkflowInstance"] = relationship(back_populates="activity_instances", foreign_keys=[workflow_instance_id])
     activity_template: Mapped["ActivityTemplate"] = relationship(foreign_keys=[activity_template_id])
