@@ -59,6 +59,13 @@ ACTIVITY_TRANSITIONS: set[tuple[ActivityState, ActivityState]] = {
     (ActivityState.ERROR, ActivityState.ACTIVE),
 }
 
+WORK_ITEM_TRANSITIONS: set[tuple[WorkItemState, WorkItemState]] = {
+    (WorkItemState.AVAILABLE, WorkItemState.ACQUIRED),
+    (WorkItemState.ACQUIRED, WorkItemState.AVAILABLE),
+    (WorkItemState.ACQUIRED, WorkItemState.COMPLETE),
+    (WorkItemState.ACQUIRED, WorkItemState.REJECTED),
+}
+
 
 def _enforce_workflow_transition(
     current: WorkflowState, target: WorkflowState
@@ -118,6 +125,48 @@ def _set_variable_value(pv: ProcessVariable, value: Any) -> None:
             pv.date_value = value
         case _:
             pv.string_value = str(value) if value is not None else None
+
+
+# ---------------------------------------------------------------------------
+# Section 2b: Performer resolution (per D-07)
+# ---------------------------------------------------------------------------
+
+
+async def resolve_performers(
+    db: AsyncSession,
+    performer_type: str | None,
+    performer_id: str | None,
+    workflow: WorkflowInstance,
+) -> list[uuid.UUID]:
+    """Resolve performer config to actual user IDs (per D-07).
+
+    SUPERVISOR -> workflow.supervisor_id
+    USER -> specific user UUID from performer_id
+    GROUP -> all members of group via user_groups table
+    """
+    if not performer_type:
+        return []
+    match performer_type.lower():
+        case "supervisor":
+            if workflow.supervisor_id:
+                return [workflow.supervisor_id]
+            return []
+        case "user":
+            if performer_id:
+                return [uuid.UUID(performer_id)]
+            return []
+        case "group":
+            if not performer_id:
+                return []
+            from app.models.user import user_groups
+            result = await db.execute(
+                select(user_groups.c.user_id).where(
+                    user_groups.c.group_id == uuid.UUID(performer_id)
+                )
+            )
+            return [row[0] for row in result.all()]
+        case _:
+            return []
 
 
 # ---------------------------------------------------------------------------
@@ -392,28 +441,24 @@ async def _advance_from_activity(
                     queue.append(target_ai)
 
                 elif target_at.activity_type == ActivityType.MANUAL:
-                    # Create work item for manual activities
-                    performer_id_str = None
-                    # Check performer_overrides first
-                    if (
-                        performer_overrides
-                        and str(target_at.id) in performer_overrides
-                    ):
-                        performer_id_str = performer_overrides[str(target_at.id)]
-                    elif target_at.performer_id:
-                        performer_id_str = target_at.performer_id
-
-                    work_item = WorkItem(
-                        activity_instance_id=target_ai.id,
-                        performer_id=(
-                            uuid.UUID(performer_id_str)
-                            if performer_id_str
-                            else None
-                        ),
-                        state=WorkItemState.AVAILABLE,
-                        created_by=user_id,
+                    # Per D-06/D-07: resolve performers then create one work item per performer
+                    performers = await resolve_performers(
+                        db, target_at.performer_type, target_at.performer_id, workflow
                     )
-                    db.add(work_item)
+                    # Check performer_overrides first
+                    if performer_overrides and str(target_at.id) in performer_overrides:
+                        performers = [uuid.UUID(performer_overrides[str(target_at.id)])]
+                    # If no performers resolved, create unassigned work item
+                    if not performers:
+                        performers = [None]
+                    for perf_id in performers:
+                        work_item = WorkItem(
+                            activity_instance_id=target_ai.id,
+                            performer_id=perf_id,
+                            state=WorkItemState.AVAILABLE,
+                            created_by=user_id,
+                        )
+                        db.add(work_item)
 
         # If no flows fired and current is END type, mark workflow FINISHED
         if not any_flow_fired:
