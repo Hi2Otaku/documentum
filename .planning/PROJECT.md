@@ -36,9 +36,9 @@ Any workflow use case described in the Documentum specification (sequential, par
 - ✓ Process variables: read/write by activities, usable in routing conditions — Phase 3
 - ✓ Process Engine: synchronous workflow execution with sequential/parallel routing — Phase 4
 - [ ] Workflow Agent: background daemon executing auto activities
-- [ ] Lifecycle management: document states (Draft → Review → Approved → Archived) with workflow-triggered transitions
+- ✓ Lifecycle management: document states (Draft → Review → Approved → Archived) with workflow-triggered transitions — Phase 7
 - [ ] Audit trail: full logging of who did what, when, with what decision
-- [ ] ACL/Security integration: automatic permission changes at workflow steps
+- ✓ ACL/Security integration: automatic permission changes at workflow steps — Phase 7
 - [ ] BAM dashboards: real-time process metrics, bottleneck detection, SLA compliance
 - [ ] External system integration capability (webhook/API-based)
 - [ ] Contract approval example workflow running end-to-end (the full 7-step example from the spec)
@@ -93,4 +93,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-31 after Phase 6 completion*
+*Last updated: 2026-03-31 after Phase 7 completion*
