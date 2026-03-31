@@ -6,6 +6,13 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import BaseModel
 from app.models.enums import ActivityState, ActivityType, FlowType, ProcessState, TriggerType, WorkflowState, WorkItemState
 
+# Re-export for convenient imports
+__all__ = [
+    "ProcessTemplate", "ActivityTemplate", "FlowTemplate",
+    "WorkflowInstance", "ActivityInstance", "WorkItem", "WorkItemComment",
+    "ProcessVariable", "WorkflowPackage", "ExecutionToken",
+]
+
 
 class ProcessTemplate(BaseModel):
     __tablename__ = "process_templates"
@@ -146,6 +153,21 @@ class WorkItem(BaseModel):
         secondaryjoin="ActivityInstance.workflow_instance_id == WorkflowInstance.id",
         viewonly=True,
     )
+    comments: Mapped[list["WorkItemComment"]] = relationship(back_populates="work_item")
+
+
+class WorkItemComment(BaseModel):
+    __tablename__ = "work_item_comments"
+
+    work_item_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(), ForeignKey("work_items.id"), nullable=False, index=True
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(), ForeignKey("users.id"), nullable=False
+    )
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+
+    work_item: Mapped["WorkItem"] = relationship(back_populates="comments")
 
 
 class ProcessVariable(BaseModel):
