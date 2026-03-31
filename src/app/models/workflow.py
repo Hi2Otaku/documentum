@@ -84,6 +84,7 @@ class ActivityTemplate(BaseModel):
     position_y: Mapped[float | None] = mapped_column(Float, nullable=True)
     routing_type: Mapped[str | None] = mapped_column(String(50), nullable=True, default="conditional")
     performer_list: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    lifecycle_action: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     process_template: Mapped["ProcessTemplate"] = relationship(back_populates="activity_templates")
 

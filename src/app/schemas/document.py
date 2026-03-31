@@ -32,6 +32,7 @@ class DocumentResponse(BaseModel):
     updated_at: datetime
     created_by: str | None
     is_deleted: bool
+    lifecycle_state: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

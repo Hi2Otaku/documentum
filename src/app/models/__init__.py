@@ -1,8 +1,9 @@
 from app.models.base import Base, BaseModel
-from app.models.enums import ActivityState, ActivityType, FlowType, PerformerType, ProcessState, TriggerType, WorkflowState, WorkItemState
+from app.models.enums import ActivityState, ActivityType, FlowType, LifecycleState, PerformerType, PermissionLevel, ProcessState, TriggerType, WorkflowState, WorkItemState
 from app.models.user import Group, Role, User, user_groups, user_roles
 from app.models.audit import AuditLog
 from app.models.document import Document, DocumentVersion
+from app.models.acl import DocumentACL, LifecycleACLRule
 from app.models.workflow import (
     ActivityInstance,
     ActivityTemplate,
@@ -43,4 +44,8 @@ __all__ = [
     "ExecutionToken",
     "Document",
     "DocumentVersion",
+    "LifecycleState",
+    "PermissionLevel",
+    "DocumentACL",
+    "LifecycleACLRule",
 ]

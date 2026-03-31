@@ -62,3 +62,17 @@ class RoutingType(str, enum.Enum):
     CONDITIONAL = "conditional"
     PERFORMER_CHOSEN = "performer_chosen"
     BROADCAST = "broadcast"
+
+
+class LifecycleState(str, enum.Enum):
+    DRAFT = "draft"
+    REVIEW = "review"
+    APPROVED = "approved"
+    ARCHIVED = "archived"
+
+
+class PermissionLevel(str, enum.Enum):
+    READ = "read"
+    WRITE = "write"
+    DELETE = "delete"
+    ADMIN = "admin"

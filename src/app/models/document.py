@@ -3,6 +3,7 @@ from datetime import datetime
 
 from sqlalchemy import (
     DateTime,
+    Enum,
     ForeignKey,
     Integer,
     JSON,
@@ -14,6 +15,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import BaseModel
+from app.models.enums import LifecycleState
 
 
 class Document(BaseModel):
@@ -39,6 +41,11 @@ class Document(BaseModel):
     )
     current_minor_version: Mapped[int] = mapped_column(
         Integer, default=1, nullable=False
+    )
+    lifecycle_state: Mapped[str | None] = mapped_column(
+        Enum(LifecycleState, name="lifecyclestate"),
+        default=LifecycleState.DRAFT,
+        nullable=True,
     )
 
     versions: Mapped[list["DocumentVersion"]] = relationship(
