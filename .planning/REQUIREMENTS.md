@@ -55,17 +55,17 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Alias Sets
 
-- [ ] **ALIAS-01**: User can create an Alias Set mapping logical roles to actual users/groups
-- [ ] **ALIAS-02**: Alias Sets can be assigned to workflow templates for flexible performer assignment
-- [ ] **ALIAS-03**: Updating an alias mapping does not require editing the workflow template
+- [x] **ALIAS-01**: User can create an Alias Set mapping logical roles to actual users/groups
+- [x] **ALIAS-02**: Alias Sets can be assigned to workflow templates for flexible performer assignment
+- [x] **ALIAS-03**: Updating an alias mapping does not require editing the workflow template
 
 ### Performer Assignment
 
 - [x] **PERF-01**: Activity can be assigned to Workflow Supervisor (workflow initiator)
 - [x] **PERF-02**: Activity can be assigned to a Specific User
 - [x] **PERF-03**: Activity can be assigned to users from a Group (parallel execution)
-- [ ] **PERF-04**: Activity can use Multiple Sequential Performers (ordered list, can reject back)
-- [ ] **PERF-05**: Activity can use Runtime Selection (previous performer chooses next)
+- [x] **PERF-04**: Activity can use Multiple Sequential Performers (ordered list, can reject back)
+- [x] **PERF-05**: Activity can use Runtime Selection (previous performer chooses next)
 
 ### Workflow Execution
 
@@ -76,10 +76,10 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **EXEC-05**: Process Engine automatically advances workflow by evaluating flows and activating next activities
 - [x] **EXEC-06**: Sequential routing: activities execute one after another (A → B → C)
 - [x] **EXEC-07**: Parallel routing: activities execute simultaneously after a split, with AND-join at convergence
-- [ ] **EXEC-08**: Conditional routing (performer-chosen): performer selects which path to take
-- [ ] **EXEC-09**: Conditional routing (condition-based): system evaluates expressions to determine next activity
-- [ ] **EXEC-10**: Conditional routing (broadcast): all connected activities are activated simultaneously
-- [ ] **EXEC-11**: Reject flow: performer rejects task, document returns to previous activity
+- [x] **EXEC-08**: Conditional routing (performer-chosen): performer selects which path to take
+- [x] **EXEC-09**: Conditional routing (condition-based): system evaluates expressions to determine next activity
+- [x] **EXEC-10**: Conditional routing (broadcast): all connected activities are activated simultaneously
+- [x] **EXEC-11**: Reject flow: performer rejects task, document returns to previous activity
 - [x] **EXEC-12**: OR-join trigger: activity starts when any one incoming flow completes
 - [x] **EXEC-13**: Process variables can be read and written by activities during execution
 - [x] **EXEC-14**: Process variables can be used in routing condition expressions
@@ -249,14 +249,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TMPL-09 | Phase 3 | Complete |
 | TMPL-10 | Phase 3 | Complete |
 | TMPL-11 | Phase 3 | Complete |
-| ALIAS-01 | Phase 6 | Pending |
-| ALIAS-02 | Phase 6 | Pending |
-| ALIAS-03 | Phase 6 | Pending |
+| ALIAS-01 | Phase 6 | Complete |
+| ALIAS-02 | Phase 6 | Complete |
+| ALIAS-03 | Phase 6 | Complete |
 | PERF-01 | Phase 5 | Complete |
 | PERF-02 | Phase 5 | Complete |
 | PERF-03 | Phase 5 | Complete |
-| PERF-04 | Phase 6 | Pending |
-| PERF-05 | Phase 6 | Pending |
+| PERF-04 | Phase 6 | Complete |
+| PERF-05 | Phase 6 | Complete |
 | EXEC-01 | Phase 4 | Complete |
 | EXEC-02 | Phase 4 | Complete |
 | EXEC-03 | Phase 4 | Complete |
@@ -264,10 +264,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EXEC-05 | Phase 4 | Complete |
 | EXEC-06 | Phase 4 | Complete |
 | EXEC-07 | Phase 4 | Complete |
-| EXEC-08 | Phase 6 | Pending |
-| EXEC-09 | Phase 6 | Pending |
-| EXEC-10 | Phase 6 | Pending |
-| EXEC-11 | Phase 6 | Pending |
+| EXEC-08 | Phase 6 | Complete |
+| EXEC-09 | Phase 6 | Complete |
+| EXEC-10 | Phase 6 | Complete |
+| EXEC-11 | Phase 6 | Complete |
 | EXEC-12 | Phase 4 | Complete |
 | EXEC-13 | Phase 4 | Complete |
 | EXEC-14 | Phase 4 | Complete |
