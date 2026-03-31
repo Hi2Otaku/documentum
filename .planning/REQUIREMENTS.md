@@ -87,11 +87,11 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Work Items & Inbox
 
 - [x] **INBOX-01**: When an activity is activated, a work item appears in the assigned performer's inbox
-- [ ] **INBOX-02**: User can view their inbox with all pending tasks (filterable, sortable)
-- [ ] **INBOX-03**: User can open a work item to view attached documents and activity details
-- [ ] **INBOX-04**: User can complete (forward) a work item, advancing the workflow
-- [ ] **INBOX-05**: User can reject a work item (triggers reject flow if configured)
-- [ ] **INBOX-06**: User can add comments to a work item
+- [x] **INBOX-02**: User can view their inbox with all pending tasks (filterable, sortable)
+- [x] **INBOX-03**: User can open a work item to view attached documents and activity details
+- [x] **INBOX-04**: User can complete (forward) a work item, advancing the workflow
+- [x] **INBOX-05**: User can reject a work item (triggers reject flow if configured)
+- [x] **INBOX-06**: User can add comments to a work item
 - [x] **INBOX-07**: Work items show priority and due date indicators
 - [ ] **INBOX-08**: If performer is unavailable, work item automatically routes to delegated user
 
@@ -272,11 +272,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EXEC-13 | Phase 4 | Complete |
 | EXEC-14 | Phase 4 | Complete |
 | INBOX-01 | Phase 5 | Complete |
-| INBOX-02 | Phase 5 | Pending |
-| INBOX-03 | Phase 5 | Pending |
-| INBOX-04 | Phase 5 | Pending |
-| INBOX-05 | Phase 5 | Pending |
-| INBOX-06 | Phase 5 | Pending |
+| INBOX-02 | Phase 5 | Complete |
+| INBOX-03 | Phase 5 | Complete |
+| INBOX-04 | Phase 5 | Complete |
+| INBOX-05 | Phase 5 | Complete |
+| INBOX-06 | Phase 5 | Complete |
 | INBOX-07 | Phase 5 | Complete |
 | INBOX-08 | Phase 10 | Pending |
 | QUEUE-01 | Phase 10 | Pending |

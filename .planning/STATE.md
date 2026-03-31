@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-01-PLAN.md
-last_updated: "2026-03-31T06:04:10.958Z"
+stopped_at: Completed 05-02-PLAN.md
+last_updated: "2026-03-31T06:08:53.383Z"
 last_activity: 2026-03-31
 progress:
   total_phases: 11
   completed_phases: 4
   total_plans: 15
-  completed_plans: 13
+  completed_plans: 14
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 ## Current Position
 
 Phase: 05 (work-items-inbox) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-03-31
 
@@ -64,6 +64,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 04 P02 | 3min | 2 tasks | 3 files |
 | Phase 04 P03 | 10min | 2 tasks | 7 files |
 | Phase 05 P01 | 3min | 2 tasks | 4 files |
+| Phase 05 P02 | 2min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -102,6 +103,9 @@ Recent decisions affecting current work:
 - [Phase 04]: Variables passed explicitly to advancement loop to avoid lazy-load in async
 - [Phase 05]: resolve_performers uses lazy import for user_groups to avoid circular dependency
 - [Phase 05]: Group performer type creates one work item per group member for shared inbox
+- [Phase 05]: complete_inbox_item delegates to engine_service.complete_work_item rather than reimplementing advancement
+- [Phase 05]: Manual dict building in inbox service for nested responses to avoid deep ORM-to-Pydantic issues
+- [Phase 05]: Row-level locking (with_for_update) on acquire for concurrent safety
 
 ### Pending Todos
 
@@ -113,6 +117,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T06:04:10.951Z
-Stopped at: Completed 05-01-PLAN.md
+Last session: 2026-03-31T06:08:53.378Z
+Stopped at: Completed 05-02-PLAN.md
 Resume file: None
