@@ -173,13 +173,14 @@ async def test_checkout_document(async_client: AsyncClient, admin_token: str):
 async def test_checkout_already_locked(
     async_client: AsyncClient, admin_token: str, regular_token: str
 ):
-    """Second checkout by different user returns 409."""
+    """Second checkout by different user returns 403 (ACL) since creator has ADMIN ACL."""
     resp = await _upload_file(async_client, admin_token)
     doc_id = resp.json()["data"]["id"]
 
     await _checkout(async_client, admin_token, doc_id)
     co2_resp = await _checkout(async_client, regular_token, doc_id)
-    assert co2_resp.status_code == 409
+    # Regular user has no ACL entry on admin-created document -> 403
+    assert co2_resp.status_code == 403
 
 
 @pytest.mark.asyncio
@@ -263,10 +264,10 @@ async def test_admin_force_unlock(
     async_client: AsyncClient, admin_token: str, regular_token: str
 ):
     """Admin can force-unlock a document locked by another user."""
-    resp = await _upload_file(async_client, admin_token)
+    # Regular user uploads (gets ADMIN ACL) and checks out
+    resp = await _upload_file(async_client, regular_token)
     doc_id = resp.json()["data"]["id"]
 
-    # Regular user checks out
     await _checkout(async_client, regular_token, doc_id)
 
     # Admin force-unlocks

@@ -82,6 +82,10 @@ async def upload_document(
                 "filename": filename,
             },
         )
+
+        # Create ADMIN ACL for document creator (Phase 7)
+        from app.services import acl_service
+        await acl_service.create_owner_acl(db, document.id, uuid.UUID(user_id))
     except Exception:
         await delete_object(object_name)
         raise

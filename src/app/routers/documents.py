@@ -6,7 +6,8 @@ from fastapi import APIRouter, Depends, Form, Query, Response, UploadFile, statu
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.dependencies import get_current_active_admin, get_current_user
+from app.core.dependencies import get_current_active_admin, get_current_user, require_permission
+from app.models.enums import PermissionLevel
 from app.models.user import User
 from app.schemas.common import EnvelopeResponse, PaginationMeta
 from app.schemas.document import DocumentResponse, DocumentUpdate, DocumentVersionResponse
@@ -79,7 +80,7 @@ async def list_documents(
 async def get_document(
     document_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission(PermissionLevel.READ)),
 ):
     """Get a single document by ID."""
     document = await document_service.get_document(db, document_id)
@@ -94,7 +95,7 @@ async def update_document(
     document_id: uuid.UUID,
     data: DocumentUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission(PermissionLevel.WRITE)),
 ):
     """Update document metadata."""
     document = await document_service.update_document_metadata(
@@ -140,7 +141,7 @@ async def delete_document(
 async def checkout(
     document_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission(PermissionLevel.WRITE)),
 ):
     """Check out (lock) a document for editing."""
     document = await document_service.checkout_document(
@@ -158,7 +159,7 @@ async def checkin(
     file: UploadFile,
     comment: str | None = Form(None),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission(PermissionLevel.WRITE)),
 ):
     """Check in a document with a new file version."""
     version = await document_service.checkin_document(
@@ -204,7 +205,7 @@ async def force_unlock(
 async def list_versions(
     document_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission(PermissionLevel.READ)),
 ):
     """List all versions of a document."""
     versions = await document_service.list_versions(db, document_id)
@@ -220,7 +221,7 @@ async def download_version(
     document_id: uuid.UUID,
     version_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission(PermissionLevel.READ)),
 ):
     """Download the content of a specific document version."""
     content, version = await document_service.download_version_content(
