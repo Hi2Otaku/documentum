@@ -103,7 +103,7 @@ Plans:
 Plans:
 - [x] 05-01-PLAN.md — REJECTED enum, WorkItemComment model, inbox schemas, performer resolution in engine
 - [x] 05-02-PLAN.md — Inbox service layer and HTTP router (8 endpoints)
-- [ ] 05-03-PLAN.md — Integration tests for INBOX-01 through INBOX-07 and PERF-01 through PERF-03
+- [x] 05-03-PLAN.md — Integration tests for INBOX-01 through INBOX-07 and PERF-01 through PERF-03
 **UI hint**: yes
 
 ### Phase 6: Advanced Routing & Alias Sets
