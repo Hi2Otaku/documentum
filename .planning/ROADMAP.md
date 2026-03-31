@@ -132,9 +132,9 @@ Plans:
   3. ACL permissions automatically change when lifecycle state changes (e.g., document becomes read-only after Approved)
   4. Permission checks are enforced on all API operations, preventing unauthorized read/write/delete
   5. All lifecycle transitions and ACL changes are recorded in the audit trail
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 Plans:
-- [ ] 07-01-PLAN.md — Enums, models, schemas, lifecycle service, ACL service
+- [x] 07-01-PLAN.md — Enums, models, schemas, lifecycle service, ACL service
 - [ ] 07-02-PLAN.md — Engine lifecycle hook, permission dependency, route protection
 - [ ] 07-03-PLAN.md — Integration tests for LIFE-01 through LIFE-04 and ACL-01 through ACL-04
 ### Phase 8: Visual Workflow Designer
@@ -216,7 +216,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> ... -> 11
 | 4. Process Engine Core | 0/3 | Planning complete | - |
 | 5. Work Items & Inbox | 0/3 | Planning complete | - |
 | 6. Advanced Routing & Alias Sets | 0/3 | Planning complete | - |
-| 7. Document Lifecycle & ACL | 0/3 | Planning complete | - |
+| 7. Document Lifecycle & ACL | 1/3 | In Progress|  |
 | 8. Visual Workflow Designer | 0/TBD | Not started | - |
 | 9. Auto Activities, Workflow Agent & Integration | 0/TBD | Not started | - |
 | 10. Delegation, Work Queues & Workflow Management | 0/TBD | Not started | - |

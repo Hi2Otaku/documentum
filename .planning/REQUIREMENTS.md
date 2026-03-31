@@ -34,10 +34,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Document Lifecycle
 
-- [ ] **LIFE-01**: Documents transition through defined states: Draft → Review → Approved → Archived
+- [x] **LIFE-01**: Documents transition through defined states: Draft → Review → Approved → Archived
 - [ ] **LIFE-02**: Lifecycle transitions can be triggered automatically by workflow activity completion
 - [ ] **LIFE-03**: Lifecycle state changes are recorded in the audit trail
-- [ ] **LIFE-04**: ACL permissions automatically change when lifecycle state changes (e.g., read-only after Approved)
+- [x] **LIFE-04**: ACL permissions automatically change when lifecycle state changes (e.g., read-only after Approved)
 
 ### Workflow Template Design
 
@@ -120,7 +120,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### ACL & Security
 
-- [ ] **ACL-01**: Objects (documents, workflows) have Access Control Lists defining who can read/write/delete
+- [x] **ACL-01**: Objects (documents, workflows) have Access Control Lists defining who can read/write/delete
 - [ ] **ACL-02**: Workflow activities can automatically modify document ACLs (e.g., remove write after approval)
 - [ ] **ACL-03**: ACL changes are recorded in the audit trail
 - [ ] **ACL-04**: Permission checks are enforced on all API operations
@@ -234,10 +234,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DOC-06 | Phase 2 | Complete |
 | DOC-07 | Phase 2 | Complete |
 | DOC-08 | Phase 2 | Complete |
-| LIFE-01 | Phase 7 | Pending |
+| LIFE-01 | Phase 7 | Complete |
 | LIFE-02 | Phase 7 | Pending |
 | LIFE-03 | Phase 7 | Pending |
-| LIFE-04 | Phase 7 | Pending |
+| LIFE-04 | Phase 7 | Complete |
 | TMPL-01 | Phase 3 | Complete |
 | TMPL-02 | Phase 3 | Complete |
 | TMPL-03 | Phase 3 | Complete |
@@ -293,7 +293,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MGMT-03 | Phase 10 | Pending |
 | MGMT-04 | Phase 10 | Pending |
 | MGMT-05 | Phase 10 | Pending |
-| ACL-01 | Phase 7 | Pending |
+| ACL-01 | Phase 7 | Complete |
 | ACL-02 | Phase 7 | Pending |
 | ACL-03 | Phase 7 | Pending |
 | ACL-04 | Phase 7 | Pending |
