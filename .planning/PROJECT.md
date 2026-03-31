@@ -22,13 +22,13 @@ Any workflow use case described in the Documentum specification (sequential, par
 ### Active
 
 - ✓ Workflow template design API (dm_process equivalent) — CRUD, validation, installation, versioning — Phase 3
-- [ ] Manual activities with configurable performer assignment (supervisor, specific user, group, sequential performers, runtime selection)
+- ✓ Manual activities with basic performer assignment (supervisor, specific user, group) — Phase 5
 - [ ] Auto activities executing server-side methods (Python equivalents of dm_method)
 - [ ] Alias sets for flexible performer mapping without hardcoding users
 - ✓ Flow routing: sequential, parallel, conditional (template-level definition) — Phase 3
 - [ ] Reject flows allowing documents to loop back to previous activities
 - ✓ Workflow instance lifecycle: Dormant → Running → Halted → Failed → Finished — Phase 4
-- [ ] Work items appearing in user inboxes (dmi_queue_item equivalent)
+- ✓ Work items appearing in user inboxes with complete/reject/comment — Phase 5
 - [ ] Document management: upload, versioning, packages attached to workflows
 - [ ] Delegation: users mark unavailable, tasks auto-route to delegates
 - [ ] Work queues: shared task pools where any qualified user can claim tasks
@@ -93,4 +93,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-30 after Phase 2 completion*
+*Last updated: 2026-03-31 after Phase 5 completion*
