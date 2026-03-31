@@ -50,6 +50,8 @@ class ActivityTemplateCreate(BaseModel):
     method_name: str | None = None
     position_x: float | None = None
     position_y: float | None = None
+    routing_type: str | None = None
+    performer_list: list[str] | None = None
 
 
 class ActivityTemplateUpdate(BaseModel):
@@ -61,6 +63,8 @@ class ActivityTemplateUpdate(BaseModel):
     method_name: str | None = None
     position_x: float | None = None
     position_y: float | None = None
+    routing_type: str | None = None
+    performer_list: list[str] | None = None
 
 
 class ActivityTemplateResponse(BaseModel):
@@ -75,6 +79,8 @@ class ActivityTemplateResponse(BaseModel):
     method_name: str | None
     position_x: float | None
     position_y: float | None
+    routing_type: str | None = None
+    performer_list: list | None = None
     created_at: datetime
     updated_at: datetime
     is_deleted: bool
@@ -90,6 +96,7 @@ class FlowTemplateCreate(BaseModel):
     target_activity_id: uuid.UUID
     flow_type: FlowType = FlowType.NORMAL
     condition_expression: str | dict[str, Any] | None = None
+    display_label: str | None = None
 
     @field_validator("condition_expression", mode="before")
     @classmethod
@@ -106,6 +113,7 @@ class FlowTemplateCreate(BaseModel):
 class FlowTemplateUpdate(BaseModel):
     flow_type: FlowType | None = None
     condition_expression: str | dict[str, Any] | None = None
+    display_label: str | None = None
 
     @field_validator("condition_expression", mode="before")
     @classmethod
@@ -124,6 +132,7 @@ class FlowTemplateResponse(BaseModel):
     target_activity_id: uuid.UUID
     flow_type: FlowType
     condition_expression: str | dict[str, Any] | None
+    display_label: str | None = None
     created_at: datetime
     updated_at: datetime
     is_deleted: bool

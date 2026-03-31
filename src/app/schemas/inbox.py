@@ -80,6 +80,8 @@ class AcquireResponse(BaseModel):
 
 class CompleteFromInboxRequest(BaseModel):
     output_variables: dict[str, Any] = {}
+    selected_path: str | None = None
+    next_performer_id: str | None = None
 
 
 class RejectFromInboxRequest(BaseModel):

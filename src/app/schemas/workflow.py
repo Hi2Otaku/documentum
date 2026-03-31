@@ -12,10 +12,13 @@ class WorkflowStartRequest(BaseModel):
     document_ids: list[uuid.UUID] = []
     performer_overrides: dict[str, str] = {}  # activity_template_id str -> user_id str
     initial_variables: dict[str, Any] = {}
+    alias_set_id: uuid.UUID | None = None
 
 
 class CompleteWorkItemRequest(BaseModel):
     output_variables: dict[str, Any] = {}
+    selected_path: str | None = None
+    next_performer_id: str | None = None
 
 
 class UpdateVariableRequest(BaseModel):
