@@ -247,6 +247,8 @@ async def add_activity(
         method_name=data.method_name,
         position_x=data.position_x,
         position_y=data.position_y,
+        routing_type=data.routing_type,
+        performer_list=data.performer_list,
         created_by=user_id,
     )
     db.add(activity)
@@ -392,6 +394,7 @@ async def add_flow(
         target_activity_id=data.target_activity_id,
         flow_type=data.flow_type,
         condition_expression=condition_str,
+        display_label=data.display_label,
         created_by=user_id,
     )
     db.add(flow)

@@ -379,6 +379,10 @@ async def _advance_from_activity(
     while queue:
         current = queue.pop(0)
 
+        # If already in terminal state (workflow finished), stop processing
+        if workflow.state == WorkflowState.FINISHED:
+            break
+
         # Get outgoing NORMAL flows from current activity's template
         outgoing_flows = [
             f
