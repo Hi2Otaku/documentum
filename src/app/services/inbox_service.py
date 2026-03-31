@@ -314,6 +314,8 @@ async def complete_inbox_item(
     work_item_id: uuid.UUID,
     user_id: str,
     output_variables: dict | None = None,
+    selected_path: str | None = None,
+    next_performer_id: str | None = None,
 ) -> WorkItem:
     """Complete a work item and advance the workflow via engine_service."""
     from app.services import engine_service
@@ -339,7 +341,8 @@ async def complete_inbox_item(
     workflow_instance_id = wi.activity_instance.workflow_instance_id
 
     return await engine_service.complete_work_item(
-        db, workflow_instance_id, work_item_id, user_id, output_variables
+        db, workflow_instance_id, work_item_id, user_id, output_variables,
+        selected_path=selected_path, next_performer_id=next_performer_id,
     )
 
 
@@ -354,9 +357,13 @@ async def reject_inbox_item(
     user_id: str,
     reason: str | None = None,
 ) -> WorkItem:
-    """Reject an acquired work item."""
+    """Reject an acquired work item and trigger reject flow traversal via engine."""
+    from app.services import engine_service
+
     result = await db.execute(
-        select(WorkItem).where(
+        select(WorkItem)
+        .options(selectinload(WorkItem.activity_instance))
+        .where(
             WorkItem.id == work_item_id,
             WorkItem.is_deleted == False,  # noqa: E712
         )
@@ -371,24 +378,10 @@ async def reject_inbox_item(
     if wi.performer_id != uuid.UUID(user_id):
         raise ValueError("Not authorized to reject this work item")
 
-    wi.state = WorkItemState.REJECTED
-    wi.completed_at = datetime.now(timezone.utc)
-
-    after_state: dict = {"state": WorkItemState.REJECTED.value}
-    if reason:
-        after_state["reason"] = reason
-
-    await create_audit_record(
-        db,
-        entity_type="work_item",
-        entity_id=str(wi.id),
-        action="work_item_rejected",
-        user_id=user_id,
-        after_state=after_state,
+    workflow_instance_id = wi.activity_instance.workflow_instance_id
+    return await engine_service.reject_work_item(
+        db, workflow_instance_id, work_item_id, user_id, reason
     )
-
-    await db.flush()
-    return wi
 
 
 # ---------------------------------------------------------------------------

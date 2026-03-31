@@ -136,6 +136,8 @@ async def complete_work_item(
             work_item_id,
             str(current_user.id),
             request.output_variables,
+            selected_path=request.selected_path,
+            next_performer_id=request.next_performer_id,
         )
     except ValueError as e:
         raise HTTPException(

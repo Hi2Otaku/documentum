@@ -168,7 +168,9 @@ async def complete_work_item(
     """Complete an acquired work item and advance the workflow."""
     try:
         wi = await inbox_service.complete_inbox_item(
-            db, work_item_id, str(current_user.id), request.output_variables
+            db, work_item_id, str(current_user.id), request.output_variables,
+            selected_path=request.selected_path,
+            next_performer_id=request.next_performer_id,
         )
     except ValueError as e:
         raise HTTPException(

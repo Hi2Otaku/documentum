@@ -243,10 +243,10 @@ async def test_complete_requires_acquire(
 # ---------------------------------------------------------------------------
 
 
-async def test_reject_work_item(
+async def test_reject_work_item_no_reject_flow(
     async_client: AsyncClient, admin_token: str, started_workflow: dict
 ):
-    """INBOX-05/D-04: Reject marks work item as REJECTED."""
+    """INBOX-05/D-03: Reject without reject flow returns error (per D-03)."""
     headers = {"Authorization": f"Bearer {admin_token}"}
 
     # Get work item id
@@ -257,15 +257,14 @@ async def test_reject_work_item(
     resp = await async_client.post(f"/api/v1/inbox/{work_item_id}/acquire", headers=headers)
     assert resp.status_code == 200
 
-    # Reject
+    # Reject -- should fail because no reject flow is defined (D-03)
     resp = await async_client.post(
         f"/api/v1/inbox/{work_item_id}/reject",
         json={"reason": "Needs revision"},
         headers=headers,
     )
-    assert resp.status_code == 200
-    data = resp.json()["data"]
-    assert data["state"] == "rejected"
+    assert resp.status_code == 400
+    assert "No reject flow" in resp.json()["detail"]
 
 
 # ---------------------------------------------------------------------------
