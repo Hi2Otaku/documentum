@@ -57,6 +57,7 @@ ACTIVITY_TRANSITIONS: set[tuple[ActivityState, ActivityState]] = {
     (ActivityState.ACTIVE, ActivityState.ERROR),
     (ActivityState.PAUSED, ActivityState.ACTIVE),
     (ActivityState.ERROR, ActivityState.ACTIVE),
+    (ActivityState.COMPLETE, ActivityState.ACTIVE),  # Reject flow reactivation (D-04)
 }
 
 WORK_ITEM_TRANSITIONS: set[tuple[WorkItemState, WorkItemState]] = {
@@ -165,6 +166,20 @@ async def resolve_performers(
                 )
             )
             return [row[0] for row in result.all()]
+        case "alias":
+            if not performer_id:
+                return []
+            snapshot = getattr(workflow, 'alias_snapshot', None) or {}
+            target_id = snapshot.get(performer_id)
+            if target_id:
+                return [uuid.UUID(target_id)]
+            return []
+        case "sequential":
+            # Handled specially in advancement loop (initial work item creation)
+            return []
+        case "runtime_selection":
+            # Handled via next_performer_id in completion
+            return []
         case _:
             return []
 
@@ -215,6 +230,16 @@ async def start_workflow(
     )
     db.add(instance)
     await db.flush()
+
+    # 3. Resolve alias snapshot at workflow start (D-06)
+    if template.alias_set_id:
+        from app.services import alias_service
+        snapshot = await alias_service.resolve_alias_snapshot(db, template.alias_set_id)
+        if performer_overrides:
+            for alias_name, override_id in performer_overrides.items():
+                if alias_name in snapshot:
+                    snapshot[alias_name] = override_id
+        instance.alias_snapshot = snapshot
 
     # 4. Create ActivityInstance for each ActivityTemplate
     template_to_instance: dict[uuid.UUID, ActivityInstance] = {}
@@ -317,6 +342,8 @@ async def _advance_from_activity(
     user_id: str,
     performer_overrides: dict[str, str] | None = None,
     instance_variables: list[ProcessVariable] | None = None,
+    selected_path: str | None = None,
+    next_performer_id: str | None = None,
 ) -> None:
     """Iterative advancement loop using token-based Petri-net model.
 
@@ -361,22 +388,42 @@ async def _advance_from_activity(
             and f.flow_type == FlowType.NORMAL
         ]
 
+        # Routing type dispatch (D-02)
+        current_at = activity_template_map.get(current.activity_template_id)
+        routing_type = getattr(current_at, 'routing_type', None) or "conditional"
+
+        match routing_type:
+            case "broadcast":
+                flows_to_fire = outgoing_flows  # Fire ALL, ignore conditions
+            case "performer_chosen":
+                if not selected_path:
+                    raise ValueError("Performer-chosen activity requires selected_path")
+                flows_to_fire = [f for f in outgoing_flows if f.display_label == selected_path]
+                if not flows_to_fire:
+                    raise ValueError(f"No flow with label '{selected_path}'")
+            case "conditional" | _:
+                # Existing behavior: evaluate condition_expression
+                flows_to_fire = []
+                for flow in outgoing_flows:
+                    if flow.condition_expression:
+                        try:
+                            if not evaluate_expression(flow.condition_expression, var_context):
+                                continue
+                        except Exception:
+                            logger.warning(
+                                "Condition evaluation failed for flow %s, skipping",
+                                flow.id,
+                            )
+                            continue
+                    flows_to_fire.append(flow)
+
+        # After first activity in queue, clear selected_path so subsequent
+        # auto-completing activities use default routing
+        selected_path = None
+
         any_flow_fired = False
 
-        for flow in outgoing_flows:
-            # Evaluate condition expression if present
-            if flow.condition_expression:
-                try:
-                    expr = flow.condition_expression
-                    if not evaluate_expression(expr, var_context):
-                        continue
-                except Exception:
-                    logger.warning(
-                        "Condition evaluation failed for flow %s, skipping",
-                        flow.id,
-                    )
-                    continue
-
+        for flow in flows_to_fire:
             any_flow_fired = True
 
             # Place token
@@ -442,9 +489,21 @@ async def _advance_from_activity(
 
                 elif target_at.activity_type == ActivityType.MANUAL:
                     # Per D-06/D-07: resolve performers then create one work item per performer
-                    performers = await resolve_performers(
-                        db, target_at.performer_type, target_at.performer_id, workflow
-                    )
+                    # Special handling for sequential and runtime_selection
+                    if target_at.performer_type == "sequential":
+                        performer_list = target_at.performer_list or []
+                        if performer_list:
+                            target_ai.current_performer_index = 0
+                            performers = [uuid.UUID(performer_list[0])]
+                        else:
+                            performers = [None]
+                    elif target_at.performer_type == "runtime_selection" and next_performer_id:
+                        performers = [uuid.UUID(next_performer_id)]
+                        next_performer_id = None  # Consumed, don't carry forward
+                    else:
+                        performers = await resolve_performers(
+                            db, target_at.performer_type, target_at.performer_id, workflow
+                        )
                     # Check performer_overrides first
                     if performer_overrides and str(target_at.id) in performer_overrides:
                         performers = [uuid.UUID(performer_overrides[str(target_at.id)])]
@@ -524,6 +583,8 @@ async def complete_work_item(
     work_item_id: uuid.UUID,
     user_id: str,
     output_variables: dict[str, Any] | None = None,
+    selected_path: str | None = None,
+    next_performer_id: str | None = None,
 ) -> WorkItem:
     """Complete a work item and advance the workflow.
 
@@ -608,8 +669,59 @@ async def complete_work_item(
     )
     current_variables = list(pv_result.scalars().all())
 
-    # 6. Advance from completed activity
+    # Build activity template map for sequential/runtime checks
+    activity_template_map: dict[uuid.UUID, ActivityTemplate] = {
+        at.id: at for at in template.activity_templates if not at.is_deleted
+    }
+
+    # 6. Check sequential performer handling (D-07, Pitfall 3)
     activity_instance = work_item.activity_instance
+    activity_template = activity_template_map.get(activity_instance.activity_template_id)
+    if activity_template and activity_template.performer_type == "sequential":
+        performer_list = activity_template.performer_list or []
+        current_index = activity_instance.current_performer_index or 0
+        if current_index < len(performer_list) - 1:
+            # Not the last performer -- create next work item, DON'T advance
+            activity_instance.current_performer_index = current_index + 1
+            next_perf_id = uuid.UUID(performer_list[current_index + 1])
+            new_wi = WorkItem(
+                activity_instance_id=activity_instance.id,
+                performer_id=next_perf_id,
+                state=WorkItemState.AVAILABLE,
+                created_by=user_id,
+            )
+            db.add(new_wi)
+            await db.flush()
+            await create_audit_record(
+                db,
+                entity_type="work_item",
+                entity_id=str(work_item.id),
+                action="work_item_completed",
+                user_id=user_id,
+                after_state={
+                    "workflow_id": str(workflow_id),
+                    "sequential_index": current_index,
+                },
+            )
+            return work_item
+
+    # 6b. Validate runtime selection (D-08)
+    if activity_template and activity_template.performer_type == "runtime_selection":
+        if not next_performer_id:
+            raise ValueError("Runtime selection activity requires next_performer_id")
+        # Validate next_performer_id is in the candidate group
+        from app.models.user import user_groups
+        group_id = uuid.UUID(activity_template.performer_id)
+        group_result = await db.execute(
+            select(user_groups.c.user_id).where(
+                user_groups.c.group_id == group_id,
+                user_groups.c.user_id == uuid.UUID(next_performer_id),
+            )
+        )
+        if group_result.scalar_one_or_none() is None:
+            raise ValueError("Selected performer is not a member of the candidate group")
+
+    # 7. Advance from completed activity
     await _advance_from_activity(
         db,
         workflow,
@@ -618,6 +730,8 @@ async def complete_work_item(
         template_to_instance,
         user_id,
         instance_variables=current_variables,
+        selected_path=selected_path,
+        next_performer_id=next_performer_id,
     )
 
     # 7. Audit
@@ -637,7 +751,187 @@ async def complete_work_item(
 
 
 # ---------------------------------------------------------------------------
-# Section 7: Query functions
+# Section 7: reject_work_item (D-03, D-04)
+# ---------------------------------------------------------------------------
+
+
+async def reject_work_item(
+    db: AsyncSession,
+    workflow_id: uuid.UUID,
+    work_item_id: uuid.UUID,
+    user_id: str,
+    reason: str | None = None,
+) -> WorkItem:
+    """Reject a work item and traverse reject flows.
+
+    For sequential performers, rejection goes back to the previous performer.
+    For regular activities, rejection follows REJECT flow edges, resetting
+    target activities from COMPLETE to ACTIVE with new work items.
+    """
+    # 1. Load workflow instance
+    wf_result = await db.execute(
+        select(WorkflowInstance).where(
+            WorkflowInstance.id == workflow_id,
+            WorkflowInstance.is_deleted == False,  # noqa: E712
+        )
+    )
+    workflow = wf_result.scalar_one_or_none()
+    if workflow is None:
+        raise ValueError("Workflow not found")
+    if workflow.state != WorkflowState.RUNNING:
+        raise ValueError("Workflow is not running")
+
+    # 2. Load work item with activity instance
+    wi_result = await db.execute(
+        select(WorkItem)
+        .options(selectinload(WorkItem.activity_instance))
+        .where(
+            WorkItem.id == work_item_id,
+            WorkItem.is_deleted == False,  # noqa: E712
+        )
+    )
+    work_item = wi_result.scalar_one_or_none()
+    if work_item is None:
+        raise ValueError("Work item not found")
+    if work_item.state != WorkItemState.ACQUIRED:
+        raise ValueError(
+            f"Cannot reject work item in state '{work_item.state.value}'; must be 'acquired'"
+        )
+
+    # 3. Mark work item as REJECTED
+    work_item.state = WorkItemState.REJECTED
+    work_item.completed_at = datetime.now(timezone.utc)
+
+    activity_instance = work_item.activity_instance
+
+    # 4. Load template with relations
+    template_result = await db.execute(
+        select(ProcessTemplate)
+        .options(
+            selectinload(ProcessTemplate.activity_templates),
+            selectinload(ProcessTemplate.flow_templates),
+        )
+        .where(ProcessTemplate.id == workflow.process_template_id)
+    )
+    template = template_result.scalar_one()
+
+    # Build activity template map
+    activity_template_map: dict[uuid.UUID, ActivityTemplate] = {
+        at.id: at for at in template.activity_templates if not at.is_deleted
+    }
+    activity_template = activity_template_map.get(activity_instance.activity_template_id)
+
+    # 5. Check sequential performer rejection (D-07)
+    if activity_template and activity_template.performer_type == "sequential":
+        performer_list = activity_template.performer_list or []
+        current_index = activity_instance.current_performer_index or 0
+        if current_index == 0:
+            raise ValueError("Cannot reject: already at first performer in sequence")
+        # Decrement index and create work item for previous performer
+        activity_instance.current_performer_index = current_index - 1
+        prev_perf_id = uuid.UUID(performer_list[current_index - 1])
+        new_wi = WorkItem(
+            activity_instance_id=activity_instance.id,
+            performer_id=prev_perf_id,
+            state=WorkItemState.AVAILABLE,
+            created_by=user_id,
+        )
+        db.add(new_wi)
+        await db.flush()
+        after_state: dict = {"state": WorkItemState.REJECTED.value, "sequential_index": current_index}
+        if reason:
+            after_state["reason"] = reason
+        await create_audit_record(
+            db,
+            entity_type="work_item",
+            entity_id=str(work_item.id),
+            action="work_item_rejected",
+            user_id=user_id,
+            after_state=after_state,
+        )
+        return work_item
+
+    # 6. Find REJECT flows from current activity template
+    reject_flows = [
+        f
+        for f in template.flow_templates
+        if not f.is_deleted
+        and f.source_activity_id == activity_instance.activity_template_id
+        and f.flow_type == FlowType.REJECT
+    ]
+    if not reject_flows:
+        raise ValueError("No reject flow defined for this activity")
+
+    # 7. Build template_to_instance mapping
+    ai_result = await db.execute(
+        select(ActivityInstance).where(
+            ActivityInstance.workflow_instance_id == workflow_id
+        )
+    )
+    all_instances = list(ai_result.scalars().all())
+    template_to_instance: dict[uuid.UUID, ActivityInstance] = {
+        ai.activity_template_id: ai for ai in all_instances
+    }
+
+    # 8. Traverse reject flows
+    for flow in reject_flows:
+        target_ai = template_to_instance.get(flow.target_activity_id)
+        if target_ai is None:
+            continue
+
+        # Reset target activity: COMPLETE -> ACTIVE (D-04)
+        _enforce_activity_transition(target_ai.state, ActivityState.ACTIVE)
+        target_ai.state = ActivityState.ACTIVE
+        target_ai.started_at = datetime.now(timezone.utc)
+        target_ai.completed_at = None
+
+        # Resolve performers for the target activity template
+        target_at = activity_template_map.get(flow.target_activity_id)
+        if target_at:
+            performers = await resolve_performers(
+                db, target_at.performer_type, target_at.performer_id, workflow
+            )
+            if not performers:
+                performers = [None]
+            for perf_id in performers:
+                new_wi = WorkItem(
+                    activity_instance_id=target_ai.id,
+                    performer_id=perf_id,
+                    state=WorkItemState.AVAILABLE,
+                    created_by=user_id,
+                )
+                db.add(new_wi)
+
+        # Place execution token for the reject flow
+        token = ExecutionToken(
+            workflow_instance_id=workflow.id,
+            flow_template_id=flow.id,
+            source_activity_instance_id=activity_instance.id,
+            target_activity_template_id=flow.target_activity_id,
+            is_consumed=True,  # Immediately consumed since we manually activated
+            created_by=user_id,
+        )
+        db.add(token)
+
+    # 9. Audit record
+    after_state_audit: dict = {"state": WorkItemState.REJECTED.value}
+    if reason:
+        after_state_audit["reason"] = reason
+    await create_audit_record(
+        db,
+        entity_type="work_item",
+        entity_id=str(work_item.id),
+        action="work_item_rejected",
+        user_id=user_id,
+        after_state=after_state_audit,
+    )
+
+    await db.flush()
+    return work_item
+
+
+# ---------------------------------------------------------------------------
+# Section 8: Query functions
 # ---------------------------------------------------------------------------
 
 
