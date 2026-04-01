@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m pytest tests/ --co -q)",
+      "Bash(ls D:/Python/documentum_clone/src/app/routers/*.py)",
+      "Bash(ls D:/Python/documentum_clone/src/app/services/*.py)",
+      "Bash(ls D:/Python/documentum_clone/src/app/models/*.py)"
+    ]
+  }
+}

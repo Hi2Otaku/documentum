@@ -9,8 +9,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml .
+COPY uv.lock .
 
-RUN pip install --no-cache-dir -e ".[dev]"
+RUN uv sync
 
 COPY . .
 
