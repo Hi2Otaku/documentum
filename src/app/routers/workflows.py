@@ -328,10 +328,8 @@ async def skip_auto_activity(
             detail="Workflow not found",
         )
 
-    # Mark activity as COMPLETE (skip it)
+    # Reset to ACTIVE so _advance_from_activity can transition ACTIVE -> COMPLETE
     activity_instance.state = ActivityState.ACTIVE  # ERROR -> ACTIVE (valid transition)
-    activity_instance.state = ActivityState.COMPLETE  # ACTIVE -> COMPLETE (valid transition)
-    activity_instance.completed_at = datetime.now(timezone.utc)
 
     # Load full template for advancement
     template_result = await db.execute(

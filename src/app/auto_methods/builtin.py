@@ -106,7 +106,7 @@ async def modify_acl(ctx: ActivityContext) -> dict[str, Any] | None:
 
     for doc_id in ctx.document_ids:
         if acl_action == "add":
-            await create_acl_entry(ctx.db, doc_id, target_user_id, permission, ctx.user_id)
+            await create_acl_entry(ctx.db, doc_id, target_user_id, "user", permission, ctx.user_id)
         elif acl_action == "remove":
             await remove_acl_entry(ctx.db, doc_id, target_user_id, permission)
         else:
