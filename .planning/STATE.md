@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 07-03-PLAN.md
-last_updated: "2026-03-31T08:23:32.494Z"
+stopped_at: Completed 08-01-PLAN.md
+last_updated: "2026-04-04T04:39:52.737Z"
 last_activity: 2026-03-31
 progress:
   total_phases: 11
-  completed_phases: 7
-  total_plans: 21
-  completed_plans: 21
+  completed_phases: 8
+  total_plans: 22
+  completed_plans: 22
   percent: 0
 ---
 
@@ -72,6 +72,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 07 P01 | 4min | 2 tasks | 11 files |
 | Phase 07 P02 | 4min | 2 tasks | 7 files |
 | Phase 07 P03 | 5min | 2 tasks | 3 files |
+| Phase 08 P01 | 5min | 3 tasks | 31 files |
 
 ## Accumulated Context
 
@@ -125,6 +126,7 @@ Recent decisions affecting current work:
 - [Phase 07]: Upload/list routes exempt from ACL; test expectations updated for ACL-aware behavior
 - [Phase 07]: lifecycle_action set via direct DB in tests (not in API schema)
 - [Phase 07]: acl_service.create_acl_entry bug fixed: missing flush before return
+- [Phase 08]: React Flow custom nodes use extends Record<string,unknown> for type compatibility; save flow deletes/recreates all flows; Vite proxy forwards /api to localhost:8000
 
 ### Pending Todos
 
@@ -136,6 +138,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T08:17:52.958Z
-Stopped at: Completed 07-03-PLAN.md
+Last session: 2026-04-04T04:39:52.733Z
+Stopped at: Completed 08-01-PLAN.md
 Resume file: None
