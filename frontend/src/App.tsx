@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router";
 import { LoginPage } from "./pages/LoginPage";
 import { TemplateListPage } from "./pages/TemplateListPage";
+import { DesignerPage } from "./pages/DesignerPage";
 import { ProtectedRoute } from "./components/layout/ProtectedRoute";
 import { AppShell } from "./components/layout/AppShell";
 
@@ -19,7 +20,7 @@ export default function App() {
           <Route path="/templates" element={<TemplateListPage />} />
           <Route
             path="/templates/:id/edit"
-            element={<div>Designer placeholder</div>}
+            element={<DesignerPage />}
           />
         </Route>
       </Route>
