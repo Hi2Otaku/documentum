@@ -83,9 +83,12 @@ services:
   celery-beat:
     build: .
     environment:
+      - DATABASE_URL=postgresql+asyncpg://docuser:docpass@db:5432/documentum
       - REDIS_URL=redis://redis:6379/0
       - SECRET_KEY=change-me-in-production
     depends_on:
+      db:
+        condition: service_healthy
       redis:
         condition: service_healthy
     command: celery -A app.celery_app beat --loglevel=info
