@@ -21,7 +21,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 7: Document Lifecycle & ACL** - Document state machine, workflow-triggered lifecycle transitions, and object-level access control (completed 2026-03-31)
 - [ ] **Phase 8: Visual Workflow Designer** - Drag-and-drop React Flow canvas for designing workflow templates
 - [ ] **Phase 9: Auto Activities, Workflow Agent & Integration** - Automated activity execution, Celery beat agent, and external REST API integration
-- [x] **Phase 10: Delegation, Work Queues & Workflow Management** - User delegation, shared task pools, and admin workflow control (completed 2026-04-04)
+- [x] **Phase 10: Delegation, Work Queues & Workflow Management** - User delegation, shared task pools, and admin workflow control (completed 2026-04-04)
 - [ ] **Phase 11: Dashboards, Query Interface & Validation** - BAM dashboards, admin query interface, and contract approval end-to-end example
 
 ## Phase Details
@@ -196,11 +196,13 @@ Plans:
   3. Admin can query workflow instances, work items, and documents by multiple criteria (template, state, date range, performer, metadata, lifecycle state)
   4. The pre-built contract approval template (7 steps: initiate, draft, parallel legal/financial review, director approval, digital signing, archival, end) can be executed end-to-end with test users
   5. The contract approval example demonstrates sequential, parallel, and conditional routing, reject flows, auto activities, and produces a complete audit trail
-**Plans**: 3 plans
+**Plans:** 5 plans
 Plans:
-- [ ] 02-01-PLAN.md — Document models, MinIO client, config, Pydantic schemas
-- [ ] 02-02-PLAN.md — Document service layer and HTTP router
-- [ ] 02-03-PLAN.md — Integration tests for DOC-01 through DOC-08
+- [ ] 11-01-PLAN.md — Dashboard backend: metrics service, SSE endpoint, Celery pre-aggregation, MetricsSummary model
+- [ ] 11-02-PLAN.md — Query backend: query service and router for workflows, work items, documents
+- [ ] 11-03-PLAN.md — Contract approval seed script and E2E integration tests
+- [ ] 11-04-PLAN.md — Dashboard frontend: KPI cards, Recharts charts, SSE hook, navigation
+- [ ] 11-05-PLAN.md — Query frontend: three-tab page with filter panels and result tables
 **UI hint**: yes
 
 ## Progress
@@ -220,4 +222,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> ... -> 11
 | 8. Visual Workflow Designer | 0/TBD | Not started | - |
 | 9. Auto Activities, Workflow Agent & Integration | 0/TBD | Not started | - |
 | 10. Delegation, Work Queues & Workflow Management | 4/4 | Complete    | 2026-04-04 |
-| 11. Dashboards, Query Interface & Validation | 0/TBD | Not started | - |
+| 11. Dashboards, Query Interface & Validation | 0/5 | Planning complete | - |
