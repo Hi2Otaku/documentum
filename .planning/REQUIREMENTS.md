@@ -19,7 +19,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **USER-02**: User can log in and receive a session token
 - [x] **USER-03**: Admin can create groups and assign users to groups
 - [x] **USER-04**: Admin can define roles (e.g., Reviewer, Approver, Director)
-- [ ] **USER-05**: User can mark themselves as unavailable and designate a delegate
+- [x] **USER-05**: User can mark themselves as unavailable and designate a delegate
 
 ### Document Management
 
@@ -93,14 +93,14 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **INBOX-05**: User can reject a work item (triggers reject flow if configured)
 - [x] **INBOX-06**: User can add comments to a work item
 - [x] **INBOX-07**: Work items show priority and due date indicators
-- [ ] **INBOX-08**: If performer is unavailable, work item automatically routes to delegated user
+- [x] **INBOX-08**: If performer is unavailable, work item automatically routes to delegated user
 
 ### Work Queues
 
-- [ ] **QUEUE-01**: Admin can create work queues and assign qualified users
-- [ ] **QUEUE-02**: Activities can be assigned to a work queue instead of a specific user
-- [ ] **QUEUE-03**: Any qualified user in the queue can claim a task
-- [ ] **QUEUE-04**: Claimed tasks are locked to the claiming user until released or completed
+- [x] **QUEUE-01**: Admin can create work queues and assign qualified users
+- [x] **QUEUE-02**: Activities can be assigned to a work queue instead of a specific user
+- [x] **QUEUE-03**: Any qualified user in the queue can claim a task
+- [x] **QUEUE-04**: Claimed tasks are locked to the claiming user until released or completed
 
 ### Auto Activities & Workflow Agent
 
@@ -112,11 +112,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Workflow Management
 
-- [ ] **MGMT-01**: Admin can halt a running workflow (pause execution)
-- [ ] **MGMT-02**: Admin can resume a halted workflow
-- [ ] **MGMT-03**: Admin can abort a workflow (terminate, mark as Failed)
-- [ ] **MGMT-04**: Admin can view all running workflow instances with current state and active activity
-- [ ] **MGMT-05**: Admin can restart a failed workflow from Dormant state
+- [x] **MGMT-01**: Admin can halt a running workflow (pause execution)
+- [x] **MGMT-02**: Admin can resume a halted workflow
+- [x] **MGMT-03**: Admin can abort a workflow (terminate, mark as Failed)
+- [x] **MGMT-04**: Admin can view all running workflow instances with current state and active activity
+- [x] **MGMT-05**: Admin can restart a failed workflow from Dormant state
 
 ### ACL & Security
 
@@ -131,7 +131,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **AUDIT-02**: Audit records include: task assignment, task completion, task rejection, workflow state changes
 - [x] **AUDIT-03**: Audit records include: document upload, version creation, check-in/out, lifecycle transitions
 - [x] **AUDIT-04**: Audit trail is append-only and cannot be modified or deleted
-- [ ] **AUDIT-05**: Admin can query audit trail by user, workflow, document, date range, or action type
+- [x] **AUDIT-05**: Admin can query audit trail by user, workflow, document, date range, or action type
 
 ### Visual Workflow Designer
 
@@ -225,7 +225,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | USER-02 | Phase 1 | Complete |
 | USER-03 | Phase 1 | Complete |
 | USER-04 | Phase 1 | Complete |
-| USER-05 | Phase 10 | Pending |
+| USER-05 | Phase 10 | Complete |
 | DOC-01 | Phase 2 | Complete |
 | DOC-02 | Phase 2 | Complete |
 | DOC-03 | Phase 2 | Complete |
@@ -278,21 +278,21 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INBOX-05 | Phase 5 | Complete |
 | INBOX-06 | Phase 5 | Complete |
 | INBOX-07 | Phase 5 | Complete |
-| INBOX-08 | Phase 10 | Pending |
-| QUEUE-01 | Phase 10 | Pending |
-| QUEUE-02 | Phase 10 | Pending |
-| QUEUE-03 | Phase 10 | Pending |
-| QUEUE-04 | Phase 10 | Pending |
+| INBOX-08 | Phase 10 | Complete |
+| QUEUE-01 | Phase 10 | Complete |
+| QUEUE-02 | Phase 10 | Complete |
+| QUEUE-03 | Phase 10 | Complete |
+| QUEUE-04 | Phase 10 | Complete |
 | AUTO-01 | Phase 9 | Pending |
 | AUTO-02 | Phase 9 | Pending |
 | AUTO-03 | Phase 9 | Pending |
 | AUTO-04 | Phase 9 | Pending |
 | AUTO-05 | Phase 9 | Pending |
-| MGMT-01 | Phase 10 | Pending |
-| MGMT-02 | Phase 10 | Pending |
-| MGMT-03 | Phase 10 | Pending |
-| MGMT-04 | Phase 10 | Pending |
-| MGMT-05 | Phase 10 | Pending |
+| MGMT-01 | Phase 10 | Complete |
+| MGMT-02 | Phase 10 | Complete |
+| MGMT-03 | Phase 10 | Complete |
+| MGMT-04 | Phase 10 | Complete |
+| MGMT-05 | Phase 10 | Complete |
 | ACL-01 | Phase 7 | Complete |
 | ACL-02 | Phase 7 | Complete |
 | ACL-03 | Phase 7 | Complete |
@@ -301,7 +301,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUDIT-02 | Phase 1 | Complete |
 | AUDIT-03 | Phase 1 | Complete |
 | AUDIT-04 | Phase 1 | Complete |
-| AUDIT-05 | Phase 10 | Pending |
+| AUDIT-05 | Phase 10 | Complete |
 | DESIGN-01 | Phase 8 | Pending |
 | DESIGN-02 | Phase 8 | Pending |
 | DESIGN-03 | Phase 8 | Pending |
