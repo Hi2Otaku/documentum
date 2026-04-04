@@ -5,6 +5,7 @@ import type {
   ValidationResult,
   ActivityTemplate,
   FlowTemplate,
+  ProcessVariable,
 } from '../types/workflow';
 
 const BASE = '/api/v1/templates';
@@ -159,6 +160,86 @@ export async function validateTemplate(
 /** Delete a template */
 export async function deleteTemplate(id: string): Promise<void> {
   await apiFetch(`${BASE}/${id}`, { method: 'DELETE' });
+}
+
+/** Update template metadata */
+export async function updateTemplate(
+  id: string,
+  data: { name?: string; description?: string | null },
+): Promise<ProcessTemplate> {
+  const res = await apiFetch<ApiResponse<ProcessTemplate>>(`${BASE}/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+  return res.data;
+}
+
+/** Update a flow */
+export async function updateFlow(
+  templateId: string,
+  flowId: string,
+  data: {
+    source_activity_id?: string;
+    target_activity_id?: string;
+    flow_type?: string;
+    condition_expression?: string | null;
+    display_label?: string | null;
+  },
+): Promise<FlowTemplate> {
+  const res = await apiFetch<ApiResponse<FlowTemplate>>(
+    `${BASE}/${templateId}/flows/${flowId}`,
+    { method: 'PUT', body: JSON.stringify(data) },
+  );
+  return res.data;
+}
+
+/** Create a variable */
+export async function createVariable(
+  templateId: string,
+  data: {
+    name: string;
+    variable_type: string;
+    string_value?: string | null;
+    int_value?: number | null;
+    bool_value?: boolean | null;
+    date_value?: string | null;
+  },
+): Promise<ProcessVariable> {
+  const res = await apiFetch<ApiResponse<ProcessVariable>>(
+    `${BASE}/${templateId}/variables`,
+    { method: 'POST', body: JSON.stringify(data) },
+  );
+  return res.data;
+}
+
+/** Update a variable */
+export async function updateVariable(
+  templateId: string,
+  variableId: string,
+  data: {
+    name?: string;
+    variable_type?: string;
+    string_value?: string | null;
+    int_value?: number | null;
+    bool_value?: boolean | null;
+    date_value?: string | null;
+  },
+): Promise<ProcessVariable> {
+  const res = await apiFetch<ApiResponse<ProcessVariable>>(
+    `${BASE}/${templateId}/variables/${variableId}`,
+    { method: 'PUT', body: JSON.stringify(data) },
+  );
+  return res.data;
+}
+
+/** Delete a variable */
+export async function deleteVariable(
+  templateId: string,
+  variableId: string,
+): Promise<void> {
+  await apiFetch(`${BASE}/${templateId}/variables/${variableId}`, {
+    method: 'DELETE',
+  });
 }
 
 /** Install template */
