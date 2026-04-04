@@ -147,11 +147,13 @@ Plans:
   3. User can configure activity properties (performer assignment, trigger conditions, routing expressions) through a side panel
   4. Designer validates the template before installation and shows structural errors visually on the canvas
   5. Templates designed in the visual editor save to and load from the backend API, and can be executed by the engine
-**Plans**: 3 plans
+**Plans**: 5 plans
 Plans:
-- [ ] 02-01-PLAN.md — Document models, MinIO client, config, Pydantic schemas
-- [ ] 02-02-PLAN.md — Document service layer and HTTP router
-- [ ] 02-03-PLAN.md — Integration tests for DOC-01 through DOC-08
+- [x] 08-01-PLAN.md — React + Vite project init, custom nodes/edges, workflow canvas
+- [x] 08-02-PLAN.md — App shell, routing, auth guard, login page, template list page
+- [ ] 08-03-PLAN.md — Node palette, properties panel, template save/load
+- [ ] 08-04-PLAN.md — Designer canvas page integration
+- [ ] 08-05-PLAN.md — Validation, install, error panel
 **UI hint**: yes
 
 ### Phase 9: Auto Activities, Workflow Agent & Integration
@@ -217,7 +219,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> ... -> 11
 | 5. Work Items & Inbox | 0/3 | Planning complete | - |
 | 6. Advanced Routing & Alias Sets | 0/3 | Planning complete | - |
 | 7. Document Lifecycle & ACL | 3/3 | Complete   | 2026-03-31 |
-| 8. Visual Workflow Designer | 1/1 | Complete   | 2026-04-04 |
+| 8. Visual Workflow Designer | 2/5 | In progress | - |
 | 9. Auto Activities, Workflow Agent & Integration | 0/TBD | Not started | - |
 | 10. Delegation, Work Queues & Workflow Management | 0/TBD | Not started | - |
 | 11. Dashboards, Query Interface & Validation | 0/TBD | Not started | - |
