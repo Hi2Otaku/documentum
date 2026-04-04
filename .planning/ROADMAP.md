@@ -147,11 +147,13 @@ Plans:
   3. User can configure activity properties (performer assignment, trigger conditions, routing expressions) through a side panel
   4. Designer validates the template before installation and shows structural errors visually on the canvas
   5. Templates designed in the visual editor save to and load from the backend API, and can be executed by the engine
-**Plans**: 3 plans
+**Plans**: 5/5 plans complete
 Plans:
-- [ ] 02-01-PLAN.md — Document models, MinIO client, config, Pydantic schemas
-- [ ] 02-02-PLAN.md — Document service layer and HTTP router
-- [ ] 02-03-PLAN.md — Integration tests for DOC-01 through DOC-08
+- [x] 08-01-PLAN.md — API client, types, serialization utilities
+- [x] 08-02-PLAN.md — React Flow canvas with custom nodes, edges, drag-and-drop
+- [x] 08-03-PLAN.md — Designer store (Zustand), undo/redo, auto-layout
+- [x] 08-04-PLAN.md — Designer page, properties panel, error panel, toolbar
+- [x] 08-05-PLAN.md — Save/validate/install, keyboard shortcuts, context menu, variable CRUD
 **UI hint**: yes
 
 ### Phase 9: Auto Activities, Workflow Agent & Integration
