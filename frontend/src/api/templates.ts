@@ -8,7 +8,7 @@ import type {
   ProcessVariable,
 } from '../types/workflow';
 
-const BASE = '/api/v1/templates';
+const BASE = '/api/v1/templates/';
 
 /** Get auth header from stored token */
 function authHeaders(): HeadersInit {
@@ -43,7 +43,7 @@ export async function getTemplateDetail(
   id: string,
 ): Promise<ProcessTemplateDetail> {
   const res = await apiFetch<ApiResponse<ProcessTemplateDetail>>(
-    `${BASE}/${id}`,
+    `${BASE}${id}`,
   );
   return res.data;
 }
@@ -78,7 +78,7 @@ export async function addActivity(
   },
 ): Promise<ActivityTemplate> {
   const res = await apiFetch<ApiResponse<ActivityTemplate>>(
-    `${BASE}/${templateId}/activities`,
+    `${BASE}${templateId}/activities`,
     { method: 'POST', body: JSON.stringify(data) },
   );
   return res.data;
@@ -102,7 +102,7 @@ export async function updateActivity(
   },
 ): Promise<ActivityTemplate> {
   const res = await apiFetch<ApiResponse<ActivityTemplate>>(
-    `${BASE}/${templateId}/activities/${activityId}`,
+    `${BASE}${templateId}/activities/${activityId}`,
     { method: 'PUT', body: JSON.stringify(data) },
   );
   return res.data;
@@ -113,7 +113,7 @@ export async function deleteActivity(
   templateId: string,
   activityId: string,
 ): Promise<void> {
-  await apiFetch(`${BASE}/${templateId}/activities/${activityId}`, {
+  await apiFetch(`${BASE}${templateId}/activities/${activityId}`, {
     method: 'DELETE',
   });
 }
@@ -130,7 +130,7 @@ export async function addFlow(
   },
 ): Promise<FlowTemplate> {
   const res = await apiFetch<ApiResponse<FlowTemplate>>(
-    `${BASE}/${templateId}/flows`,
+    `${BASE}${templateId}/flows`,
     { method: 'POST', body: JSON.stringify(data) },
   );
   return res.data;
@@ -141,7 +141,7 @@ export async function deleteFlow(
   templateId: string,
   flowId: string,
 ): Promise<void> {
-  await apiFetch(`${BASE}/${templateId}/flows/${flowId}`, {
+  await apiFetch(`${BASE}${templateId}/flows/${flowId}`, {
     method: 'DELETE',
   });
 }
@@ -151,7 +151,7 @@ export async function validateTemplate(
   id: string,
 ): Promise<ValidationResult> {
   const res = await apiFetch<ApiResponse<ValidationResult>>(
-    `${BASE}/${id}/validate`,
+    `${BASE}${id}/validate`,
     { method: 'POST' },
   );
   return res.data;
@@ -159,7 +159,7 @@ export async function validateTemplate(
 
 /** Delete a template */
 export async function deleteTemplate(id: string): Promise<void> {
-  await apiFetch(`${BASE}/${id}`, { method: 'DELETE' });
+  await apiFetch(`${BASE}${id}`, { method: 'DELETE' });
 }
 
 /** Update template metadata */
@@ -167,7 +167,7 @@ export async function updateTemplate(
   id: string,
   data: { name?: string; description?: string | null },
 ): Promise<ProcessTemplate> {
-  const res = await apiFetch<ApiResponse<ProcessTemplate>>(`${BASE}/${id}`, {
+  const res = await apiFetch<ApiResponse<ProcessTemplate>>(`${BASE}${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
   });
@@ -187,7 +187,7 @@ export async function updateFlow(
   },
 ): Promise<FlowTemplate> {
   const res = await apiFetch<ApiResponse<FlowTemplate>>(
-    `${BASE}/${templateId}/flows/${flowId}`,
+    `${BASE}${templateId}/flows/${flowId}`,
     { method: 'PUT', body: JSON.stringify(data) },
   );
   return res.data;
@@ -206,7 +206,7 @@ export async function createVariable(
   },
 ): Promise<ProcessVariable> {
   const res = await apiFetch<ApiResponse<ProcessVariable>>(
-    `${BASE}/${templateId}/variables`,
+    `${BASE}${templateId}/variables`,
     { method: 'POST', body: JSON.stringify(data) },
   );
   return res.data;
@@ -226,7 +226,7 @@ export async function updateVariable(
   },
 ): Promise<ProcessVariable> {
   const res = await apiFetch<ApiResponse<ProcessVariable>>(
-    `${BASE}/${templateId}/variables/${variableId}`,
+    `${BASE}${templateId}/variables/${variableId}`,
     { method: 'PUT', body: JSON.stringify(data) },
   );
   return res.data;
@@ -237,7 +237,7 @@ export async function deleteVariable(
   templateId: string,
   variableId: string,
 ): Promise<void> {
-  await apiFetch(`${BASE}/${templateId}/variables/${variableId}`, {
+  await apiFetch(`${BASE}${templateId}/variables/${variableId}`, {
     method: 'DELETE',
   });
 }
@@ -245,7 +245,7 @@ export async function deleteVariable(
 /** Install template */
 export async function installTemplate(id: string): Promise<ProcessTemplate> {
   const res = await apiFetch<ApiResponse<ProcessTemplate>>(
-    `${BASE}/${id}/install`,
+    `${BASE}${id}/install`,
     { method: 'POST' },
   );
   return res.data;

@@ -1,4 +1,5 @@
 import asyncio
+import os
 from logging.config import fileConfig
 
 from alembic import context
@@ -10,6 +11,11 @@ from app.models import Base  # noqa: F401
 
 # this is the Alembic Config object
 config = context.config
+
+# Override sqlalchemy.url from DATABASE_URL env var if set
+database_url = os.environ.get("DATABASE_URL")
+if database_url:
+    config.set_main_option("sqlalchemy.url", database_url)
 
 # Interpret the config file for Python logging
 if config.config_file_name is not None:

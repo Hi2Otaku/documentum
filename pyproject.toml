@@ -12,10 +12,11 @@ dependencies = [
     "pydantic",
     "pydantic-settings",
     "PyJWT",
-    "pwdlib[bcrypt]",
+    "pwdlib[argon2,bcrypt]",
     "celery",
     "redis",
     "python-multipart",
+    "minio",
 ]
 
 [project.optional-dependencies]

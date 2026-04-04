@@ -24,6 +24,7 @@ export async function loginApi(
     throw new Error("Invalid username or password.");
   }
 
-  const data = await res.json();
-  return data.access_token;
+  const json = await res.json();
+  // Backend wraps in EnvelopeResponse: { data: { access_token: "..." } }
+  return json.data?.access_token ?? json.access_token;
 }
