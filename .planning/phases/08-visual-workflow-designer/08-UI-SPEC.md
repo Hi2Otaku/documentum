@@ -45,13 +45,12 @@ None. All components from shadcn/ui official registry only.
 ## 2. Spacing
 
 **Base unit:** 4px
-**Scale:** 4, 8, 12, 16, 24, 32, 48, 64
+**Scale:** 4, 8, 16, 24, 32, 48, 64
 
 | Token | Value | Usage |
 |-------|-------|-------|
 | `gap-1` | 4px | Inline icon-to-text spacing |
-| `gap-2` | 8px | Between form fields within a group, badge padding |
-| `gap-3` | 12px | Between toolbar buttons |
+| `gap-2` | 8px | Between form fields within a group, badge padding, between toolbar buttons |
 | `gap-4` | 16px | Section spacing within properties panel |
 | `gap-6` | 24px | Between major panel sections |
 | `gap-8` | 32px | Page-level content padding |
@@ -108,7 +107,7 @@ Uses shadcn/ui CSS custom properties (HSL-based). All colors reference the theme
 |------|-----------|-------|-------|
 | Dominant surface | 60% | `--background` / `--card` | Canvas background, page background, panel backgrounds |
 | Secondary | 30% | `--muted` / `--accent` | Sidebar backgrounds, toolbar background, template list cards, hover states |
-| Accent | 10% | `--primary` | Primary CTA buttons (Save, Install), active nav indicator, selected node ring |
+| Accent | 10% | `--primary` | Primary CTA buttons (Save Template, Install), active nav indicator, selected node ring |
 
 ### Accent Reserved For (exhaustive list)
 
@@ -153,7 +152,7 @@ These are semantic colors for the workflow canvas nodes and edges, defined as Ta
 
 | Context | Label | Notes |
 |---------|-------|-------|
-| Save template | "Save" | Toolbar button with floppy disk icon. Keyboard shortcut: Ctrl+S |
+| Save template | "Save Template" | Toolbar button with floppy disk icon. Keyboard shortcut: Ctrl+S |
 | Validate and install | "Validate & Install" | Toolbar button. Runs validation first, installs if clean |
 | Create new template | "New Template" | Template list page, primary button |
 | Login | "Sign In" | Login page submit button |
@@ -225,7 +224,7 @@ These map from `ValidationErrorDetail.code` values. Display `message` field from
 ```
 +--------------------------------------------------+
 |  Top Toolbar (48px)                               |
-|  [<-] Template Name    [Save] [Validate&Install]  |
+|  [<-] Template Name  [Save Template] [Validate..] |
 +--------+----------------------------+-------------+
 | Left   |                            | Right       |
 | Palette|    React Flow Canvas       | Properties  |
@@ -244,7 +243,7 @@ These map from `ValidationErrorDetail.code` values. Display `message` field from
 - Template name (editable inline or via properties)
 - Unsaved changes indicator: amber dot next to name
 - Spacer
-- "Save" button (secondary variant, floppy disk icon)
+- "Save Template" button (secondary variant, floppy disk icon)
 - "Validate & Install" button (primary variant, shield-check icon)
 - Undo button (arrow-left icon, disabled when nothing to undo)
 - Redo button (arrow-right icon, disabled when nothing to redo)
@@ -333,13 +332,13 @@ These map from `ValidationErrorDetail.code` values. Display `message` field from
 #### ManualNode
 - Shape: rounded rectangle, min-width 160px, min-height 64px
 - Background: `bg-blue-500`, border: 2px `border-blue-600`, `rounded-lg`
-- Content: white text, name top line (`font-semibold text-sm`), config hint bottom line (`text-xs opacity-80`), e.g. "Assigned to: John" or "Group: Reviewers"
+- Content: white text, name top line (`font-semibold text-sm`), config hint bottom line (`text-sm opacity-70`), e.g. "Assigned to: John" or "Group: Reviewers"
 - Target handle at left, source handle at right
 
 #### AutoNode
 - Shape: hexagon (CSS clip-path), min-width 160px, min-height 64px
 - Background: `bg-orange-500`, border: 2px `border-orange-600`
-- Content: white text, name top line (`font-semibold text-sm`), method hint bottom line (`text-xs opacity-80`), e.g. "Method: send_email"
+- Content: white text, name top line (`font-semibold text-sm`), method hint bottom line (`text-sm opacity-70`), e.g. "Method: send_email"
 - Target handle at left, source handle at right
 
 ### Custom Edge Components (3 types)
@@ -412,7 +411,7 @@ These map from `ValidationErrorDetail.code` values. Display `message` field from
 
 ### Save Flow
 
-1. User presses Ctrl+S or clicks "Save"
+1. User presses Ctrl+S or clicks "Save Template"
 2. Button shows loading spinner
 3. Canvas state (nodes with positions, edges, properties) serialized to API format
 4. PUT request to `/api/v1/templates/{id}` + activity/flow/variable endpoints
@@ -539,4 +538,5 @@ FlowTemplateResponse -> Edge {
 ---
 
 *Generated: 2026-04-04*
+*Revised: 2026-04-04 — Fixed typography scale (removed text-xs), spacing scale (removed 12px), CTA copywriting (Save -> Save Template)*
 *Source: CONTEXT.md (D-01 through D-21), REQUIREMENTS.md (DESIGN-01 through DESIGN-07), CLAUDE.md tech stack*
