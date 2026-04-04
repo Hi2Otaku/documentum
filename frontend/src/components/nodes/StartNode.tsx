@@ -1,19 +1,21 @@
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react';
-import type { ActivityNodeData } from '../../types/workflow';
+import { Play } from 'lucide-react';
+import type { ActivityNodeData } from '../../types/designer';
 
-type StartNodeType = Node<ActivityNodeData, 'start'>;
+type StartNodeType = Node<ActivityNodeData, 'startNode'>;
 
-export function StartNode({ selected }: NodeProps<StartNodeType>) {
+export function StartNode({ data, selected }: NodeProps<StartNodeType>) {
   return (
-    <div
-      className={`flex items-center justify-center w-16 h-16 rounded-full border-2 text-white text-xs font-bold ${
-        selected
-          ? 'border-yellow-400 shadow-lg shadow-yellow-400/30'
-          : 'border-green-600'
-      } bg-green-500`}
-    >
-      START
-      <Handle type="source" position={Position.Right} className="!bg-green-700" />
+    <div className="flex flex-col items-center">
+      <div
+        className={`flex items-center justify-center w-[60px] h-[60px] rounded-full bg-green-500 border-2 border-green-600 text-white ${
+          selected ? 'ring-2 ring-primary ring-offset-2' : ''
+        }`}
+      >
+        <Play className="w-6 h-6" />
+        <Handle type="source" position={Position.Right} />
+      </div>
+      <div className="text-sm text-center mt-1">{data.name}</div>
     </div>
   );
 }

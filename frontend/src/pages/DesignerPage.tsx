@@ -18,7 +18,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { nodeTypes } from '../components/nodes';
 import { edgeTypes } from '../components/edges';
-import { useDesignerStore } from '../store/designerStore';
+import { useDesignerStore } from '../stores/designerStore';
 import {
   getTemplateDetail,
   addActivity,
@@ -29,9 +29,8 @@ import {
   validateTemplate,
   installTemplate,
 } from '../api/templates';
+import type { ActivityNodeData, FlowEdgeData } from '../types/designer';
 import type {
-  ActivityNodeData,
-  FlowEdgeData,
   ActivityType,
   ProcessTemplateDetail,
   ValidationResult,
@@ -47,7 +46,7 @@ function templateToFlow(template: ProcessTemplateDetail): {
     type: a.activity_type,
     position: { x: a.position_x ?? 0, y: a.position_y ?? 0 },
     data: {
-      label: a.name,
+      name: a.name,
       activityType: a.activity_type,
       description: a.description ?? undefined,
       performerType: a.performer_type,
@@ -95,8 +94,10 @@ function DesignerCanvas() {
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<ValidationResult | null>(null);
 
-  const selectNode = useDesignerStore((s) => s.selectNode);
-  const markDirty = useDesignerStore((s) => s.markDirty);
+  const selectNode = useDesignerStore((s) => s.setSelectedNode);
+  const markDirty = useCallback(() => {
+    useDesignerStore.setState({ isDirty: true });
+  }, []);
 
   // Load template data
   const { data: template } = useQuery({
@@ -152,7 +153,7 @@ function DesignerCanvas() {
         type: activityType,
         position,
         data: {
-          label: `${activityType.charAt(0).toUpperCase() + activityType.slice(1)} Activity`,
+          name: `${activityType.charAt(0).toUpperCase() + activityType.slice(1)} Activity`,
           activityType,
         },
       };
@@ -193,7 +194,7 @@ function DesignerCanvas() {
         if (backendId && existingActivityIds.has(backendId)) {
           // Update existing
           await updateActivity(templateId, backendId, {
-            name: node.data.label,
+            name: node.data.name,
             description: node.data.description,
             performer_type: node.data.performerType,
             performer_id: node.data.performerId,
@@ -209,7 +210,7 @@ function DesignerCanvas() {
         } else {
           // Create new
           const created = await addActivity(templateId, {
-            name: node.data.label,
+            name: node.data.name,
             activity_type: node.data.activityType,
             description: node.data.description,
             performer_type: node.data.performerType,
@@ -255,7 +256,7 @@ function DesignerCanvas() {
       const { nodes: n, edges: e } = templateToFlow(updated);
       setNodes(n);
       setEdges(e);
-      useDesignerStore.getState().markClean();
+      useDesignerStore.getState().setClean();
       setStatusMsg('Saved successfully');
       setTimeout(() => setStatusMsg(null), 2000);
     } catch (err) {

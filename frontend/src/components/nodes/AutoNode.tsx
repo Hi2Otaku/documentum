@@ -1,32 +1,31 @@
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react';
-import type { ActivityNodeData } from '../../types/workflow';
+import type { ActivityNodeData } from '../../types/designer';
 
-type AutoNodeType = Node<ActivityNodeData, 'auto'>;
+type AutoNodeType = Node<ActivityNodeData, 'autoNode'>;
 
 export function AutoNode({ data, selected }: NodeProps<AutoNodeType>) {
+  const methodHint = data.methodName
+    ? `Method: ${data.methodName}`
+    : 'No method';
+
   return (
     <div
-      className={`min-w-[140px] rounded-lg border-2 bg-white shadow-md ${
-        selected
-          ? 'border-yellow-400 shadow-lg shadow-yellow-400/30'
-          : 'border-purple-500'
+      className={`min-w-[160px] min-h-[64px] ${
+        selected ? 'ring-2 ring-primary ring-offset-2' : ''
       }`}
     >
-      <div className="bg-purple-500 text-white text-xs font-semibold px-3 py-1 rounded-t-md">
-        Auto
+      <div
+        className="bg-orange-500 border-2 border-orange-600 text-white px-4 py-3"
+        style={{
+          clipPath:
+            'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)',
+        }}
+      >
+        <div className="font-semibold text-sm truncate">{data.name}</div>
+        <div className="text-sm opacity-70 truncate">{methodHint}</div>
       </div>
-      <div className="px-3 py-2">
-        <div className="text-sm font-medium text-gray-800 truncate">
-          {data.label}
-        </div>
-        {data.methodName && (
-          <div className="text-xs text-gray-500 mt-1 font-mono">
-            {data.methodName}
-          </div>
-        )}
-      </div>
-      <Handle type="target" position={Position.Left} className="!bg-purple-600" />
-      <Handle type="source" position={Position.Right} className="!bg-purple-600" />
+      <Handle type="target" position={Position.Left} />
+      <Handle type="source" position={Position.Right} />
     </div>
   );
 }
