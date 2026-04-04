@@ -167,7 +167,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [ ] **EXAMPLE-01**: Pre-built contract approval template matching the 7-step example from the spec
 - [ ] **EXAMPLE-02**: Example demonstrates: sequential routing (draft), parallel routing (legal + financial review), conditional routing (director approval), reject flows, auto activities (signing, archival)
-- [ ] **EXAMPLE-03**: Example can be executed end-to-end with test users, producing a complete audit trail
+- [x] **EXAMPLE-03**: Example can be executed end-to-end with test users, producing a complete audit trail
 
 ## v2 Requirements
 
@@ -322,7 +322,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | QUERY-03 | Phase 11 | Complete |
 | EXAMPLE-01 | Phase 11 | Pending |
 | EXAMPLE-02 | Phase 11 | Pending |
-| EXAMPLE-03 | Phase 11 | Pending |
+| EXAMPLE-03 | Phase 11 | Complete |
 
 **Coverage:**
 - v1 requirements: 105 total
