@@ -28,6 +28,12 @@ class User(BaseModel):
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_available: Mapped[bool] = mapped_column(
+        Boolean, default=True, server_default="true", nullable=False
+    )
+    delegate_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid(), ForeignKey("users.id"), nullable=True
+    )
 
     groups: Mapped[list["Group"]] = relationship(secondary=user_groups, back_populates="users")
     roles: Mapped[list["Role"]] = relationship(secondary=user_roles, back_populates="users")

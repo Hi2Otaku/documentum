@@ -1,10 +1,17 @@
 import uuid
 
-from sqlalchemy import Boolean, DateTime, Enum, Float, ForeignKey, Integer, JSON, String, Text, Uuid
+from sqlalchemy import Boolean, Column, DateTime, Enum, Float, ForeignKey, Integer, JSON, String, Table, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import BaseModel
 from app.models.enums import ActivityState, ActivityType, FlowType, ProcessState, TriggerType, WorkflowState, WorkItemState
+
+work_queue_members = Table(
+    "work_queue_members",
+    BaseModel.metadata,
+    Column("queue_id", Uuid(), ForeignKey("work_queues.id"), primary_key=True),
+    Column("user_id", Uuid(), ForeignKey("users.id"), primary_key=True),
+)
 
 # Re-export for convenient imports
 __all__ = [
@@ -12,7 +19,18 @@ __all__ = [
     "ProcessTemplate", "ActivityTemplate", "FlowTemplate",
     "WorkflowInstance", "ActivityInstance", "WorkItem", "WorkItemComment",
     "ProcessVariable", "WorkflowPackage", "ExecutionToken",
+    "WorkQueue", "work_queue_members",
 ]
+
+
+class WorkQueue(BaseModel):
+    __tablename__ = "work_queues"
+
+    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+
+    members: Mapped[list["User"]] = relationship(secondary=work_queue_members)
 
 
 class AliasSet(BaseModel):
@@ -179,6 +197,9 @@ class WorkItem(BaseModel):
     due_date: Mapped[None] = mapped_column(DateTime(timezone=True), nullable=True)
     priority: Mapped[int] = mapped_column(Integer, default=5, nullable=False)
     completed_at: Mapped[None] = mapped_column(DateTime(timezone=True), nullable=True)
+    queue_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid(), ForeignKey("work_queues.id"), nullable=True
+    )
 
     activity_instance: Mapped["ActivityInstance"] = relationship(back_populates="work_items", foreign_keys=[activity_instance_id])
     workflow_instance: Mapped["WorkflowInstance"] = relationship(
