@@ -1,24 +1,27 @@
 """Workflow lifecycle endpoints."""
 import math
 import uuid
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_active_admin, get_current_user
 from app.models.user import User
 from app.schemas.common import EnvelopeResponse, PaginationMeta
 from app.schemas.workflow import (
     CompleteWorkItemRequest,
     ProcessVariableResponse,
     UpdateVariableRequest,
+    WorkflowActionResponse,
+    WorkflowAdminListResponse,
     WorkflowDetailResponse,
     WorkflowInstanceResponse,
     WorkflowStartRequest,
     WorkItemResponse,
 )
-from app.services import engine_service
+from app.services import engine_service, workflow_mgmt_service
 
 router = APIRouter(prefix="/workflows", tags=["workflows"])
 
@@ -77,6 +80,133 @@ async def list_workflows(
             total_count=total_count,
             total_pages=math.ceil(total_count / limit) if limit > 0 else 0,
         ),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Admin workflow management (placed before /{workflow_id} to avoid path clash)
+# ---------------------------------------------------------------------------
+
+
+@router.get(
+    "/admin/list",
+    response_model=EnvelopeResponse[list[WorkflowAdminListResponse]],
+)
+async def list_workflows_admin(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
+    state: str | None = Query(None),
+    template_id: uuid.UUID | None = Query(None),
+    created_by: uuid.UUID | None = Query(None),
+    date_from: datetime | None = Query(None),
+    date_to: datetime | None = Query(None),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_admin),
+):
+    """Admin filtered workflow listing with enriched metadata."""
+    workflows, total_count = await workflow_mgmt_service.list_workflows_filtered(
+        db, skip, limit, state, template_id, created_by, date_from, date_to
+    )
+    return EnvelopeResponse(
+        data=[WorkflowAdminListResponse(**w) for w in workflows],
+        meta=PaginationMeta(
+            page=(skip // limit) + 1,
+            page_size=limit,
+            total_count=total_count,
+            total_pages=math.ceil(total_count / limit) if limit > 0 else 0,
+        ),
+    )
+
+
+@router.post(
+    "/{workflow_id}/halt",
+    response_model=EnvelopeResponse[WorkflowActionResponse],
+)
+async def halt_workflow(
+    workflow_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_admin),
+):
+    """Halt a running workflow. Admin only."""
+    try:
+        workflow = await workflow_mgmt_service.halt_workflow(
+            db, workflow_id, str(current_user.id)
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return EnvelopeResponse(
+        data=WorkflowActionResponse(
+            id=workflow.id, state=workflow.state, message="Workflow halted"
+        )
+    )
+
+
+@router.post(
+    "/{workflow_id}/resume",
+    response_model=EnvelopeResponse[WorkflowActionResponse],
+)
+async def resume_workflow(
+    workflow_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_admin),
+):
+    """Resume a halted workflow. Admin only."""
+    try:
+        workflow = await workflow_mgmt_service.resume_workflow(
+            db, workflow_id, str(current_user.id)
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return EnvelopeResponse(
+        data=WorkflowActionResponse(
+            id=workflow.id, state=workflow.state, message="Workflow resumed"
+        )
+    )
+
+
+@router.post(
+    "/{workflow_id}/abort",
+    response_model=EnvelopeResponse[WorkflowActionResponse],
+)
+async def abort_workflow(
+    workflow_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_admin),
+):
+    """Abort a running or halted workflow. Admin only."""
+    try:
+        workflow = await workflow_mgmt_service.abort_workflow(
+            db, workflow_id, str(current_user.id)
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return EnvelopeResponse(
+        data=WorkflowActionResponse(
+            id=workflow.id, state=workflow.state, message="Workflow aborted"
+        )
+    )
+
+
+@router.post(
+    "/{workflow_id}/restart",
+    response_model=EnvelopeResponse[WorkflowActionResponse],
+)
+async def restart_workflow(
+    workflow_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_admin),
+):
+    """Restart a failed workflow back to dormant. Admin only."""
+    try:
+        workflow = await workflow_mgmt_service.restart_workflow(
+            db, workflow_id, str(current_user.id)
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return EnvelopeResponse(
+        data=WorkflowActionResponse(
+            id=workflow.id, state=workflow.state, message="Workflow reset to dormant"
+        )
     )
 
 
