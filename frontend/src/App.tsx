@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router";
 import { LoginPage } from "./pages/LoginPage";
 import { TemplateListPage } from "./pages/TemplateListPage";
 import { DesignerPage } from "./pages/DesignerPage";
+import { QueryPage } from "./pages/QueryPage";
 import { ProtectedRoute } from "./components/layout/ProtectedRoute";
 import { AppShell } from "./components/layout/AppShell";
 
@@ -22,6 +23,7 @@ export default function App() {
             path="/templates/:id/edit"
             element={<DesignerPage />}
           />
+          <Route path="/query" element={<QueryPage />} />
         </Route>
       </Route>
 

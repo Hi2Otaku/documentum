@@ -18,13 +18,19 @@ export function AppShell() {
         {/* Left: App name */}
         <span className="text-lg font-semibold">Workflow Designer</span>
 
-        {/* Center: Templates nav link */}
-        <nav className="flex-1 flex justify-center">
+        {/* Center: Nav links */}
+        <nav className="flex-1 flex justify-center gap-6">
           <Link
             to="/templates"
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
             Templates
+          </Link>
+          <Link
+            to="/query"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Query
           </Link>
         </nav>
 
