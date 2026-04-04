@@ -22,7 +22,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 8: Visual Workflow Designer** - Drag-and-drop React Flow canvas for designing workflow templates
 - [ ] **Phase 9: Auto Activities, Workflow Agent & Integration** - Automated activity execution, Celery beat agent, and external REST API integration
 - [ ] **Phase 10: Delegation, Work Queues & Workflow Management** - User delegation, shared task pools, and admin workflow control
-- [x] **Phase 11: Dashboards, Query Interface & Validation** - BAM dashboards, admin query interface, and contract approval end-to-end example (completed 2026-04-04)
+- [x] **Phase 11: Dashboards, Query Interface & Validation** - BAM dashboards, admin query interface, and contract approval end-to-end example (completed 2026-04-04)
 
 ## Phase Details
 
@@ -196,11 +196,15 @@ Plans:
   3. Admin can query workflow instances, work items, and documents by multiple criteria (template, state, date range, performer, metadata, lifecycle state)
   4. The pre-built contract approval template (7 steps: initiate, draft, parallel legal/financial review, director approval, digital signing, archival, end) can be executed end-to-end with test users
   5. The contract approval example demonstrates sequential, parallel, and conditional routing, reject flows, auto activities, and produces a complete audit trail
-**Plans**: 3 plans
+**Plans:** 7 plans
 Plans:
-- [ ] 02-01-PLAN.md — Document models, MinIO client, config, Pydantic schemas
-- [ ] 02-02-PLAN.md — Document service layer and HTTP router
-- [ ] 02-03-PLAN.md — Integration tests for DOC-01 through DOC-08
+- [x] 11-01-PLAN.md — Dashboard backend (services, router, schemas) and frontend (KPI cards, charts, SSE hook)
+- [x] 11-02-PLAN.md — Query interface backend (query service, router) and frontend (three-tab query page)
+- [x] 11-03-PLAN.md — Contract approval seed script and E2E test
+- [x] 11-04-PLAN.md — Integration tests for dashboard and query services
+- [x] 11-05-PLAN.md — Frontend query components (QueryResultTable, tab components)
+- [ ] 11-06-PLAN.md — Gap closure: restore audit router, fix dashboard admin auth
+- [ ] 11-07-PLAN.md — Gap closure: unified /metrics endpoint, SLA compliance, SSE /stream, Celery aggregation
 **UI hint**: yes
 
 ## Progress
@@ -220,4 +224,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> ... -> 11
 | 8. Visual Workflow Designer | 0/TBD | Not started | - |
 | 9. Auto Activities, Workflow Agent & Integration | 0/TBD | Not started | - |
 | 10. Delegation, Work Queues & Workflow Management | 0/TBD | Not started | - |
-| 11. Dashboards, Query Interface & Validation | 5/5 | Complete   | 2026-04-04 |
+| 11. Dashboards, Query Interface & Validation | 5/7 | Gap closure | 2026-04-04 |
