@@ -145,11 +145,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### BAM Dashboards & Monitoring
 
-- [ ] **BAM-01**: Dashboard shows count of running, halted, finished, and failed workflows
-- [ ] **BAM-02**: Dashboard shows average completion time per workflow template
-- [ ] **BAM-03**: Dashboard identifies bottleneck activities (longest average duration)
-- [ ] **BAM-04**: Dashboard shows workload per user (tasks assigned, completed, pending)
-- [ ] **BAM-05**: Dashboard shows SLA compliance rate (tasks completed within configured time limits)
+- [x] **BAM-01**: Dashboard shows count of running, halted, finished, and failed workflows
+- [x] **BAM-02**: Dashboard shows average completion time per workflow template
+- [x] **BAM-03**: Dashboard identifies bottleneck activities (longest average duration)
+- [x] **BAM-04**: Dashboard shows workload per user (tasks assigned, completed, pending)
+- [x] **BAM-05**: Dashboard shows SLA compliance rate (tasks completed within configured time limits)
 
 ### External Integration
 
@@ -309,11 +309,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DESIGN-05 | Phase 8 | Pending |
 | DESIGN-06 | Phase 8 | Pending |
 | DESIGN-07 | Phase 8 | Pending |
-| BAM-01 | Phase 11 | Pending |
-| BAM-02 | Phase 11 | Pending |
-| BAM-03 | Phase 11 | Pending |
-| BAM-04 | Phase 11 | Pending |
-| BAM-05 | Phase 11 | Pending |
+| BAM-01 | Phase 11 | Complete |
+| BAM-02 | Phase 11 | Complete |
+| BAM-03 | Phase 11 | Complete |
+| BAM-04 | Phase 11 | Complete |
+| BAM-05 | Phase 11 | Complete |
 | INTG-01 | Phase 9 | Pending |
 | INTG-02 | Phase 9 | Pending |
 | INTG-03 | Phase 9 | Pending |
