@@ -3,6 +3,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { TemplateListPage } from "./pages/TemplateListPage";
 import { DesignerPage } from "./pages/DesignerPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { QueryPage } from "./pages/QueryPage";
 import { ProtectedRoute } from "./components/layout/ProtectedRoute";
 import { AppShell } from "./components/layout/AppShell";
 
@@ -24,6 +25,7 @@ export default function App() {
             element={<DesignerPage />}
           />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/query" element={<QueryPage />} />
         </Route>
       </Route>
 
