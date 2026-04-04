@@ -60,8 +60,7 @@ None. All components from shadcn/ui official registry only.
 |-------|-------|-------|
 | `gap-1` | 4px | Icon-to-text within KPI cards, badge internal spacing |
 | `gap-2` | 8px | Between filter controls, between KPI card label and value |
-| `gap-3` | 12px | Between KPI cards in the top row |
-| `gap-4` | 16px | Between chart containers, between filter rows, form field spacing |
+| `gap-4` | 16px | Between KPI cards in the top row, between chart containers, between filter rows, form field spacing |
 | `gap-6` | 24px | Between major page sections (KPI row to chart area, chart area to SLA section) |
 | `gap-8` | 32px | Page container outer padding |
 | `p-4` | 16px | KPI card inner padding, chart container padding |
@@ -101,24 +100,15 @@ Inherited from Phase 08/10. No changes.
 |-------|------|--------|-------------|-------|
 | `text-sm` | 14px | 400 (regular) | 1.43 (20px) | KPI card labels, table cell text, filter labels, chart axis labels, metadata text |
 | `text-base` | 16px | 400 (regular) | 1.5 (24px) | Form inputs, dialog body text, chart tooltips, query result descriptions |
-| `text-lg` | 18px | 600 (semibold) | 1.33 (24px) | Section headings ("Bottleneck Activities", "Workload by User"), chart titles |
-| `text-xl` | 20px | 600 (semibold) | 1.3 (26px) | Page title ("Dashboard", "Query") |
-
-### KPI Card Value Typography
-
-| Token | Size | Weight | Line Height | Usage |
-|-------|------|--------|-------------|-------|
+| `text-lg` | 18px | 700 (bold) | 1.33 (24px) | Page titles ("Dashboard", "Query"), section headings ("Bottleneck Activities", "Workload by User"), chart titles |
 | `text-3xl` | 30px | 700 (bold) | 1.2 (36px) | KPI count values (running: 12, halted: 3, etc.) |
-
-This is the one exception to the 2-weight rule: KPI card numeric values use `font-bold` (700) for visual emphasis as large dashboard numbers. All other text uses 400 or 600 only.
 
 ### Weights
 
 | Weight | Token | Usage |
 |--------|-------|-------|
-| 400 | `font-normal` | Body text, table cells, filter labels, chart labels |
-| 600 | `font-semibold` | Page titles, section headings, table headers, button labels, KPI card labels |
-| 700 | `font-bold` | KPI card numeric values only |
+| 400 | `font-normal` | Body text, table cells, filter labels, chart labels, form inputs |
+| 700 | `font-bold` | Page titles, section headings, table headers, button labels, KPI card labels, KPI card numeric values |
 
 ## 4. Color
 
@@ -306,7 +296,7 @@ The AppShell header nav expands to include dashboard and query:
 
 #### KPI Cards Row
 
-- 5 cards in a flex row with `gap-3`
+- 5 cards in a flex row with `gap-4`
 - Each card: `Card` component with `border-l-4` in semantic color
 - Card content: Lucide icon (16px, muted color) + label (`text-sm text-muted-foreground`) on top, large number (`text-3xl font-bold`) below
 - KPI counts (running/halted/finished/failed) are live via SSE
