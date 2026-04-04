@@ -40,10 +40,10 @@ Any workflow use case described in the Documentum specification (sequential, par
 - ✓ Audit trail: full logging of who did what, when, with what decision — Phase 10
 - ✓ ACL/Security integration: automatic permission changes at workflow steps — Phase 7
 - ✓ Visual workflow designer: drag-and-drop React Flow canvas with custom nodes, edges, properties panel, save/load, validation — Phase 8
-- [ ] BAM dashboards: real-time process metrics, bottleneck detection, SLA compliance
+- ✓ BAM dashboards: real-time process metrics, bottleneck detection, SLA compliance — Phase 11
 - ✓ External system integration capability (webhook/API-based) — Phase 9
-- [ ] Contract approval example workflow running end-to-end (the full 7-step example from the spec)
-- [ ] DQL-like query interface for workflow administration
+- ✓ Contract approval example workflow running end-to-end (the full 7-step example from the spec) — Phase 11
+- ✓ DQL-like query interface for workflow administration — Phase 11
 
 ### Out of Scope
 
