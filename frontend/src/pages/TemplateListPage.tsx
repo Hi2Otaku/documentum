@@ -1,146 +1,214 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router';
-import { listTemplates, createTemplate } from '../api/templates';
-import type { ProcessTemplate } from '../types/workflow';
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router";
+import { listTemplates, createTemplate, deleteTemplate } from "../api/templates";
+import type { ProcessTemplate } from "../types/workflow";
+import { toast } from "sonner";
+import { MoreVertical } from "lucide-react";
+import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
+import { Badge } from "../components/ui/badge";
+import { Skeleton } from "../components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../components/ui/dropdown-menu";
 
 export function TemplateListPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [newName, setNewName] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<ProcessTemplate | null>(null);
 
-  const { data: templates, isLoading, error } = useQuery<ProcessTemplate[]>({
-    queryKey: ['templates'],
+  const {
+    data: templates,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery<ProcessTemplate[]>({
+    queryKey: ["templates"],
     queryFn: listTemplates,
   });
 
   const createMutation = useMutation({
-    mutationFn: (name: string) => createTemplate({ name }),
+    mutationFn: () => createTemplate({ name: "Untitled Template" }),
     onSuccess: (template) => {
-      queryClient.invalidateQueries({ queryKey: ['templates'] });
-      navigate(`/designer/${template.id}`);
+      queryClient.invalidateQueries({ queryKey: ["templates"] });
+      navigate(`/templates/${template.id}/edit`);
+    },
+    onError: () => {
+      toast.error("Failed to create template.");
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteTemplate(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["templates"] });
+      toast.success("Template deleted");
+      setDeleteTarget(null);
+    },
+    onError: () => {
+      toast.error("Failed to delete template.");
+      setDeleteTarget(null);
     },
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Workflow Templates
-        </h1>
-      </header>
+    <div className="p-8 max-w-4xl mx-auto">
+      {/* Page header */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-xl font-semibold">Workflow Templates</h1>
+        <Button
+          onClick={() => createMutation.mutate()}
+          disabled={createMutation.isPending}
+        >
+          {createMutation.isPending ? "Creating..." : "New Template"}
+        </Button>
+      </div>
 
-      <main className="max-w-4xl mx-auto p-6">
-        {/* Create new template */}
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
-          <h2 className="text-lg font-semibold mb-3">Create New Template</h2>
-          <form
-            className="flex gap-3"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (newName.trim()) {
-                createMutation.mutate(newName.trim());
-                setNewName('');
-              }
-            }}
-          >
-            <input
-              type="text"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              placeholder="Template name..."
-              className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button
-              type="submit"
-              disabled={!newName.trim() || createMutation.isPending}
-              className="bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
-            >
-              {createMutation.isPending ? 'Creating...' : 'Create'}
-            </button>
-          </form>
+      {/* Loading state: 3 skeleton cards */}
+      {isLoading && (
+        <div className="flex flex-col gap-4">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="p-6">
+              <Skeleton className="h-5 w-[40%] mb-3" />
+              <Skeleton className="h-4 w-[70%] mb-3" />
+              <Skeleton className="h-3 w-[30%]" />
+            </Card>
+          ))}
         </div>
+      )}
 
-        {/* Template list */}
-        {isLoading && (
-          <div className="text-center text-gray-500 py-8">
-            Loading templates...
-          </div>
-        )}
+      {/* Error state */}
+      {error && (
+        <div className="text-center py-12">
+          <p className="text-destructive mb-4">
+            Error loading templates. Make sure the backend is running.
+          </p>
+          <Button variant="outline" onClick={() => refetch()}>
+            Retry
+          </Button>
+        </div>
+      )}
 
-        {error && (
-          <div className="text-center text-red-500 py-8">
-            Error loading templates. Make sure the backend is running and you are
-            logged in.
-          </div>
-        )}
+      {/* Empty state */}
+      {templates && templates.length === 0 && (
+        <div className="text-center py-12">
+          <h2 className="text-lg font-semibold mb-2">No workflow templates</h2>
+          <p className="text-muted-foreground mb-4">
+            Create your first workflow template to get started.
+          </p>
+          <Button onClick={() => createMutation.mutate()}>
+            New Template
+          </Button>
+        </div>
+      )}
 
-        {templates && templates.length === 0 && (
-          <div className="text-center text-gray-500 py-8">
-            No templates yet. Create one to get started.
-          </div>
-        )}
-
-        {templates && templates.length > 0 && (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">
-                    Name
-                  </th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">
-                    State
-                  </th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">
-                    Version
-                  </th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">
-                    Updated
-                  </th>
-                  <th className="px-4 py-3" />
-                </tr>
-              </thead>
-              <tbody>
-                {templates.map((t) => (
-                  <tr key={t.id} className="border-b last:border-0 hover:bg-gray-50">
-                    <td className="px-4 py-3 font-medium text-gray-900">
-                      {t.name}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-                          t.state === 'active'
-                            ? 'bg-green-100 text-green-700'
-                            : t.state === 'draft'
-                              ? 'bg-gray-100 text-gray-700'
-                              : t.state === 'validated'
-                                ? 'bg-blue-100 text-blue-700'
-                                : 'bg-orange-100 text-orange-700'
-                        }`}
-                      >
-                        {t.state}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-gray-500">v{t.version}</td>
-                    <td className="px-4 py-3 text-gray-500">
+      {/* Template grid */}
+      {templates && templates.length > 0 && (
+        <div className="flex flex-col gap-4">
+          {templates.map((t) => (
+            <Card
+              key={t.id}
+              className="cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => navigate(`/templates/${t.id}/edit`)}
+            >
+              <CardContent className="p-6 flex items-center justify-between">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-1">
+                    <span className="font-semibold truncate">{t.name}</span>
+                    <Badge
+                      variant={t.state === "active" ? "default" : "secondary"}
+                      className={
+                        t.state === "active"
+                          ? "bg-green-600 hover:bg-green-600"
+                          : ""
+                      }
+                    >
+                      {t.state === "active" ? "Active" : "Draft"}
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-muted-foreground flex items-center gap-4">
+                    <span>v{t.version}</span>
+                    <span>
                       {new Date(t.updated_at).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => navigate(`/designer/${t.id}`)}
-                        className="text-blue-600 hover:text-blue-800 font-medium"
-                      >
-                        Open Designer
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </main>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Overflow menu */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteTarget(t);
+                      }}
+                    >
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Delete confirmation dialog */}
+      <Dialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete template &apos;{deleteTarget?.name}&apos;?</DialogTitle>
+            <DialogDescription>
+              This cannot be undone. Running workflow instances will not be
+              affected.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={deleteMutation.isPending}
+              onClick={() => {
+                if (deleteTarget) {
+                  deleteMutation.mutate(deleteTarget.id);
+                }
+              }}
+            >
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
