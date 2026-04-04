@@ -167,9 +167,9 @@ Plans:
   4. External systems can start workflows, complete work items, and reject work items through documented REST API endpoints
 **Plans**: 3 plans
 Plans:
-- [ ] 02-01-PLAN.md — Document models, MinIO client, config, Pydantic schemas
-- [ ] 02-02-PLAN.md — Document service layer and HTTP router
-- [ ] 02-03-PLAN.md — Integration tests for DOC-01 through DOC-08
+- [ ] 09-01-PLAN.md — Auto method registry, ActivityContext, built-in methods, execution log model, engine integration
+- [ ] 09-02-PLAN.md — Celery app, Workflow Agent tasks (poll + execute), admin retry/skip endpoints
+- [ ] 09-03-PLAN.md — Integration tests for AUTO-01 through AUTO-05 and INTG-01 through INTG-03
 
 ### Phase 10: Delegation, Work Queues & Workflow Management
 **Goal**: Users can delegate tasks when unavailable, shared work queues allow any qualified user to claim tasks, and admins can halt, resume, and abort workflow instances
@@ -220,6 +220,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> ... -> 11
 | 6. Advanced Routing & Alias Sets | 0/3 | Planning complete | - |
 | 7. Document Lifecycle & ACL | 3/3 | Complete   | 2026-03-31 |
 | 8. Visual Workflow Designer | 4/5 | In Progress|  |
-| 9. Auto Activities, Workflow Agent & Integration | 0/TBD | Not started | - |
+| 9. Auto Activities, Workflow Agent & Integration | 0/3 | Planning complete | - |
 | 10. Delegation, Work Queues & Workflow Management | 0/TBD | Not started | - |
 | 11. Dashboards, Query Interface & Validation | 0/TBD | Not started | - |
