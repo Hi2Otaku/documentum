@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_active_admin
 from app.models.user import User
 from app.schemas.common import EnvelopeResponse
 from app.schemas.dashboard import (
@@ -23,7 +23,7 @@ router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 )
 async def workflow_summary(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_admin),
 ):
     """Get workflow counts by state and average completion time."""
     summary = await dashboard_service.get_workflow_summary(db)
@@ -37,7 +37,7 @@ async def workflow_summary(
 async def bottleneck_activities(
     limit: int = Query(10, ge=1, le=50),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_admin),
 ):
     """Identify activities with the longest average duration."""
     bottlenecks = await dashboard_service.get_bottleneck_activities(db, limit=limit)
@@ -50,7 +50,7 @@ async def bottleneck_activities(
 )
 async def user_workload(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_admin),
 ):
     """Get pending work item counts per user."""
     workload = await dashboard_service.get_user_workload(db)
@@ -63,7 +63,7 @@ async def user_workload(
 )
 async def template_metrics(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_admin),
 ):
     """Get instance counts and state breakdown per template."""
     metrics = await dashboard_service.get_template_metrics(db)
