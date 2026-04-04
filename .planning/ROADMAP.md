@@ -196,10 +196,10 @@ Plans:
   3. Admin can query workflow instances, work items, and documents by multiple criteria (template, state, date range, performer, metadata, lifecycle state)
   4. The pre-built contract approval template (7 steps: initiate, draft, parallel legal/financial review, director approval, digital signing, archival, end) can be executed end-to-end with test users
   5. The contract approval example demonstrates sequential, parallel, and conditional routing, reject flows, auto activities, and produces a complete audit trail
-**Plans:** 5 plans
+**Plans:** 1/5 plans executed
 Plans:
 - [ ] 11-01-PLAN.md — Dashboard backend: metrics service, SSE endpoint, Celery pre-aggregation, MetricsSummary model
-- [ ] 11-02-PLAN.md — Query backend: query service and router for workflows, work items, documents
+- [x] 11-02-PLAN.md — Query backend: query service and router for workflows, work items, documents
 - [ ] 11-03-PLAN.md — Contract approval seed script and E2E integration tests
 - [ ] 11-04-PLAN.md — Dashboard frontend: KPI cards, Recharts charts, SSE hook, navigation
 - [ ] 11-05-PLAN.md — Query frontend: three-tab page with filter panels and result tables
@@ -222,4 +222,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> ... -> 11
 | 8. Visual Workflow Designer | 0/TBD | Not started | - |
 | 9. Auto Activities, Workflow Agent & Integration | 0/TBD | Not started | - |
 | 10. Delegation, Work Queues & Workflow Management | 4/4 | Complete    | 2026-04-04 |
-| 11. Dashboards, Query Interface & Validation | 0/5 | Planning complete | - |
+| 11. Dashboards, Query Interface & Validation | 1/5 | In Progress|  |

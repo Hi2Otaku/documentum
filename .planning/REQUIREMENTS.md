@@ -159,9 +159,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Query Interface
 
-- [ ] **QUERY-01**: Admin can query workflow instances by template, state, date range, performer
-- [ ] **QUERY-02**: Admin can query work items by assignee, state, workflow, priority
-- [ ] **QUERY-03**: Admin can query documents by metadata, lifecycle state, version
+- [x] **QUERY-01**: Admin can query workflow instances by template, state, date range, performer
+- [x] **QUERY-02**: Admin can query work items by assignee, state, workflow, priority
+- [x] **QUERY-03**: Admin can query documents by metadata, lifecycle state, version
 
 ### Contract Approval Example
 
@@ -317,9 +317,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INTG-01 | Phase 9 | Pending |
 | INTG-02 | Phase 9 | Pending |
 | INTG-03 | Phase 9 | Pending |
-| QUERY-01 | Phase 11 | Pending |
-| QUERY-02 | Phase 11 | Pending |
-| QUERY-03 | Phase 11 | Pending |
+| QUERY-01 | Phase 11 | Complete |
+| QUERY-02 | Phase 11 | Complete |
+| QUERY-03 | Phase 11 | Complete |
 | EXAMPLE-01 | Phase 11 | Pending |
 | EXAMPLE-02 | Phase 11 | Pending |
 | EXAMPLE-03 | Phase 11 | Pending |
