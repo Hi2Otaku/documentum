@@ -19,7 +19,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **USER-02**: User can log in and receive a session token
 - [x] **USER-03**: Admin can create groups and assign users to groups
 - [x] **USER-04**: Admin can define roles (e.g., Reviewer, Approver, Director)
-- [ ] **USER-05**: User can mark themselves as unavailable and designate a delegate
+- [x] **USER-05**: User can mark themselves as unavailable and designate a delegate
 
 ### Document Management
 
@@ -93,30 +93,30 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **INBOX-05**: User can reject a work item (triggers reject flow if configured)
 - [x] **INBOX-06**: User can add comments to a work item
 - [x] **INBOX-07**: Work items show priority and due date indicators
-- [ ] **INBOX-08**: If performer is unavailable, work item automatically routes to delegated user
+- [x] **INBOX-08**: If performer is unavailable, work item automatically routes to delegated user
 
 ### Work Queues
 
-- [ ] **QUEUE-01**: Admin can create work queues and assign qualified users
-- [ ] **QUEUE-02**: Activities can be assigned to a work queue instead of a specific user
-- [ ] **QUEUE-03**: Any qualified user in the queue can claim a task
-- [ ] **QUEUE-04**: Claimed tasks are locked to the claiming user until released or completed
+- [x] **QUEUE-01**: Admin can create work queues and assign qualified users
+- [x] **QUEUE-02**: Activities can be assigned to a work queue instead of a specific user
+- [x] **QUEUE-03**: Any qualified user in the queue can claim a task
+- [x] **QUEUE-04**: Claimed tasks are locked to the claiming user until released or completed
 
 ### Auto Activities & Workflow Agent
 
 - [ ] **AUTO-01**: Auto activities execute Python methods (equivalent of dm_method) without human intervention
-- [x] **AUTO-02**: Workflow Agent (Celery worker) continuously scans for auto activities to execute
+- [ ] **AUTO-02**: Workflow Agent (Celery worker) continuously scans for auto activities to execute
 - [ ] **AUTO-03**: Auto activities can: send emails, change lifecycle state, move documents to folders, modify ACLs, call external APIs
-- [x] **AUTO-04**: Workflow Agent logs execution results and handles errors (retry, fail)
-- [x] **AUTO-05**: Failed auto activities can be retried or skipped by an administrator
+- [ ] **AUTO-04**: Workflow Agent logs execution results and handles errors (retry, fail)
+- [ ] **AUTO-05**: Failed auto activities can be retried or skipped by an administrator
 
 ### Workflow Management
 
-- [ ] **MGMT-01**: Admin can halt a running workflow (pause execution)
-- [ ] **MGMT-02**: Admin can resume a halted workflow
-- [ ] **MGMT-03**: Admin can abort a workflow (terminate, mark as Failed)
-- [ ] **MGMT-04**: Admin can view all running workflow instances with current state and active activity
-- [ ] **MGMT-05**: Admin can restart a failed workflow from Dormant state
+- [x] **MGMT-01**: Admin can halt a running workflow (pause execution)
+- [x] **MGMT-02**: Admin can resume a halted workflow
+- [x] **MGMT-03**: Admin can abort a workflow (terminate, mark as Failed)
+- [x] **MGMT-04**: Admin can view all running workflow instances with current state and active activity
+- [x] **MGMT-05**: Admin can restart a failed workflow from Dormant state
 
 ### ACL & Security
 
@@ -131,17 +131,17 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **AUDIT-02**: Audit records include: task assignment, task completion, task rejection, workflow state changes
 - [x] **AUDIT-03**: Audit records include: document upload, version creation, check-in/out, lifecycle transitions
 - [x] **AUDIT-04**: Audit trail is append-only and cannot be modified or deleted
-- [ ] **AUDIT-05**: Admin can query audit trail by user, workflow, document, date range, or action type
+- [x] **AUDIT-05**: Admin can query audit trail by user, workflow, document, date range, or action type
 
 ### Visual Workflow Designer
 
-- [x] **DESIGN-01**: Web-based drag-and-drop canvas for designing workflow templates (React Flow)
-- [x] **DESIGN-02**: User can drag activity nodes (Manual, Auto, Start, End) onto the canvas
-- [x] **DESIGN-03**: User can draw flow connections (Normal Flow, Reject Flow) between activities
-- [x] **DESIGN-04**: User can configure activity properties (performer, trigger, conditions) via side panel
-- [x] **DESIGN-05**: User can define process variables via the designer
-- [x] **DESIGN-06**: Designer validates the template and shows errors before installation
-- [x] **DESIGN-07**: Designer saves/loads templates to/from the backend API
+- [ ] **DESIGN-01**: Web-based drag-and-drop canvas for designing workflow templates (React Flow)
+- [ ] **DESIGN-02**: User can drag activity nodes (Manual, Auto, Start, End) onto the canvas
+- [ ] **DESIGN-03**: User can draw flow connections (Normal Flow, Reject Flow) between activities
+- [ ] **DESIGN-04**: User can configure activity properties (performer, trigger, conditions) via side panel
+- [ ] **DESIGN-05**: User can define process variables via the designer
+- [ ] **DESIGN-06**: Designer validates the template and shows errors before installation
+- [ ] **DESIGN-07**: Designer saves/loads templates to/from the backend API
 
 ### BAM Dashboards & Monitoring
 
@@ -154,8 +154,8 @@ Requirements for initial release. Each maps to roadmap phases.
 ### External Integration
 
 - [ ] **INTG-01**: Auto activities can call external REST APIs (webhook-based)
-- [x] **INTG-02**: External systems can trigger workflow start via REST API
-- [x] **INTG-03**: External systems can complete/reject work items via REST API
+- [ ] **INTG-02**: External systems can trigger workflow start via REST API
+- [ ] **INTG-03**: External systems can complete/reject work items via REST API
 
 ### Query Interface
 
@@ -225,7 +225,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | USER-02 | Phase 1 | Complete |
 | USER-03 | Phase 1 | Complete |
 | USER-04 | Phase 1 | Complete |
-| USER-05 | Phase 10 | Pending |
+| USER-05 | Phase 10 | Complete |
 | DOC-01 | Phase 2 | Complete |
 | DOC-02 | Phase 2 | Complete |
 | DOC-03 | Phase 2 | Complete |
@@ -278,21 +278,21 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INBOX-05 | Phase 5 | Complete |
 | INBOX-06 | Phase 5 | Complete |
 | INBOX-07 | Phase 5 | Complete |
-| INBOX-08 | Phase 10 | Pending |
-| QUEUE-01 | Phase 10 | Pending |
-| QUEUE-02 | Phase 10 | Pending |
-| QUEUE-03 | Phase 10 | Pending |
-| QUEUE-04 | Phase 10 | Pending |
+| INBOX-08 | Phase 10 | Complete |
+| QUEUE-01 | Phase 10 | Complete |
+| QUEUE-02 | Phase 10 | Complete |
+| QUEUE-03 | Phase 10 | Complete |
+| QUEUE-04 | Phase 10 | Complete |
 | AUTO-01 | Phase 9 | Pending |
-| AUTO-02 | Phase 9 | Complete |
+| AUTO-02 | Phase 9 | Pending |
 | AUTO-03 | Phase 9 | Pending |
-| AUTO-04 | Phase 9 | Complete |
-| AUTO-05 | Phase 9 | Complete |
-| MGMT-01 | Phase 10 | Pending |
-| MGMT-02 | Phase 10 | Pending |
-| MGMT-03 | Phase 10 | Pending |
-| MGMT-04 | Phase 10 | Pending |
-| MGMT-05 | Phase 10 | Pending |
+| AUTO-04 | Phase 9 | Pending |
+| AUTO-05 | Phase 9 | Pending |
+| MGMT-01 | Phase 10 | Complete |
+| MGMT-02 | Phase 10 | Complete |
+| MGMT-03 | Phase 10 | Complete |
+| MGMT-04 | Phase 10 | Complete |
+| MGMT-05 | Phase 10 | Complete |
 | ACL-01 | Phase 7 | Complete |
 | ACL-02 | Phase 7 | Complete |
 | ACL-03 | Phase 7 | Complete |
@@ -301,22 +301,22 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUDIT-02 | Phase 1 | Complete |
 | AUDIT-03 | Phase 1 | Complete |
 | AUDIT-04 | Phase 1 | Complete |
-| AUDIT-05 | Phase 10 | Pending |
-| DESIGN-01 | Phase 8 | Complete |
-| DESIGN-02 | Phase 8 | Complete |
-| DESIGN-03 | Phase 8 | Complete |
-| DESIGN-04 | Phase 8 | Complete |
-| DESIGN-05 | Phase 8 | Complete |
-| DESIGN-06 | Phase 8 | Complete |
-| DESIGN-07 | Phase 8 | Complete |
+| AUDIT-05 | Phase 10 | Complete |
+| DESIGN-01 | Phase 8 | Pending |
+| DESIGN-02 | Phase 8 | Pending |
+| DESIGN-03 | Phase 8 | Pending |
+| DESIGN-04 | Phase 8 | Pending |
+| DESIGN-05 | Phase 8 | Pending |
+| DESIGN-06 | Phase 8 | Pending |
+| DESIGN-07 | Phase 8 | Pending |
 | BAM-01 | Phase 11 | Pending |
 | BAM-02 | Phase 11 | Pending |
 | BAM-03 | Phase 11 | Pending |
 | BAM-04 | Phase 11 | Pending |
 | BAM-05 | Phase 11 | Pending |
 | INTG-01 | Phase 9 | Pending |
-| INTG-02 | Phase 9 | Complete |
-| INTG-03 | Phase 9 | Complete |
+| INTG-02 | Phase 9 | Pending |
+| INTG-03 | Phase 9 | Pending |
 | QUERY-01 | Phase 11 | Pending |
 | QUERY-02 | Phase 11 | Pending |
 | QUERY-03 | Phase 11 | Pending |

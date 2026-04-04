@@ -163,11 +163,11 @@ Plans:
   2. Workflow Agent (Celery beat worker) continuously polls for and executes queued auto activities with timeout and retry logic
   3. Failed auto activities are logged with error details and can be retried or skipped by an administrator
   4. External systems can start workflows, complete work items, and reject work items through documented REST API endpoints
-**Plans**: 3/3 plans complete
+**Plans**: 3 plans
 Plans:
-- [x] 09-01-PLAN.md — Auto method registry, ActivityContext, built-in methods, engine AUTO handling
-- [x] 09-02-PLAN.md — Celery app, Workflow Agent tasks (poll + execute), admin retry/skip endpoints
-- [x] 09-03-PLAN.md — Integration tests for AUTO-01 through AUTO-05 and INTG-01 through INTG-03
+- [ ] 02-01-PLAN.md — Document models, MinIO client, config, Pydantic schemas
+- [ ] 02-02-PLAN.md — Document service layer and HTTP router
+- [ ] 02-03-PLAN.md — Integration tests for DOC-01 through DOC-08
 
 ### Phase 10: Delegation, Work Queues & Workflow Management
 **Goal**: Users can delegate tasks when unavailable, shared work queues allow any qualified user to claim tasks, and admins can halt, resume, and abort workflow instances
@@ -179,12 +179,11 @@ Plans:
   3. Claimed tasks are locked to the claiming user until released or completed, preventing double-work
   4. Admin can halt a running workflow, resume a halted workflow, abort a workflow, and restart a failed workflow from Dormant state
   5. Admin can view all running workflow instances with current state and active activity, and query the audit trail by user, workflow, document, date range, or action type
-**Plans:** 4 plans
+**Plans**: 3 plans
 Plans:
-- [ ] 10-01-PLAN.md — Models, enums, schemas, and Alembic migration for delegation, queues, and workflow management
-- [ ] 10-02-PLAN.md — Delegation service, queue CRUD service, engine integration (QUEUE + delegation routing), inbox query extension
-- [ ] 10-03-PLAN.md — Workflow management service (halt/resume/abort/restart), admin workflow endpoints, audit query endpoint
-- [ ] 10-04-PLAN.md — Integration tests for all 12 Phase 10 requirements
+- [ ] 02-01-PLAN.md — Document models, MinIO client, config, Pydantic schemas
+- [ ] 02-02-PLAN.md — Document service layer and HTTP router
+- [ ] 02-03-PLAN.md — Integration tests for DOC-01 through DOC-08
 **UI hint**: yes
 
 ### Phase 11: Dashboards, Query Interface & Validation
@@ -219,6 +218,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> ... -> 11
 | 6. Advanced Routing & Alias Sets | 0/3 | Planning complete | - |
 | 7. Document Lifecycle & ACL | 3/3 | Complete   | 2026-03-31 |
 | 8. Visual Workflow Designer | 0/TBD | Not started | - |
-| 9. Auto Activities, Workflow Agent & Integration | 3/3 | Complete | 2026-04-04 |
-| 10. Delegation, Work Queues & Workflow Management | 0/4 | Planning complete | - |
+| 9. Auto Activities, Workflow Agent & Integration | 0/TBD | Not started | - |
+| 10. Delegation, Work Queues & Workflow Management | 1/4 | In Progress|  |
 | 11. Dashboards, Query Interface & Validation | 0/TBD | Not started | - |

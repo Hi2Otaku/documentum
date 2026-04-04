@@ -39,6 +39,7 @@ class WorkItemState(str, enum.Enum):
     DELEGATED = "delegated"
     COMPLETE = "complete"
     REJECTED = "rejected"
+    SUSPENDED = "suspended"
 
 
 class ActivityState(str, enum.Enum):
@@ -56,6 +57,7 @@ class PerformerType(str, enum.Enum):
     ALIAS = "alias"
     SEQUENTIAL = "sequential"
     RUNTIME_SELECTION = "runtime_selection"
+    QUEUE = "queue"
 
 
 class RoutingType(str, enum.Enum):
