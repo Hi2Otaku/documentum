@@ -156,6 +156,11 @@ export async function validateTemplate(
   return res.data;
 }
 
+/** Delete a template */
+export async function deleteTemplate(id: string): Promise<void> {
+  await apiFetch(`${BASE}/${id}`, { method: 'DELETE' });
+}
+
 /** Install template */
 export async function installTemplate(id: string): Promise<ProcessTemplate> {
   const res = await apiFetch<ApiResponse<ProcessTemplate>>(

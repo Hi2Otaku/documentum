@@ -1,5 +1,31 @@
-// App component is no longer used directly.
-// Routing is handled in main.tsx with React Router.
+import { Routes, Route, Navigate } from "react-router";
+import { LoginPage } from "./pages/LoginPage";
+import { TemplateListPage } from "./pages/TemplateListPage";
+import { ProtectedRoute } from "./components/layout/ProtectedRoute";
+import { AppShell } from "./components/layout/AppShell";
+
 export default function App() {
-  return null;
+  return (
+    <Routes>
+      {/* Public route */}
+      <Route path="/login" element={<LoginPage />} />
+
+      {/* Redirect root to templates */}
+      <Route path="/" element={<Navigate to="/templates" replace />} />
+
+      {/* Protected routes */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<AppShell />}>
+          <Route path="/templates" element={<TemplateListPage />} />
+          <Route
+            path="/templates/:id/edit"
+            element={<div>Designer placeholder</div>}
+          />
+        </Route>
+      </Route>
+
+      {/* Catch-all */}
+      <Route path="*" element={<Navigate to="/templates" replace />} />
+    </Routes>
+  );
 }

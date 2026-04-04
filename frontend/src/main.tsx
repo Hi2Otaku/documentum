@@ -1,10 +1,12 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import './index.css'
-import { TemplateListPage } from './pages/TemplateListPage'
-import { DesignerPage } from './pages/DesignerPage'
+import "@fontsource/inter";
+import "./index.css";
+
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { BrowserRouter } from "react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "sonner";
+import App from "./App";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -13,18 +15,15 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
     },
   },
-})
+});
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <Routes>
-          <Route path="/templates" element={<TemplateListPage />} />
-          <Route path="/designer/:id" element={<DesignerPage />} />
-          <Route path="*" element={<Navigate to="/templates" replace />} />
-        </Routes>
+        <App />
       </BrowserRouter>
+      <Toaster />
     </QueryClientProvider>
-  </StrictMode>,
-)
+  </StrictMode>
+);
