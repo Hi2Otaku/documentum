@@ -17,3 +17,4 @@ env/
 .mypy_cache/
 htmlcov/
 .coverage
+.claude/worktrees/
