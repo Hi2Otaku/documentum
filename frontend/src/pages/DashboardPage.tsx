@@ -7,7 +7,7 @@ import { KpiCards } from '../components/dashboard/KpiCards';
 import { BottleneckChart } from '../components/dashboard/BottleneckChart';
 import { WorkloadChart } from '../components/dashboard/WorkloadChart';
 import { SlaChart } from '../components/dashboard/SlaChart';
-import { Select } from '../components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Separator } from '../components/ui/separator';
 import { Skeleton } from '../components/ui/skeleton';
 import { Button } from '../components/ui/button';
@@ -74,14 +74,21 @@ export function DashboardPage() {
 
           {/* Template filter */}
           <Select
-            options={templateOptions}
-            placeholder="All Templates"
             value={templateId ?? ''}
-            onChange={(e) =>
-              setTemplateId(e.target.value || undefined)
-            }
-            className="w-[220px]"
-          />
+            onValueChange={(v) => setTemplateId(v || undefined)}
+          >
+            <SelectTrigger className="w-[220px]">
+              <SelectValue placeholder="All Templates" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Templates</SelectItem>
+              {templateOptions.map((t) => (
+                <SelectItem key={t.value} value={t.value}>
+                  {t.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
