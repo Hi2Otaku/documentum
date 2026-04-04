@@ -11,6 +11,8 @@ export interface ActivityNodeData extends Record<string, unknown> {
   routingType?: string | null;
   performerList?: string[] | null;
   apiId?: string;
+  /** Backend ID -- undefined for newly created nodes not yet saved */
+  backendId?: string;
 }
 
 export interface FlowEdgeData extends Record<string, unknown> {
@@ -18,4 +20,6 @@ export interface FlowEdgeData extends Record<string, unknown> {
   conditionExpression?: string | null;
   displayLabel?: string | null;
   apiId?: string;
+  /** Backend ID -- undefined for newly created edges not yet saved */
+  backendId?: string;
 }

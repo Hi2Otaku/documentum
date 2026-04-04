@@ -18,7 +18,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { nodeTypes } from '../components/nodes';
 import { edgeTypes } from '../components/edges';
-import { useDesignerStore } from '../store/designerStore';
+import { useDesignerStore } from '../stores/designerStore';
 import {
   getTemplateDetail,
   addActivity,
@@ -94,8 +94,10 @@ function DesignerCanvas() {
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<ValidationResult | null>(null);
 
-  const selectNode = useDesignerStore((s) => s.selectNode);
-  const markDirty = useDesignerStore((s) => s.markDirty);
+  const selectNode = useDesignerStore((s) => s.setSelectedNode);
+  const markDirty = useCallback(() => {
+    useDesignerStore.setState({ isDirty: true });
+  }, []);
 
   // Load template data
   const { data: template } = useQuery({
@@ -254,7 +256,7 @@ function DesignerCanvas() {
       const { nodes: n, edges: e } = templateToFlow(updated);
       setNodes(n);
       setEdges(e);
-      useDesignerStore.getState().markClean();
+      useDesignerStore.getState().setClean();
       setStatusMsg('Saved successfully');
       setTimeout(() => setStatusMsg(null), 2000);
     } catch (err) {
