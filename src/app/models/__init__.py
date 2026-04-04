@@ -4,6 +4,7 @@ from app.models.user import Group, Role, User, user_groups, user_roles
 from app.models.audit import AuditLog
 from app.models.document import Document, DocumentVersion
 from app.models.acl import DocumentACL, LifecycleACLRule
+from app.models.execution_log import AutoActivityLog
 from app.models.workflow import (
     ActivityInstance,
     ActivityTemplate,
@@ -48,4 +49,5 @@ __all__ = [
     "PermissionLevel",
     "DocumentACL",
     "LifecycleACLRule",
+    "AutoActivityLog",
 ]

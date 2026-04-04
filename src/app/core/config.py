@@ -14,6 +14,11 @@ class Settings(BaseSettings):
     debug: bool = False
     api_v1_prefix: str = "/api/v1"
     access_token_expire_minutes: int = 30
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_from_email: str = "workflow@localhost"
 
     model_config = {
         "env_file": ".env",
