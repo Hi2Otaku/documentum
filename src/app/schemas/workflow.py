@@ -90,6 +90,13 @@ class ActivityRetryResponse(BaseModel):
     message: str
 
 
+class WorkflowActionResponse(BaseModel):
+    id: uuid.UUID
+    state: WorkflowState
+    message: str
+    model_config = ConfigDict(from_attributes=True)
+
+
 class WorkflowAdminListResponse(BaseModel):
     id: uuid.UUID
     process_template_id: uuid.UUID
@@ -102,14 +109,8 @@ class WorkflowAdminListResponse(BaseModel):
     active_activity_name: str | None = None
     created_at: datetime
     updated_at: datetime
-
     model_config = ConfigDict(from_attributes=True)
 
-
-class WorkflowActionResponse(BaseModel):
-    id: uuid.UUID
-    state: WorkflowState
-    message: str
 
 
 class WorkflowDetailResponse(BaseModel):
