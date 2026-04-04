@@ -23,7 +23,7 @@ Any workflow use case described in the Documentum specification (sequential, par
 
 - ✓ Workflow template design API (dm_process equivalent) — CRUD, validation, installation, versioning — Phase 3
 - ✓ Manual activities with full performer assignment (supervisor, user, group, sequential, runtime selection) — Phase 5/6
-- [ ] Auto activities executing server-side methods (Python equivalents of dm_method)
+- ✓ Auto activities executing server-side methods (Python equivalents of dm_method) — Phase 9
 - ✓ Alias sets for flexible performer mapping without hardcoding users — Phase 6
 - ✓ Flow routing: sequential, parallel, conditional (template-level definition) — Phase 3
 - ✓ Reject flows allowing workflows to loop back to previous activities — Phase 6
@@ -35,13 +35,13 @@ Any workflow use case described in the Documentum specification (sequential, par
 - ✓ Trigger conditions: AND-join and OR-join for activities with multiple incoming flows — Phase 3
 - ✓ Process variables: read/write by activities, usable in routing conditions — Phase 3
 - ✓ Process Engine: synchronous workflow execution with sequential/parallel routing — Phase 4
-- [ ] Workflow Agent: background daemon executing auto activities
+- ✓ Workflow Agent: background daemon executing auto activities — Phase 9
 - ✓ Lifecycle management: document states (Draft → Review → Approved → Archived) with workflow-triggered transitions — Phase 7
 - [ ] Audit trail: full logging of who did what, when, with what decision
 - ✓ ACL/Security integration: automatic permission changes at workflow steps — Phase 7
 - ✓ Visual workflow designer: drag-and-drop React Flow canvas with custom nodes, edges, properties panel, save/load, validation — Phase 8
 - [ ] BAM dashboards: real-time process metrics, bottleneck detection, SLA compliance
-- [ ] External system integration capability (webhook/API-based)
+- ✓ External system integration capability (webhook/API-based) — Phase 9
 - [ ] Contract approval example workflow running end-to-end (the full 7-step example from the spec)
 - [ ] DQL-like query interface for workflow administration
 
