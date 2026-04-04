@@ -179,11 +179,12 @@ Plans:
   3. Claimed tasks are locked to the claiming user until released or completed, preventing double-work
   4. Admin can halt a running workflow, resume a halted workflow, abort a workflow, and restart a failed workflow from Dormant state
   5. Admin can view all running workflow instances with current state and active activity, and query the audit trail by user, workflow, document, date range, or action type
-**Plans**: 3 plans
+**Plans:** 4 plans
 Plans:
-- [ ] 02-01-PLAN.md — Document models, MinIO client, config, Pydantic schemas
-- [ ] 02-02-PLAN.md — Document service layer and HTTP router
-- [ ] 02-03-PLAN.md — Integration tests for DOC-01 through DOC-08
+- [ ] 10-01-PLAN.md — Models, enums, schemas, and Alembic migration for delegation, queues, and workflow management
+- [ ] 10-02-PLAN.md — Delegation service, queue CRUD service, engine integration (QUEUE + delegation routing), inbox query extension
+- [ ] 10-03-PLAN.md — Workflow management service (halt/resume/abort/restart), admin workflow endpoints, audit query endpoint
+- [ ] 10-04-PLAN.md — Integration tests for all 12 Phase 10 requirements
 **UI hint**: yes
 
 ### Phase 11: Dashboards, Query Interface & Validation
@@ -219,5 +220,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> ... -> 11
 | 7. Document Lifecycle & ACL | 3/3 | Complete   | 2026-03-31 |
 | 8. Visual Workflow Designer | 0/TBD | Not started | - |
 | 9. Auto Activities, Workflow Agent & Integration | 3/3 | Complete | 2026-04-04 |
-| 10. Delegation, Work Queues & Workflow Management | 0/TBD | Not started | - |
+| 10. Delegation, Work Queues & Workflow Management | 0/4 | Planning complete | - |
 | 11. Dashboards, Query Interface & Validation | 0/TBD | Not started | - |
