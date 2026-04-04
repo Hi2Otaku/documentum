@@ -72,6 +72,28 @@ class WorkflowInstanceResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class WorkflowAdminListResponse(BaseModel):
+    id: uuid.UUID
+    process_template_id: uuid.UUID
+    state: WorkflowState
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    supervisor_id: uuid.UUID | None = None
+    template_name: str | None = None
+    started_by_username: str | None = None
+    active_activity_name: str | None = None
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class WorkflowActionResponse(BaseModel):
+    id: uuid.UUID
+    state: WorkflowState
+    message: str
+
+
 class WorkflowDetailResponse(BaseModel):
     id: uuid.UUID
     process_template_id: uuid.UUID

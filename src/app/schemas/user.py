@@ -17,12 +17,19 @@ class UserUpdate(BaseModel):
     password: str | None = None
 
 
+class AvailabilityUpdate(BaseModel):
+    is_available: bool
+    delegate_id: uuid.UUID | None = None
+
+
 class UserResponse(BaseModel):
     id: uuid.UUID
     username: str
     email: str | None
     is_active: bool
     is_superuser: bool
+    is_available: bool = True
+    delegate_id: uuid.UUID | None = None
     created_at: datetime
     updated_at: datetime
 
