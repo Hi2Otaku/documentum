@@ -147,11 +147,13 @@ Plans:
   3. User can configure activity properties (performer assignment, trigger conditions, routing expressions) through a side panel
   4. Designer validates the template before installation and shows structural errors visually on the canvas
   5. Templates designed in the visual editor save to and load from the backend API, and can be executed by the engine
-**Plans**: 3 plans
+**Plans:** 5 plans
 Plans:
-- [ ] 02-01-PLAN.md — Document models, MinIO client, config, Pydantic schemas
-- [ ] 02-02-PLAN.md — Document service layer and HTTP router
-- [ ] 02-03-PLAN.md — Integration tests for DOC-01 through DOC-08
+- [ ] 08-01-PLAN.md — Frontend scaffolding, dependencies, API client, types, serialization, stores, Docker
+- [ ] 08-02-PLAN.md — App shell (login, routing, nav, auth guard), template list page
+- [ ] 08-03-PLAN.md — Custom React Flow nodes (4 types), edges (3 types), designer store, auto-layout
+- [ ] 08-04-PLAN.md — Designer page: canvas, palette, toolbar, properties panel, error panel
+- [ ] 08-05-PLAN.md — Save/load, validate/install, keyboard shortcuts, context menu, visual verification
 **UI hint**: yes
 
 ### Phase 9: Auto Activities, Workflow Agent & Integration
@@ -217,7 +219,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> ... -> 11
 | 5. Work Items & Inbox | 0/3 | Planning complete | - |
 | 6. Advanced Routing & Alias Sets | 0/3 | Planning complete | - |
 | 7. Document Lifecycle & ACL | 3/3 | Complete   | 2026-03-31 |
-| 8. Visual Workflow Designer | 0/TBD | Not started | - |
+| 8. Visual Workflow Designer | 0/5 | Planning complete | - |
 | 9. Auto Activities, Workflow Agent & Integration | 0/TBD | Not started | - |
 | 10. Delegation, Work Queues & Workflow Management | 0/TBD | Not started | - |
 | 11. Dashboards, Query Interface & Validation | 0/TBD | Not started | - |
