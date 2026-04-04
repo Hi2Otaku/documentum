@@ -221,8 +221,8 @@ async def test_query_workflows_by_date_range(
     await _create_workflow(db_session, tmpl, created_at=recent)
     await db_session.commit()
 
-    date_from = (now - timedelta(days=5)).isoformat()
-    date_to = now.isoformat()
+    date_from = (now - timedelta(days=5)).strftime("%Y-%m-%dT%H:%M:%S")
+    date_to = now.strftime("%Y-%m-%dT%H:%M:%S")
     resp = await async_client.get(
         f"/api/v1/query/workflows?date_from={date_from}&date_to={date_to}",
         headers={"Authorization": f"Bearer {admin_token}"},
