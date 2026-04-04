@@ -29,9 +29,8 @@ import {
   validateTemplate,
   installTemplate,
 } from '../api/templates';
+import type { ActivityNodeData, FlowEdgeData } from '../types/designer';
 import type {
-  ActivityNodeData,
-  FlowEdgeData,
   ActivityType,
   ProcessTemplateDetail,
   ValidationResult,
@@ -47,7 +46,7 @@ function templateToFlow(template: ProcessTemplateDetail): {
     type: a.activity_type,
     position: { x: a.position_x ?? 0, y: a.position_y ?? 0 },
     data: {
-      label: a.name,
+      name: a.name,
       activityType: a.activity_type,
       description: a.description ?? undefined,
       performerType: a.performer_type,
@@ -152,7 +151,7 @@ function DesignerCanvas() {
         type: activityType,
         position,
         data: {
-          label: `${activityType.charAt(0).toUpperCase() + activityType.slice(1)} Activity`,
+          name: `${activityType.charAt(0).toUpperCase() + activityType.slice(1)} Activity`,
           activityType,
         },
       };
@@ -193,7 +192,7 @@ function DesignerCanvas() {
         if (backendId && existingActivityIds.has(backendId)) {
           // Update existing
           await updateActivity(templateId, backendId, {
-            name: node.data.label,
+            name: node.data.name,
             description: node.data.description,
             performer_type: node.data.performerType,
             performer_id: node.data.performerId,
@@ -209,7 +208,7 @@ function DesignerCanvas() {
         } else {
           // Create new
           const created = await addActivity(templateId, {
-            name: node.data.label,
+            name: node.data.name,
             activity_type: node.data.activityType,
             description: node.data.description,
             performer_type: node.data.performerType,

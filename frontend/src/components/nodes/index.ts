@@ -9,4 +9,8 @@ export const nodeTypes: NodeTypes = {
   end: EndNode,
   manual: ManualNode,
   auto: AutoNode,
+  startNode: StartNode,
+  endNode: EndNode,
+  manualNode: ManualNode,
+  autoNode: AutoNode,
 };

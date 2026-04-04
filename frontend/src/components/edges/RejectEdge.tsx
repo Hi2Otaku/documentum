@@ -1,13 +1,13 @@
 import {
   BaseEdge,
   EdgeLabelRenderer,
-  getStraightPath,
+  getSmoothStepPath,
   type EdgeProps,
   type Edge,
 } from '@xyflow/react';
-import type { FlowEdgeData } from '../../types/workflow';
+import type { FlowEdgeData } from '../../types/designer';
 
-type RejectEdgeType = Edge<FlowEdgeData, 'reject'>;
+type RejectEdgeType = Edge<FlowEdgeData, 'rejectEdge'>;
 
 export function RejectEdge({
   id,
@@ -15,15 +15,20 @@ export function RejectEdge({
   sourceY,
   targetX,
   targetY,
-  selected,
+  sourcePosition,
+  targetPosition,
   data,
 }: EdgeProps<RejectEdgeType>) {
-  const [edgePath, labelX, labelY] = getStraightPath({
+  const [edgePath, labelX, labelY] = getSmoothStepPath({
     sourceX,
     sourceY,
     targetX,
     targetY,
+    sourcePosition,
+    targetPosition,
   });
+
+  const label = data?.displayLabel || 'Reject';
 
   return (
     <>
@@ -31,26 +36,24 @@ export function RejectEdge({
         id={id}
         path={edgePath}
         style={{
-          stroke: selected ? '#eab308' : '#ef4444',
-          strokeWidth: selected ? 2.5 : 2,
-          strokeDasharray: '6 3',
+          stroke: '#ef4444',
+          strokeWidth: 2,
+          strokeDasharray: '8 4',
         }}
-        markerEnd="url(#arrow-reject)"
+        markerEnd="url(#react-flow__arrowclosed)"
       />
-      {data?.displayLabel && (
-        <EdgeLabelRenderer>
-          <div
-            style={{
-              position: 'absolute',
-              transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-              pointerEvents: 'all',
-            }}
-            className="bg-white text-xs px-1 py-0.5 rounded border border-red-300 text-red-600"
-          >
-            {data.displayLabel}
-          </div>
-        </EdgeLabelRenderer>
-      )}
+      <EdgeLabelRenderer>
+        <div
+          style={{
+            position: 'absolute',
+            transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
+            pointerEvents: 'all',
+          }}
+          className="bg-white px-2 py-0.5 rounded text-sm text-red-500 border border-red-200"
+        >
+          {label}
+        </div>
+      </EdgeLabelRenderer>
     </>
   );
 }

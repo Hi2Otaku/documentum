@@ -7,9 +7,9 @@ import {
 } from '@xyflow/react';
 import type { FlowEdgeData } from '../../types/designer';
 
-type NormalEdgeType = Edge<FlowEdgeData, 'normalEdge'>;
+type ConditionalEdgeType = Edge<FlowEdgeData, 'conditionalEdge'>;
 
-export function NormalEdge({
+export function ConditionalEdge({
   id,
   sourceX,
   sourceY,
@@ -18,7 +18,7 @@ export function NormalEdge({
   sourcePosition,
   targetPosition,
   data,
-}: EdgeProps<NormalEdgeType>) {
+}: EdgeProps<ConditionalEdgeType>) {
   const [edgePath, labelX, labelY] = getSmoothStepPath({
     sourceX,
     sourceY,
@@ -28,18 +28,27 @@ export function NormalEdge({
     targetPosition,
   });
 
+  const conditionText = data?.conditionExpression
+    ? data.conditionExpression.length > 20
+      ? `${data.conditionExpression.substring(0, 20)}...`
+      : data.conditionExpression
+    : undefined;
+
+  const label = data?.displayLabel || conditionText;
+
   return (
     <>
       <BaseEdge
         id={id}
         path={edgePath}
         style={{
-          stroke: '#374151',
+          stroke: '#3b82f6',
           strokeWidth: 2,
+          strokeDasharray: '2 4',
         }}
         markerEnd="url(#react-flow__arrowclosed)"
       />
-      {data?.displayLabel && (
+      {label && (
         <EdgeLabelRenderer>
           <div
             style={{
@@ -47,9 +56,9 @@ export function NormalEdge({
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
               pointerEvents: 'all',
             }}
-            className="bg-white px-2 py-0.5 rounded text-sm border"
+            className="bg-white px-2 py-0.5 rounded text-sm text-blue-500 border border-blue-200"
           >
-            {data.displayLabel}
+            {label}
           </div>
         </EdgeLabelRenderer>
       )}

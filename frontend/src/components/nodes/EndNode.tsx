@@ -1,19 +1,21 @@
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react';
-import type { ActivityNodeData } from '../../types/workflow';
+import { Square } from 'lucide-react';
+import type { ActivityNodeData } from '../../types/designer';
 
-type EndNodeType = Node<ActivityNodeData, 'end'>;
+type EndNodeType = Node<ActivityNodeData, 'endNode'>;
 
-export function EndNode({ selected }: NodeProps<EndNodeType>) {
+export function EndNode({ data, selected }: NodeProps<EndNodeType>) {
   return (
-    <div
-      className={`flex items-center justify-center w-16 h-16 rounded-full border-2 text-white text-xs font-bold ${
-        selected
-          ? 'border-yellow-400 shadow-lg shadow-yellow-400/30'
-          : 'border-red-600'
-      } bg-red-500`}
-    >
-      END
-      <Handle type="target" position={Position.Left} className="!bg-red-700" />
+    <div className="flex flex-col items-center">
+      <div
+        className={`flex items-center justify-center w-[60px] h-[60px] rounded-full bg-red-500 border-2 border-red-600 text-white ${
+          selected ? 'ring-2 ring-primary ring-offset-2' : ''
+        }`}
+      >
+        <Square className="w-6 h-6" />
+        <Handle type="target" position={Position.Left} />
+      </div>
+      <div className="text-sm text-center mt-1">{data.name}</div>
     </div>
   );
 }
