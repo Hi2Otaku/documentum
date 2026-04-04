@@ -10,6 +10,7 @@ from app.core.dependencies import get_current_user
 from app.models.user import User
 from app.schemas.common import EnvelopeResponse, PaginationMeta
 from app.schemas.workflow import (
+    ActivityRetryResponse,
     CompleteWorkItemRequest,
     ProcessVariableResponse,
     UpdateVariableRequest,
@@ -200,4 +201,205 @@ async def update_variable(
         )
     return EnvelopeResponse(
         data=ProcessVariableResponse.model_validate(variable)
+    )
+
+
+# ---------------------------------------------------------------------------
+# Admin: retry and skip failed auto activities
+# ---------------------------------------------------------------------------
+
+
+@router.post(
+    "/{workflow_id}/activities/{activity_id}/retry",
+    response_model=EnvelopeResponse[ActivityRetryResponse],
+)
+async def retry_auto_activity(
+    workflow_id: uuid.UUID,
+    activity_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Retry a failed auto activity by resetting its state to ACTIVE.
+
+    The Workflow Agent poll task will pick it up on the next cycle.
+    """
+    from sqlalchemy import select
+
+    from app.models.enums import ActivityState
+    from app.models.workflow import ActivityInstance
+    from app.services.audit_service import create_audit_record
+
+    result = await db.execute(
+        select(ActivityInstance).where(
+            ActivityInstance.id == activity_id,
+            ActivityInstance.workflow_instance_id == workflow_id,
+        )
+    )
+    activity_instance = result.scalar_one_or_none()
+
+    if activity_instance is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Activity instance not found",
+        )
+
+    if activity_instance.state != ActivityState.ERROR:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Activity is not in error state",
+        )
+
+    # Reset to ACTIVE for re-pickup by the poll task
+    activity_instance.state = ActivityState.ACTIVE
+
+    await create_audit_record(
+        db,
+        entity_type="activity_instance",
+        entity_id=str(activity_id),
+        action="auto_activity_retried",
+        user_id=str(current_user.id),
+        after_state={"workflow_id": str(workflow_id), "new_state": "active"},
+    )
+
+    return EnvelopeResponse(
+        data=ActivityRetryResponse(
+            activity_instance_id=activity_id,
+            status="requeued",
+            message="Activity requeued for execution",
+        )
+    )
+
+
+@router.post(
+    "/{workflow_id}/activities/{activity_id}/skip",
+    response_model=EnvelopeResponse[ActivityRetryResponse],
+)
+async def skip_auto_activity(
+    workflow_id: uuid.UUID,
+    activity_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Skip a failed auto activity, marking it COMPLETE and advancing the workflow."""
+    from datetime import datetime, timezone
+
+    from sqlalchemy import select
+    from sqlalchemy.orm import selectinload
+
+    from app.models.enums import ActivityState
+    from app.models.execution_log import AutoActivityLog
+    from app.models.workflow import (
+        ActivityInstance,
+        ProcessTemplate,
+        ProcessVariable,
+    )
+    from app.services.audit_service import create_audit_record
+    from app.services.engine_service import _advance_from_activity
+
+    result = await db.execute(
+        select(ActivityInstance)
+        .where(
+            ActivityInstance.id == activity_id,
+            ActivityInstance.workflow_instance_id == workflow_id,
+        )
+        .options(selectinload(ActivityInstance.activity_template))
+    )
+    activity_instance = result.scalar_one_or_none()
+
+    if activity_instance is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Activity instance not found",
+        )
+
+    if activity_instance.state != ActivityState.ERROR:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Activity is not in error state",
+        )
+
+    # Load workflow instance
+    from app.models.workflow import WorkflowInstance
+
+    workflow = await db.get(WorkflowInstance, workflow_id)
+    if workflow is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Workflow not found",
+        )
+
+    # Reset to ACTIVE so _advance_from_activity can transition ACTIVE -> COMPLETE
+    activity_instance.state = ActivityState.ACTIVE  # ERROR -> ACTIVE (valid transition)
+
+    # Load full template for advancement
+    template_result = await db.execute(
+        select(ProcessTemplate)
+        .where(ProcessTemplate.id == workflow.process_template_id)
+        .options(
+            selectinload(ProcessTemplate.activity_templates),
+            selectinload(ProcessTemplate.flow_templates),
+            selectinload(ProcessTemplate.process_variables),
+        )
+    )
+    template = template_result.scalar_one()
+
+    # Build template_to_instance mapping
+    ai_result = await db.execute(
+        select(ActivityInstance).where(
+            ActivityInstance.workflow_instance_id == workflow_id
+        )
+    )
+    all_instances = list(ai_result.scalars().all())
+    template_to_instance = {
+        inst.activity_template_id: inst for inst in all_instances
+    }
+
+    # Load process variables
+    pv_result = await db.execute(
+        select(ProcessVariable).where(
+            ProcessVariable.workflow_instance_id == workflow_id,
+            ProcessVariable.is_deleted == False,  # noqa: E712
+        )
+    )
+    instance_variables = list(pv_result.scalars().all())
+
+    # Advance workflow past the skipped activity
+    await _advance_from_activity(
+        db,
+        workflow,
+        activity_instance,
+        template,
+        template_to_instance,
+        str(current_user.id),
+        instance_variables=instance_variables,
+    )
+
+    # Create skip log entry
+    skip_log = AutoActivityLog(
+        activity_instance_id=activity_id,
+        method_name=activity_instance.activity_template.method_name
+        if activity_instance.activity_template
+        else "unknown",
+        attempt_number=0,
+        status="skipped",
+        started_at=datetime.now(timezone.utc),
+        completed_at=datetime.now(timezone.utc),
+    )
+    db.add(skip_log)
+
+    await create_audit_record(
+        db,
+        entity_type="activity_instance",
+        entity_id=str(activity_id),
+        action="auto_activity_skipped",
+        user_id=str(current_user.id),
+        after_state={"workflow_id": str(workflow_id), "new_state": "complete"},
+    )
+
+    return EnvelopeResponse(
+        data=ActivityRetryResponse(
+            activity_instance_id=activity_id,
+            status="skipped",
+            message="Activity skipped, workflow advanced",
+        )
     )

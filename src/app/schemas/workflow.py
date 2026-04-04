@@ -72,6 +72,24 @@ class WorkflowInstanceResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class AutoActivityLogResponse(BaseModel):
+    id: uuid.UUID
+    activity_instance_id: uuid.UUID
+    method_name: str
+    attempt_number: int
+    status: str
+    error_message: str | None = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ActivityRetryResponse(BaseModel):
+    activity_instance_id: uuid.UUID
+    status: str  # "requeued" or "skipped"
+    message: str
+
+
 class WorkflowDetailResponse(BaseModel):
     id: uuid.UUID
     process_template_id: uuid.UUID
