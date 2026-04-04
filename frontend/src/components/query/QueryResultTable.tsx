@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   useReactTable,
   getCoreRowModel,
-  getSortingRowModel,
+  getSortedRowModel,
   flexRender,
   type ColumnDef,
   type SortingState,
@@ -55,7 +55,7 @@ export function QueryResultTable<T>({
     state: { sorting },
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
-    getSortingRowModel: getSortingRowModel(),
+    getSortedRowModel: getSortedRowModel(),
   });
 
   // Loading state: 5 skeleton rows
