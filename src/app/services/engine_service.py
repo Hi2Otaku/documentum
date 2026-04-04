@@ -47,6 +47,7 @@ WORKFLOW_TRANSITIONS: set[tuple[WorkflowState, WorkflowState]] = {
     (WorkflowState.RUNNING, WorkflowState.FAILED),
     (WorkflowState.RUNNING, WorkflowState.FINISHED),
     (WorkflowState.HALTED, WorkflowState.RUNNING),
+    (WorkflowState.HALTED, WorkflowState.FAILED),
     (WorkflowState.FAILED, WorkflowState.DORMANT),
 }
 

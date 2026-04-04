@@ -39,6 +39,7 @@ class WorkItemState(str, enum.Enum):
     DELEGATED = "delegated"
     COMPLETE = "complete"
     REJECTED = "rejected"
+    SUSPENDED = "suspended"
 
 
 class ActivityState(str, enum.Enum):
