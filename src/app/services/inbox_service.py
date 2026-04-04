@@ -8,7 +8,7 @@ import logging
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -20,6 +20,7 @@ from app.models.workflow import (
     WorkflowPackage,
     WorkItem,
     WorkItemComment,
+    work_queue_members,
 )
 from app.services.audit_service import create_audit_record
 
@@ -46,10 +47,22 @@ async def get_inbox_items(
 
     Returns (items_as_dicts, total_count).
     """
-    # Base WHERE clause
+    # Base WHERE clause: show directly assigned items OR unclaimed queue items
     conditions = [
-        WorkItem.performer_id == uuid.UUID(user_id),
         WorkItem.is_deleted == False,  # noqa: E712
+        or_(
+            WorkItem.performer_id == uuid.UUID(user_id),
+            and_(
+                WorkItem.queue_id.isnot(None),
+                WorkItem.performer_id.is_(None),
+                WorkItem.state == WorkItemState.AVAILABLE,
+                WorkItem.queue_id.in_(
+                    select(work_queue_members.c.queue_id).where(
+                        work_queue_members.c.user_id == uuid.UUID(user_id)
+                    )
+                ),
+            ),
+        ),
     ]
 
     if state_filter:
@@ -172,8 +185,19 @@ async def get_inbox_item_detail(
     wi = result.scalar_one_or_none()
     if wi is None:
         raise ValueError("Work item not found")
+    # Authorize: either direct performer or queue member for unclaimed queue items
     if wi.performer_id != uuid.UUID(user_id):
-        raise ValueError("Not authorized to view this work item")
+        if wi.queue_id and wi.performer_id is None:
+            membership = await db.execute(
+                select(work_queue_members).where(
+                    work_queue_members.c.queue_id == wi.queue_id,
+                    work_queue_members.c.user_id == uuid.UUID(user_id),
+                )
+            )
+            if membership.first() is None:
+                raise ValueError("Not authorized to view this work item")
+        else:
+            raise ValueError("Not authorized to view this work item")
 
     ai = wi.activity_instance
     at = ai.activity_template
@@ -242,6 +266,17 @@ async def acquire_work_item(
         raise ValueError(
             f"Cannot acquire work item in state '{wi.state.value}'; must be 'available'"
         )
+
+    # For queue items, check queue membership instead of performer_id match
+    if wi.queue_id and wi.performer_id is None:
+        membership = await db.execute(
+            select(work_queue_members).where(
+                work_queue_members.c.queue_id == wi.queue_id,
+                work_queue_members.c.user_id == uuid.UUID(user_id),
+            )
+        )
+        if membership.first() is None:
+            raise ValueError("Not authorized: not a member of this queue")
 
     wi.state = WorkItemState.ACQUIRED
     wi.performer_id = uuid.UUID(user_id)

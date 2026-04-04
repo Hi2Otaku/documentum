@@ -1,15 +1,16 @@
 import math
 import uuid
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.dependencies import get_current_active_admin, get_current_user
 from app.models.user import User
 from app.schemas.common import EnvelopeResponse, PaginationMeta
-from app.schemas.user import UserCreate, UserResponse, UserUpdate
+from app.schemas.user import AvailabilityUpdate, UserCreate, UserResponse, UserUpdate
 from app.services import user_service
+from app.services.audit_service import create_audit_record
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -80,3 +81,35 @@ async def delete_user(
 ):
     """Soft delete a user (admin only)."""
     await user_service.delete_user(db, user_id, str(current_user.id))
+
+
+@router.put("/me/availability", response_model=EnvelopeResponse[UserResponse])
+async def update_availability(
+    data: AvailabilityUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Toggle user availability and set delegate per D-01."""
+    if not data.is_available and data.delegate_id is None:
+        raise HTTPException(status_code=400, detail="Must specify delegate_id when marking unavailable")
+    if data.delegate_id == current_user.id:
+        raise HTTPException(status_code=400, detail="Cannot delegate to yourself")
+    if data.delegate_id:
+        delegate = await db.get(User, data.delegate_id)
+        if delegate is None or delegate.is_deleted:
+            raise HTTPException(status_code=400, detail="Delegate user not found")
+    current_user.is_available = data.is_available
+    current_user.delegate_id = data.delegate_id if not data.is_available else None
+    await create_audit_record(
+        db,
+        entity_type="user",
+        entity_id=str(current_user.id),
+        action="availability_changed",
+        user_id=str(current_user.id),
+        after_state={
+            "is_available": data.is_available,
+            "delegate_id": str(data.delegate_id) if data.delegate_id else None,
+        },
+    )
+    await db.flush()
+    return EnvelopeResponse(data=UserResponse.model_validate(current_user))

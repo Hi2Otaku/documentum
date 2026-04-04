@@ -65,6 +65,9 @@ WORK_ITEM_TRANSITIONS: set[tuple[WorkItemState, WorkItemState]] = {
     (WorkItemState.ACQUIRED, WorkItemState.AVAILABLE),
     (WorkItemState.ACQUIRED, WorkItemState.COMPLETE),
     (WorkItemState.ACQUIRED, WorkItemState.REJECTED),
+    (WorkItemState.AVAILABLE, WorkItemState.SUSPENDED),
+    (WorkItemState.ACQUIRED, WorkItemState.SUSPENDED),
+    (WorkItemState.SUSPENDED, WorkItemState.AVAILABLE),
 }
 
 
@@ -174,6 +177,10 @@ async def resolve_performers(
             if target_id:
                 return [uuid.UUID(target_id)]
             return []
+        case "queue":
+            # Queue items use special creation path -- return empty list
+            # The caller creates ONE work item with performer_id=None and queue_id set
+            return []
         case "sequential":
             # Handled specially in advancement loop (initial work item creation)
             return []
@@ -182,6 +189,42 @@ async def resolve_performers(
             return []
         case _:
             return []
+
+
+async def _apply_delegation(
+    db: AsyncSession,
+    user_ids: list[uuid.UUID],
+    user_id_for_audit: str,
+    workflow_instance_id: uuid.UUID | None = None,
+) -> list[uuid.UUID]:
+    """Replace unavailable users with their delegates (one level only per anti-pattern rule)."""
+    if not user_ids:
+        return user_ids
+    from app.models.user import User
+    result = await db.execute(
+        select(User).where(User.id.in_(user_ids))
+    )
+    users_map = {u.id: u for u in result.scalars().all()}
+    resolved = []
+    for uid in user_ids:
+        user = users_map.get(uid)
+        if user and not user.is_available and user.delegate_id:
+            resolved.append(user.delegate_id)
+            await create_audit_record(
+                db,
+                entity_type="work_item",
+                entity_id="",
+                action="work_item_delegated",
+                user_id=user_id_for_audit,
+                after_state={
+                    "original_performer": str(uid),
+                    "delegated_to": str(user.delegate_id),
+                    "workflow_instance_id": str(workflow_instance_id),
+                },
+            )
+        else:
+            resolved.append(uid)
+    return resolved
 
 
 # ---------------------------------------------------------------------------
@@ -519,35 +562,71 @@ async def _advance_from_activity(
 
                 elif target_at.activity_type == ActivityType.MANUAL:
                     # Per D-06/D-07: resolve performers then create one work item per performer
-                    # Special handling for sequential and runtime_selection
-                    if target_at.performer_type == "sequential":
+                    # Special handling for sequential, runtime_selection, and queue
+                    if target_at.performer_type == "queue" and target_at.performer_id:
+                        # Queue: create ONE work item with performer_id=None and queue_id set
+                        work_item = WorkItem(
+                            activity_instance_id=target_ai.id,
+                            performer_id=None,
+                            queue_id=uuid.UUID(target_at.performer_id),
+                            state=WorkItemState.AVAILABLE,
+                            created_by=user_id,
+                        )
+                        db.add(work_item)
+                    elif target_at.performer_type == "sequential":
                         performer_list = target_at.performer_list or []
                         if performer_list:
                             target_ai.current_performer_index = 0
                             performers = [uuid.UUID(performer_list[0])]
                         else:
                             performers = [None]
+                        # Apply delegation for sequential performers
+                        performers = await _apply_delegation(
+                            db, [p for p in performers if p is not None],
+                            user_id, workflow.id,
+                        ) or performers
+                        for perf_id in performers:
+                            work_item = WorkItem(
+                                activity_instance_id=target_ai.id,
+                                performer_id=perf_id,
+                                state=WorkItemState.AVAILABLE,
+                                created_by=user_id,
+                            )
+                            db.add(work_item)
                     elif target_at.performer_type == "runtime_selection" and next_performer_id:
                         performers = [uuid.UUID(next_performer_id)]
                         next_performer_id = None  # Consumed, don't carry forward
+                        # Apply delegation
+                        performers = await _apply_delegation(db, performers, user_id, workflow.id)
+                        for perf_id in performers:
+                            work_item = WorkItem(
+                                activity_instance_id=target_ai.id,
+                                performer_id=perf_id,
+                                state=WorkItemState.AVAILABLE,
+                                created_by=user_id,
+                            )
+                            db.add(work_item)
                     else:
                         performers = await resolve_performers(
                             db, target_at.performer_type, target_at.performer_id, workflow
                         )
-                    # Check performer_overrides first
-                    if performer_overrides and str(target_at.id) in performer_overrides:
-                        performers = [uuid.UUID(performer_overrides[str(target_at.id)])]
-                    # If no performers resolved, create unassigned work item
-                    if not performers:
-                        performers = [None]
-                    for perf_id in performers:
-                        work_item = WorkItem(
-                            activity_instance_id=target_ai.id,
-                            performer_id=perf_id,
-                            state=WorkItemState.AVAILABLE,
-                            created_by=user_id,
-                        )
-                        db.add(work_item)
+                        # Check performer_overrides first
+                        if performer_overrides and str(target_at.id) in performer_overrides:
+                            performers = [uuid.UUID(performer_overrides[str(target_at.id)])]
+                        # Apply delegation to resolved performers
+                        if performers:
+                            performers = await _apply_delegation(db, performers, user_id, workflow.id)
+                        # If no performers resolved, create unassigned work item
+                        if not performers:
+                            performers = [None]
+                        for perf_id in performers:
+                            work_item = WorkItem(
+                                activity_instance_id=target_ai.id,
+                                performer_id=perf_id,
+                                state=WorkItemState.AVAILABLE,
+                                created_by=user_id,
+                            )
+                            db.add(work_item)
 
         # If no flows fired and current is END type, mark workflow FINISHED
         if not any_flow_fired:
