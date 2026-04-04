@@ -510,6 +510,13 @@ async def _advance_from_activity(
                     target_ai.completed_at = datetime.now(timezone.utc)
                     queue.append(target_ai)
 
+                elif target_at.activity_type == ActivityType.AUTO:
+                    # Leave as ACTIVE for Celery Workflow Agent to pick up (per D-04).
+                    # Do NOT auto-complete and do NOT create work items.
+                    # The poll task in Plan 02 will find ACTIVE AUTO activities
+                    # and dispatch them as Celery tasks.
+                    pass
+
                 elif target_at.activity_type == ActivityType.MANUAL:
                     # Per D-06/D-07: resolve performers then create one work item per performer
                     # Special handling for sequential and runtime_selection
