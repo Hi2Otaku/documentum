@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 5: Work Items & Inbox** - User inbox with task completion, rejection, comments, and basic performer assignment
 - [ ] **Phase 6: Advanced Routing & Alias Sets** - Conditional routing, reject flows, sequential/runtime performer selection, and alias set resolution
 - [x] **Phase 7: Document Lifecycle & ACL** - Document state machine, workflow-triggered lifecycle transitions, and object-level access control (completed 2026-03-31)
-- [ ] **Phase 8: Visual Workflow Designer** - Drag-and-drop React Flow canvas for designing workflow templates
+- [x] **Phase 8: Visual Workflow Designer** - Drag-and-drop React Flow canvas for designing workflow templates (completed 2026-04-04)
 - [ ] **Phase 9: Auto Activities, Workflow Agent & Integration** - Automated activity execution, Celery beat agent, and external REST API integration
 - [ ] **Phase 10: Delegation, Work Queues & Workflow Management** - User delegation, shared task pools, and admin workflow control
 - [ ] **Phase 11: Dashboards, Query Interface & Validation** - BAM dashboards, admin query interface, and contract approval end-to-end example
@@ -147,13 +147,11 @@ Plans:
   3. User can configure activity properties (performer assignment, trigger conditions, routing expressions) through a side panel
   4. Designer validates the template before installation and shows structural errors visually on the canvas
   5. Templates designed in the visual editor save to and load from the backend API, and can be executed by the engine
-**Plans:** 5 plans
+**Plans**: 3 plans
 Plans:
-- [ ] 08-01-PLAN.md — Frontend scaffolding, dependencies, API client, types, serialization, stores, Docker
-- [ ] 08-02-PLAN.md — App shell (login, routing, nav, auth guard), template list page
-- [ ] 08-03-PLAN.md — Custom React Flow nodes (4 types), edges (3 types), designer store, auto-layout
-- [ ] 08-04-PLAN.md — Designer page: canvas, palette, toolbar, properties panel, error panel
-- [ ] 08-05-PLAN.md — Save/load, validate/install, keyboard shortcuts, context menu, visual verification
+- [ ] 02-01-PLAN.md — Document models, MinIO client, config, Pydantic schemas
+- [ ] 02-02-PLAN.md — Document service layer and HTTP router
+- [ ] 02-03-PLAN.md — Integration tests for DOC-01 through DOC-08
 **UI hint**: yes
 
 ### Phase 9: Auto Activities, Workflow Agent & Integration
@@ -219,7 +217,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> ... -> 11
 | 5. Work Items & Inbox | 0/3 | Planning complete | - |
 | 6. Advanced Routing & Alias Sets | 0/3 | Planning complete | - |
 | 7. Document Lifecycle & ACL | 3/3 | Complete   | 2026-03-31 |
-| 8. Visual Workflow Designer | 0/5 | Planning complete | - |
+| 8. Visual Workflow Designer | 1/1 | Complete   | 2026-04-04 |
 | 9. Auto Activities, Workflow Agent & Integration | 0/TBD | Not started | - |
 | 10. Delegation, Work Queues & Workflow Management | 0/TBD | Not started | - |
 | 11. Dashboards, Query Interface & Validation | 0/TBD | Not started | - |
