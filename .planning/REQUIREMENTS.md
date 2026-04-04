@@ -159,15 +159,15 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Query Interface
 
-- [ ] **QUERY-01**: Admin can query workflow instances by template, state, date range, performer
-- [ ] **QUERY-02**: Admin can query work items by assignee, state, workflow, priority
-- [ ] **QUERY-03**: Admin can query documents by metadata, lifecycle state, version
+- [x] **QUERY-01**: Admin can query workflow instances by template, state, date range, performer
+- [x] **QUERY-02**: Admin can query work items by assignee, state, workflow, priority
+- [x] **QUERY-03**: Admin can query documents by metadata, lifecycle state, version
 
 ### Contract Approval Example
 
-- [x] **EXAMPLE-01**: Pre-built contract approval template matching the 7-step example from the spec
-- [x] **EXAMPLE-02**: Example demonstrates: sequential routing (draft), parallel routing (legal + financial review), conditional routing (director approval), reject flows, auto activities (signing, archival)
-- [x] **EXAMPLE-03**: Example can be executed end-to-end with test users, producing a complete audit trail
+- [ ] **EXAMPLE-01**: Pre-built contract approval template matching the 7-step example from the spec
+- [ ] **EXAMPLE-02**: Example demonstrates: sequential routing (draft), parallel routing (legal + financial review), conditional routing (director approval), reject flows, auto activities (signing, archival)
+- [ ] **EXAMPLE-03**: Example can be executed end-to-end with test users, producing a complete audit trail
 
 ## v2 Requirements
 
@@ -317,12 +317,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INTG-01 | Phase 9 | Pending |
 | INTG-02 | Phase 9 | Pending |
 | INTG-03 | Phase 9 | Pending |
-| QUERY-01 | Phase 11 | Pending |
-| QUERY-02 | Phase 11 | Pending |
-| QUERY-03 | Phase 11 | Pending |
-| EXAMPLE-01 | Phase 11 | Complete |
-| EXAMPLE-02 | Phase 11 | Complete |
-| EXAMPLE-03 | Phase 11 | Complete |
+| QUERY-01 | Phase 11 | Complete |
+| QUERY-02 | Phase 11 | Complete |
+| QUERY-03 | Phase 11 | Complete |
+| EXAMPLE-01 | Phase 11 | Pending |
+| EXAMPLE-02 | Phase 11 | Pending |
+| EXAMPLE-03 | Phase 11 | Pending |
 
 **Coverage:**
 - v1 requirements: 105 total
