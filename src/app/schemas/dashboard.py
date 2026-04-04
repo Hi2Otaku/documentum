@@ -41,3 +41,41 @@ class TemplateMetric(BaseModel):
     finished: int
     failed: int
     avg_completion_seconds: float | None = None
+
+
+class KpiMetrics(BaseModel):
+    running: int
+    halted: int
+    finished: int
+    failed: int
+    avg_completion_hours: float
+
+
+class SlaCompliance(BaseModel):
+    activity_name: str
+    on_time: int
+    overdue: int
+    compliance_percent: float
+
+
+class DashboardBottleneck(BaseModel):
+    """Bottleneck data shaped for the frontend contract."""
+    activity_name: str
+    avg_duration_hours: float
+    template_name: str | None = None
+
+
+class DashboardWorkload(BaseModel):
+    """Workload data shaped for the frontend contract."""
+    user_id: uuid.UUID
+    username: str
+    assigned: int
+    completed: int
+    pending: int
+
+
+class DashboardMetrics(BaseModel):
+    kpi: KpiMetrics
+    bottleneck_activities: list[DashboardBottleneck]
+    workload: list[DashboardWorkload]
+    sla_compliance: list[SlaCompliance]

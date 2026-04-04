@@ -1,5 +1,6 @@
 """BAM dashboard service — workflow metrics, bottleneck detection, user workload."""
 import logging
+import uuid as _uuid
 
 from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,6 +16,11 @@ from app.models.workflow import (
 )
 from app.schemas.dashboard import (
     BottleneckActivity,
+    DashboardBottleneck,
+    DashboardMetrics,
+    DashboardWorkload,
+    KpiMetrics,
+    SlaCompliance,
     TemplateMetric,
     UserWorkload,
     WorkflowCountByState,
@@ -233,3 +239,192 @@ async def get_template_metrics(db: AsyncSession) -> list[TemplateMetric]:
         )
         for row in rows
     ]
+
+
+async def get_sla_data(
+    db: AsyncSession, template_id: _uuid.UUID | None = None
+) -> list[SlaCompliance]:
+    """Compute SLA compliance per activity using expected_duration_hours.
+
+    Only includes activities where ActivityTemplate.expected_duration_hours IS NOT NULL
+    and only COMPLETED work items.
+    """
+    # Duration in hours: julianday difference * 24
+    duration_hours = (
+        func.julianday(WorkItem.completed_at) - func.julianday(WorkItem.created_at)
+    ) * 24
+
+    on_time_count = func.sum(
+        case(
+            (duration_hours <= ActivityTemplate.expected_duration_hours, 1),
+            else_=0,
+        )
+    )
+    overdue_count = func.sum(
+        case(
+            (duration_hours > ActivityTemplate.expected_duration_hours, 1),
+            else_=0,
+        )
+    )
+
+    stmt = (
+        select(
+            ActivityTemplate.name.label("activity_name"),
+            on_time_count.label("on_time"),
+            overdue_count.label("overdue"),
+        )
+        .select_from(WorkItem)
+        .join(ActivityInstance, WorkItem.activity_instance_id == ActivityInstance.id)
+        .join(ActivityTemplate, ActivityInstance.activity_template_id == ActivityTemplate.id)
+        .where(
+            WorkItem.state == WorkItemState.COMPLETE,
+            WorkItem.completed_at.isnot(None),
+            WorkItem.is_deleted == False,  # noqa: E712
+            ActivityTemplate.expected_duration_hours.isnot(None),
+        )
+        .group_by(ActivityTemplate.name)
+    )
+
+    if template_id is not None:
+        stmt = stmt.join(
+            WorkflowInstance,
+            ActivityInstance.workflow_instance_id == WorkflowInstance.id,
+        ).where(WorkflowInstance.process_template_id == template_id)
+
+    result = await db.execute(stmt)
+    rows = result.all()
+
+    sla_list: list[SlaCompliance] = []
+    for row in rows:
+        on_time = row[1] or 0
+        overdue = row[2] or 0
+        total = on_time + overdue
+        pct = (on_time / total * 100) if total > 0 else 0.0
+        sla_list.append(
+            SlaCompliance(
+                activity_name=row[0],
+                on_time=on_time,
+                overdue=overdue,
+                compliance_percent=round(pct, 2),
+            )
+        )
+    return sla_list
+
+
+async def get_kpi_metrics(
+    db: AsyncSession, template_id: _uuid.UUID | None = None
+) -> KpiMetrics:
+    """Return KPI metrics matching the frontend KpiMetrics interface."""
+    running_count = func.sum(
+        case((WorkflowInstance.state == WorkflowState.RUNNING, 1), else_=0)
+    )
+    halted_count = func.sum(
+        case((WorkflowInstance.state == WorkflowState.HALTED, 1), else_=0)
+    )
+    finished_count = func.sum(
+        case((WorkflowInstance.state == WorkflowState.FINISHED, 1), else_=0)
+    )
+    failed_count = func.sum(
+        case((WorkflowInstance.state == WorkflowState.FAILED, 1), else_=0)
+    )
+
+    stmt = (
+        select(
+            running_count.label("running"),
+            halted_count.label("halted"),
+            finished_count.label("finished"),
+            failed_count.label("failed"),
+        )
+        .where(WorkflowInstance.is_deleted == False)  # noqa: E712
+    )
+    if template_id is not None:
+        stmt = stmt.where(WorkflowInstance.process_template_id == template_id)
+
+    result = await db.execute(stmt)
+    row = result.one()
+
+    # Average completion hours for finished workflows
+    avg_stmt = select(
+        func.avg(
+            (
+                func.julianday(WorkflowInstance.completed_at)
+                - func.julianday(WorkflowInstance.started_at)
+            )
+            * 24  # days -> hours
+        )
+    ).where(
+        WorkflowInstance.state == WorkflowState.FINISHED,
+        WorkflowInstance.completed_at.isnot(None),
+        WorkflowInstance.started_at.isnot(None),
+        WorkflowInstance.is_deleted == False,  # noqa: E712
+    )
+    if template_id is not None:
+        avg_stmt = avg_stmt.where(WorkflowInstance.process_template_id == template_id)
+
+    avg_result = await db.execute(avg_stmt)
+    avg_hours = avg_result.scalar()
+
+    return KpiMetrics(
+        running=row[0] or 0,
+        halted=row[1] or 0,
+        finished=row[2] or 0,
+        failed=row[3] or 0,
+        avg_completion_hours=round(float(avg_hours), 2) if avg_hours is not None else 0.0,
+    )
+
+
+async def get_all_metrics(
+    db: AsyncSession, template_id: _uuid.UUID | None = None
+) -> DashboardMetrics:
+    """Return unified dashboard metrics combining KPIs, bottlenecks, workload, and SLA."""
+    kpi = await get_kpi_metrics(db, template_id)
+    bottlenecks = await get_bottleneck_activities(db)
+    workload_raw = await get_user_workload(db)
+    sla = await get_sla_data(db, template_id)
+
+    # Reshape bottlenecks: convert avg_duration_seconds -> avg_duration_hours
+    bottleneck_list = [
+        DashboardBottleneck(
+            activity_name=b.activity_name,
+            avg_duration_hours=round(b.avg_duration_seconds / 3600, 2),
+            template_name=b.template_name,
+        )
+        for b in bottlenecks
+    ]
+
+    # Get completed counts per user for workload reshaping
+    completed_counts: dict[_uuid.UUID, int] = {}
+    completed_stmt = (
+        select(
+            WorkItem.performer_id,
+            func.count().label("completed"),
+        )
+        .where(
+            WorkItem.is_deleted == False,  # noqa: E712
+            WorkItem.state == WorkItemState.COMPLETE,
+            WorkItem.performer_id.isnot(None),
+        )
+        .group_by(WorkItem.performer_id)
+    )
+    completed_result = await db.execute(completed_stmt)
+    for crow in completed_result.all():
+        completed_counts[crow[0]] = crow[1]
+
+    # Reshape workload: available+acquired -> assigned, total_pending -> pending
+    workload_list = [
+        DashboardWorkload(
+            user_id=w.user_id,
+            username=w.username,
+            assigned=w.available_count + w.acquired_count,
+            completed=completed_counts.get(w.user_id, 0),
+            pending=w.total_pending,
+        )
+        for w in workload_raw
+    ]
+
+    return DashboardMetrics(
+        kpi=kpi,
+        bottleneck_activities=bottleneck_list,
+        workload=workload_list,
+        sla_compliance=sla,
+    )
