@@ -138,9 +138,9 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **DESIGN-01**: Web-based drag-and-drop canvas for designing workflow templates (React Flow)
 - [x] **DESIGN-02**: User can drag activity nodes (Manual, Auto, Start, End) onto the canvas
 - [x] **DESIGN-03**: User can draw flow connections (Normal Flow, Reject Flow) between activities
-- [ ] **DESIGN-04**: User can configure activity properties (performer, trigger, conditions) via side panel
-- [ ] **DESIGN-05**: User can define process variables via the designer
-- [ ] **DESIGN-06**: Designer validates the template and shows errors before installation
+- [x] **DESIGN-04**: User can configure activity properties (performer, trigger, conditions) via side panel
+- [x] **DESIGN-05**: User can define process variables via the designer
+- [x] **DESIGN-06**: Designer validates the template and shows errors before installation
 - [x] **DESIGN-07**: Designer saves/loads templates to/from the backend API
 
 ### BAM Dashboards & Monitoring
@@ -305,9 +305,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DESIGN-01 | Phase 8 | Complete |
 | DESIGN-02 | Phase 8 | Complete |
 | DESIGN-03 | Phase 8 | Complete |
-| DESIGN-04 | Phase 8 | Pending |
-| DESIGN-05 | Phase 8 | Pending |
-| DESIGN-06 | Phase 8 | Pending |
+| DESIGN-04 | Phase 8 | Complete |
+| DESIGN-05 | Phase 8 | Complete |
+| DESIGN-06 | Phase 8 | Complete |
 | DESIGN-07 | Phase 8 | Complete |
 | BAM-01 | Phase 11 | Pending |
 | BAM-02 | Phase 11 | Pending |
