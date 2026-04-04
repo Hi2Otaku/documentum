@@ -105,10 +105,10 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Auto Activities & Workflow Agent
 
 - [ ] **AUTO-01**: Auto activities execute Python methods (equivalent of dm_method) without human intervention
-- [ ] **AUTO-02**: Workflow Agent (Celery worker) continuously scans for auto activities to execute
+- [x] **AUTO-02**: Workflow Agent (Celery worker) continuously scans for auto activities to execute
 - [ ] **AUTO-03**: Auto activities can: send emails, change lifecycle state, move documents to folders, modify ACLs, call external APIs
-- [ ] **AUTO-04**: Workflow Agent logs execution results and handles errors (retry, fail)
-- [ ] **AUTO-05**: Failed auto activities can be retried or skipped by an administrator
+- [x] **AUTO-04**: Workflow Agent logs execution results and handles errors (retry, fail)
+- [x] **AUTO-05**: Failed auto activities can be retried or skipped by an administrator
 
 ### Workflow Management
 
@@ -154,8 +154,8 @@ Requirements for initial release. Each maps to roadmap phases.
 ### External Integration
 
 - [ ] **INTG-01**: Auto activities can call external REST APIs (webhook-based)
-- [ ] **INTG-02**: External systems can trigger workflow start via REST API
-- [ ] **INTG-03**: External systems can complete/reject work items via REST API
+- [x] **INTG-02**: External systems can trigger workflow start via REST API
+- [x] **INTG-03**: External systems can complete/reject work items via REST API
 
 ### Query Interface
 
@@ -284,10 +284,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | QUEUE-03 | Phase 10 | Pending |
 | QUEUE-04 | Phase 10 | Pending |
 | AUTO-01 | Phase 9 | Pending |
-| AUTO-02 | Phase 9 | Pending |
+| AUTO-02 | Phase 9 | Complete |
 | AUTO-03 | Phase 9 | Pending |
-| AUTO-04 | Phase 9 | Pending |
-| AUTO-05 | Phase 9 | Pending |
+| AUTO-04 | Phase 9 | Complete |
+| AUTO-05 | Phase 9 | Complete |
 | MGMT-01 | Phase 10 | Pending |
 | MGMT-02 | Phase 10 | Pending |
 | MGMT-03 | Phase 10 | Pending |
@@ -315,8 +315,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BAM-04 | Phase 11 | Pending |
 | BAM-05 | Phase 11 | Pending |
 | INTG-01 | Phase 9 | Pending |
-| INTG-02 | Phase 9 | Pending |
-| INTG-03 | Phase 9 | Pending |
+| INTG-02 | Phase 9 | Complete |
+| INTG-03 | Phase 9 | Complete |
 | QUERY-01 | Phase 11 | Pending |
 | QUERY-02 | Phase 11 | Pending |
 | QUERY-03 | Phase 11 | Pending |
