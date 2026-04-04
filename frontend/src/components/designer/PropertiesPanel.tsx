@@ -1,14 +1,7 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useDesignerStore } from '../../stores/designerStore';
 import type { ActivityNodeData, FlowEdgeData } from '../../types/designer';
-
-// ---- Variable management types ----
-interface DesignerVariable {
-  id: string;
-  name: string;
-  variableType: 'string' | 'int' | 'boolean' | 'date';
-  defaultValue: string;
-}
+import type { ProcessVariable } from '../../types/workflow';
 
 // ---- Node Properties ----
 function NodeProperties({
@@ -355,29 +348,64 @@ function EdgeProperties({
 }
 
 // ---- Template Info + Variables (no selection) ----
-function TemplatePanel() {
+interface TemplatePanelProps {
+  variables: ProcessVariable[];
+  onVariablesChange: (vars: ProcessVariable[]) => void;
+  templateName: string;
+  templateDescription: string;
+  onTemplateMetaChange: (name: string, description: string) => void;
+}
+
+function TemplatePanel({
+  variables,
+  onVariablesChange,
+  templateName: initialName,
+  templateDescription: initialDesc,
+  onTemplateMetaChange,
+}: TemplatePanelProps) {
   const [activeTab, setActiveTab] = useState<'template' | 'variables'>(
     'template',
   );
-  const [templateName, setTemplateName] = useState('');
-  const [templateDescription, setTemplateDescription] = useState('');
-  const [variables, setVariables] = useState<DesignerVariable[]>([]);
+  const [templateName, setTemplateName] = useState(initialName);
+  const [templateDescription, setTemplateDescription] = useState(initialDesc);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newVarName, setNewVarName] = useState('');
-  const [newVarType, setNewVarType] = useState<DesignerVariable['variableType']>('string');
+  const [newVarType, setNewVarType] = useState<'string' | 'int' | 'boolean' | 'date'>('string');
   const [newVarDefault, setNewVarDefault] = useState('');
+
+  const handleNameChange = useCallback(
+    (name: string) => {
+      setTemplateName(name);
+      onTemplateMetaChange(name, templateDescription);
+    },
+    [templateDescription, onTemplateMetaChange],
+  );
+
+  const handleDescChange = useCallback(
+    (desc: string) => {
+      setTemplateDescription(desc);
+      onTemplateMetaChange(templateName, desc);
+    },
+    [templateName, onTemplateMetaChange],
+  );
 
   const addVariable = () => {
     if (!newVarName.trim()) return;
-    setVariables([
-      ...variables,
-      {
-        id: crypto.randomUUID(),
-        name: newVarName.trim(),
-        variableType: newVarType,
-        defaultValue: newVarDefault,
-      },
-    ]);
+    const newVar: ProcessVariable = {
+      id: '', // empty id signals new variable to save hook
+      process_template_id: null,
+      workflow_instance_id: null,
+      name: newVarName.trim(),
+      variable_type: newVarType,
+      string_value: newVarType === 'string' ? newVarDefault : null,
+      int_value: newVarType === 'int' ? parseInt(newVarDefault, 10) || null : null,
+      bool_value: newVarType === 'boolean' ? newVarDefault === 'true' : null,
+      date_value: newVarType === 'date' ? newVarDefault || null : null,
+      created_at: '',
+      updated_at: '',
+      is_deleted: false,
+    };
+    onVariablesChange([...variables, newVar]);
     setNewVarName('');
     setNewVarType('string');
     setNewVarDefault('');
@@ -385,7 +413,7 @@ function TemplatePanel() {
   };
 
   const deleteVariable = (id: string) => {
-    setVariables(variables.filter((v) => v.id !== id));
+    onVariablesChange(variables.filter((v) => v.id !== id));
   };
 
   return (
@@ -425,7 +453,7 @@ function TemplatePanel() {
               type="text"
               className="mt-1 w-full rounded border px-3 py-2 text-sm"
               value={templateName}
-              onChange={(e) => setTemplateName(e.target.value)}
+              onChange={(e) => handleNameChange(e.target.value)}
             />
           </div>
           <div>
@@ -436,7 +464,7 @@ function TemplatePanel() {
               id="template-desc"
               className="mt-1 w-full rounded border px-3 py-2 text-sm min-h-[60px]"
               value={templateDescription}
-              onChange={(e) => setTemplateDescription(e.target.value)}
+              onChange={(e) => handleDescChange(e.target.value)}
             />
           </div>
         </div>
@@ -452,7 +480,7 @@ function TemplatePanel() {
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">{v.name}</span>
                 <span className="inline-block px-1.5 py-0.5 text-xs rounded bg-muted text-muted-foreground">
-                  {v.variableType}
+                  {v.variable_type}
                 </span>
               </div>
               <button
@@ -491,7 +519,7 @@ function TemplatePanel() {
                 value={newVarType}
                 onChange={(e) =>
                   setNewVarType(
-                    e.target.value as DesignerVariable['variableType'],
+                    e.target.value as 'string' | 'int' | 'boolean' | 'date',
                   )
                 }
               >
@@ -539,7 +567,21 @@ function TemplatePanel() {
 }
 
 // ---- Main PropertiesPanel ----
-export function PropertiesPanel() {
+interface PropertiesPanelProps {
+  variables: ProcessVariable[];
+  onVariablesChange: (vars: ProcessVariable[]) => void;
+  templateName: string;
+  templateDescription: string;
+  onTemplateMetaChange: (name: string, description: string) => void;
+}
+
+export function PropertiesPanel({
+  variables,
+  onVariablesChange,
+  templateName,
+  templateDescription,
+  onTemplateMetaChange,
+}: PropertiesPanelProps) {
   const selectedNodeId = useDesignerStore((s) => s.selectedNodeId);
   const selectedEdgeId = useDesignerStore((s) => s.selectedEdgeId);
   const nodes = useDesignerStore((s) => s.nodes);
@@ -582,7 +624,13 @@ export function PropertiesPanel() {
           sourceRoutingType={sourceRoutingType}
         />
       ) : (
-        <TemplatePanel />
+        <TemplatePanel
+          variables={variables}
+          onVariablesChange={onVariablesChange}
+          templateName={templateName}
+          templateDescription={templateDescription}
+          onTemplateMetaChange={onTemplateMetaChange}
+        />
       )}
     </aside>
   );

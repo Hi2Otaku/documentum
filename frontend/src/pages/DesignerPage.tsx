@@ -1,16 +1,20 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router';
-import { ReactFlowProvider } from '@xyflow/react';
+import { ReactFlowProvider, useReactFlow } from '@xyflow/react';
 import { useQuery } from '@tanstack/react-query';
 import type { Node, Edge } from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 
 import { Canvas } from '../components/designer/Canvas';
 import { NodePalette } from '../components/designer/NodePalette';
 import { PropertiesPanel } from '../components/designer/PropertiesPanel';
 import { ErrorPanel } from '../components/designer/ErrorPanel';
 import { Toolbar } from '../components/designer/Toolbar';
+import { ContextMenu } from '../components/designer/ContextMenu';
 import { useDesignerStore } from '../stores/designerStore';
-import { getTemplateDetail } from '../api/templates';
+import { getTemplateDetail, updateTemplate } from '../api/templates';
+import { useSaveTemplate } from '../hooks/useSaveTemplate';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { getLayoutedElements } from '../hooks/useAutoLayout';
 import type { ProcessTemplateDetail } from '../types/workflow';
 import type { ActivityNodeData, FlowEdgeData } from '../types/designer';
@@ -66,6 +70,7 @@ function flowsToEdges(
 function DesignerInner() {
   const { id } = useParams<{ id: string }>();
   const isDirty = useDesignerStore((s) => s.isDirty);
+  const { setCenter } = useReactFlow();
 
   const {
     data: template,
@@ -76,6 +81,75 @@ function DesignerInner() {
     queryFn: () => getTemplateDetail(id!),
     enabled: !!id,
   });
+
+  // Save template hook -- pass initialData for correct snapshot initialization
+  const {
+    save,
+    validateAndInstall,
+    saving,
+    validating,
+    validationErrors,
+    variables,
+    setVariables,
+  } = useSaveTemplate(id!, template);
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({ onSave: save });
+
+  // Context menu state
+  const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
+  const [contextMenuTarget, setContextMenuTarget] = useState<{
+    type: 'node' | 'edge' | 'pane';
+    id?: string;
+  } | null>(null);
+
+  const handleCloseContextMenu = useCallback(() => {
+    setContextMenuPos(null);
+    setContextMenuTarget(null);
+  }, []);
+
+  const handleNodeContextMenu = useCallback(
+    (event: React.MouseEvent | MouseEvent, node: Node) => {
+      event.preventDefault();
+      setContextMenuPos({ x: (event as MouseEvent).clientX, y: (event as MouseEvent).clientY });
+      setContextMenuTarget({ type: 'node', id: node.id });
+    },
+    [],
+  );
+
+  const handleEdgeContextMenu = useCallback(
+    (event: React.MouseEvent | MouseEvent, edge: Edge) => {
+      event.preventDefault();
+      setContextMenuPos({ x: (event as MouseEvent).clientX, y: (event as MouseEvent).clientY });
+      setContextMenuTarget({ type: 'edge', id: edge.id });
+    },
+    [],
+  );
+
+  const handlePaneContextMenu = useCallback(
+    (event: React.MouseEvent | MouseEvent) => {
+      event.preventDefault();
+      setContextMenuPos({ x: (event as MouseEvent).clientX, y: (event as MouseEvent).clientY });
+      setContextMenuTarget({ type: 'pane' });
+    },
+    [],
+  );
+
+  const handleErrorClick = useCallback(
+    (entityId: string) => {
+      const nodes = useDesignerStore.getState().nodes;
+      const node = nodes.find(
+        (n) =>
+          n.id === entityId ||
+          (n.data as ActivityNodeData).backendId === entityId,
+      );
+      if (node) {
+        setCenter(node.position.x, node.position.y, { zoom: 1.5, duration: 300 });
+        useDesignerStore.getState().setSelectedNode(node.id);
+      }
+    },
+    [setCenter],
+  );
 
   // Load template data into store on mount
   useEffect(() => {
@@ -145,19 +219,36 @@ function DesignerInner() {
     <div className="h-screen flex flex-col">
       <Toolbar
         templateName={template.name}
-        onSave={() => {}}
-        onValidateInstall={() => {}}
-        saving={false}
-        validating={false}
+        onSave={save}
+        onValidateInstall={validateAndInstall}
+        saving={saving}
+        validating={validating}
       />
       <div className="flex flex-1 overflow-hidden">
         <NodePalette />
         <div className="flex-1 relative">
-          <Canvas />
+          <Canvas
+            onNodeContextMenu={handleNodeContextMenu}
+            onEdgeContextMenu={handleEdgeContextMenu}
+            onPaneContextMenu={handlePaneContextMenu}
+          />
         </div>
-        <PropertiesPanel />
+        <PropertiesPanel
+          variables={variables}
+          onVariablesChange={setVariables}
+          templateName={template.name}
+          templateDescription={template.description ?? ''}
+          onTemplateMetaChange={(name, description) => {
+            updateTemplate(id!, { name, description });
+          }}
+        />
       </div>
-      <ErrorPanel errors={[]} onErrorClick={() => {}} />
+      <ErrorPanel errors={validationErrors} onErrorClick={handleErrorClick} />
+      <ContextMenu
+        position={contextMenuPos}
+        target={contextMenuTarget}
+        onClose={handleCloseContextMenu}
+      />
     </div>
   );
 }

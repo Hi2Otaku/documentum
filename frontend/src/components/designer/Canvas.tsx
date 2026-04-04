@@ -8,6 +8,7 @@ import {
   useReactFlow,
   type Connection,
   type Node,
+  type Edge,
 } from '@xyflow/react';
 import { nodeTypes } from '../nodes';
 import { edgeTypes } from '../edges';
@@ -21,7 +22,13 @@ const DEFAULT_NODE_DATA: Record<string, { name: string; activityType: string }> 
   autoNode: { name: 'New Auto Activity', activityType: 'auto' },
 };
 
-export function Canvas() {
+interface CanvasProps {
+  onNodeContextMenu?: (event: React.MouseEvent | MouseEvent, node: Node) => void;
+  onEdgeContextMenu?: (event: React.MouseEvent | MouseEvent, edge: Edge) => void;
+  onPaneContextMenu?: (event: React.MouseEvent | MouseEvent) => void;
+}
+
+export function Canvas({ onNodeContextMenu, onEdgeContextMenu, onPaneContextMenu }: CanvasProps = {}) {
   const { screenToFlowPosition } = useReactFlow();
 
   const nodes = useDesignerStore((s) => s.nodes);
@@ -116,6 +123,9 @@ export function Canvas() {
         onNodeClick={onNodeClick}
         onEdgeClick={onEdgeClick}
         onPaneClick={onPaneClick}
+        onNodeContextMenu={onNodeContextMenu}
+        onEdgeContextMenu={onEdgeContextMenu}
+        onPaneContextMenu={onPaneContextMenu}
         onDrop={onDrop}
         onDragOver={onDragOver}
         nodeTypes={nodeTypes}
