@@ -218,6 +218,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> ... -> 11
 | 6. Advanced Routing & Alias Sets | 0/3 | Planning complete | - |
 | 7. Document Lifecycle & ACL | 3/3 | Complete   | 2026-03-31 |
 | 8. Visual Workflow Designer | 0/TBD | Not started | - |
-| 9. Auto Activities, Workflow Agent & Integration | 0/TBD | Not started | - |
+| 9. Auto Activities, Workflow Agent & Integration | 1/3 | In progress | - |
 | 10. Delegation, Work Queues & Workflow Management | 0/TBD | Not started | - |
 | 11. Dashboards, Query Interface & Validation | 0/TBD | Not started | - |
