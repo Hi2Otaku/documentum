@@ -28,10 +28,10 @@ Requirements for milestone v1.2: Advanced Engine & Document Platform.
 ### Sub-Workflows
 
 - [ ] **SUBWF-01**: Admin can add a SUB_WORKFLOW activity type in the workflow designer that references another template
-- [ ] **SUBWF-02**: When a SUB_WORKFLOW activity executes, a child workflow instance is spawned from the referenced template
-- [ ] **SUBWF-03**: Parent workflow pauses at the SUB_WORKFLOW activity until the child workflow completes
-- [ ] **SUBWF-04**: Variables can be mapped from parent to child workflow on spawn
-- [ ] **SUBWF-05**: System enforces depth limits to prevent recursive sub-workflow chains
+- [x] **SUBWF-02**: When a SUB_WORKFLOW activity executes, a child workflow instance is spawned from the referenced template
+- [x] **SUBWF-03**: Parent workflow pauses at the SUB_WORKFLOW activity until the child workflow completes
+- [x] **SUBWF-04**: Variables can be mapped from parent to child workflow on spawn
+- [x] **SUBWF-05**: System enforces depth limits to prevent recursive sub-workflow chains
 
 ### Event-Driven Activities
 
@@ -142,10 +142,10 @@ Explicitly excluded from v1.2.
 | TIMER-03 | Phase 17 | Pending |
 | TIMER-04 | Phase 17 | Pending |
 | SUBWF-01 | Phase 18 | Pending |
-| SUBWF-02 | Phase 18 | Pending |
-| SUBWF-03 | Phase 18 | Pending |
-| SUBWF-04 | Phase 18 | Pending |
-| SUBWF-05 | Phase 18 | Pending |
+| SUBWF-02 | Phase 18 | Complete (18-02) |
+| SUBWF-03 | Phase 18 | Complete (18-02) |
+| SUBWF-04 | Phase 18 | Complete (18-02) |
+| SUBWF-05 | Phase 18 | Complete (18-02) |
 | EVTACT-01 | Phase 19 | Pending |
 | EVTACT-02 | Phase 19 | Pending |
 | EVTACT-03 | Phase 19 | Pending |

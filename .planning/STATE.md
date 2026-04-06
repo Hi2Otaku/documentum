@@ -10,8 +10,8 @@ progress:
   total_phases: 8
   completed_phases: 0
   total_plans: 0
-  completed_plans: 1
-  percent: 4
+  completed_plans: 2
+  percent: 8
 ---
 
 # Project State
@@ -26,24 +26,24 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 ## Current Position
 
 Phase: 18 of 23 (Sub-Workflows)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: Executing phase 18
-Last activity: 2026-04-06 -- Completed 18-01 (Sub-Workflow Data Layer)
+Last activity: 2026-04-06 -- Completed 18-02 (Sub-Workflow Engine Logic)
 
-Progress: [..........] 4% (v1.2: 1 plan complete)
+Progress: [#.........] 8% (v1.2: 2 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1 (v1.2)
-- Average duration: 2m
-- Total execution time: 2m
+- Total plans completed: 2 (v1.2)
+- Average duration: 17m
+- Total execution time: 35m
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 18 | 1 | 2m | 2m |
+| 18 | 2 | 35m | 17m |
 
 **Recent Trend (from v1.1):**
 
@@ -59,6 +59,8 @@ Progress: [..........] 4% (v1.2: 1 plan complete)
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- [Phase 18-02]: Event handler delegates state transition to _advance_from_activity (no pre-completion)
+- [Phase 18-02]: Depth validation at two layers: template install time AND runtime
 - [Phase 18-01]: Used string-based foreign_keys on ProcessTemplate.activity_templates to resolve ambiguity from dual FK paths
 - [Phase 18-01]: Added parent_workflow_id as self-referential FK on workflow_instances for parent-child hierarchy
 - [v1.2 Roadmap]: Event bus + notifications first -- 6 of 8 features emit or consume domain events
@@ -80,5 +82,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-06
-Stopped at: Completed 18-01-PLAN.md (Sub-Workflow Data Layer)
+Stopped at: Completed 18-02-PLAN.md (Sub-Workflow Engine Logic)
 Resume file: None
