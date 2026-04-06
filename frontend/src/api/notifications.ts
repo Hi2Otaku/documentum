@@ -95,16 +95,16 @@ export async function markNotificationRead(
 ): Promise<{ ok: boolean }> {
   return apiMutate<{ ok: boolean }>(
     `/api/v1/notifications/${id}/read`,
-    "PUT",
+    "PATCH",
   );
 }
 
 export async function markAllNotificationsRead(): Promise<{
   ok: boolean;
-  updated: number;
+  updated_count: number;
 }> {
-  return apiMutate<{ ok: boolean; updated: number }>(
-    "/api/v1/notifications/mark-all-read",
-    "PUT",
+  return apiMutate<{ ok: boolean; updated_count: number }>(
+    "/api/v1/notifications/read-all",
+    "PATCH",
   );
 }
