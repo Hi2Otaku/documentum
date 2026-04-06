@@ -52,6 +52,7 @@ class DocumentVersionResponse(BaseModel):
     filename: str
     content_type: str
     comment: str | None
+    is_signed: bool = False
     created_at: datetime
     created_by: str | None
 
