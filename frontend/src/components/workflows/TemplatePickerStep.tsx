@@ -9,17 +9,6 @@ interface TemplateItem {
   is_installed: boolean;
 }
 
-async function fetchTemplates(): Promise<TemplateItem[]> {
-  const token = localStorage.getItem("token");
-  const headers: HeadersInit = token
-    ? { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }
-    : { "Content-Type": "application/json" };
-  const res = await fetch("/api/v1/templates/", { headers });
-  if (!res.ok) throw new Error(`API error ${res.status}`);
-  const json = await res.json();
-  return json.data as TemplateItem[];
-}
-
 interface TemplatePickerStepProps {
   selectedTemplateId: string | null;
   onSelect: (id: string) => void;
@@ -31,7 +20,16 @@ export function TemplatePickerStep({
 }: TemplatePickerStepProps) {
   const { data: templates, isLoading } = useQuery({
     queryKey: ["templates"],
-    queryFn: fetchTemplates,
+    queryFn: async () => {
+      const token = localStorage.getItem("token");
+      const headers: HeadersInit = token
+        ? { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }
+        : { "Content-Type": "application/json" };
+      const res = await fetch("/api/v1/templates/", { headers });
+      if (!res.ok) throw new Error(`API error ${res.status}`);
+      const json = await res.json();
+      return json.data as TemplateItem[];
+    },
   });
 
   if (isLoading) {

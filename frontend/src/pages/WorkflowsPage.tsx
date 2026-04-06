@@ -53,11 +53,15 @@ export function WorkflowsPage() {
   // Fetch templates for filter dropdown
   const { data: templatesData } = useQuery({
     queryKey: ["templates"],
-    queryFn: () =>
-      apiFetchGeneric<{ data: TemplateListItem[] }>("/api/v1/templates/"),
+    queryFn: async () => {
+      const envelope = await apiFetchGeneric<{ data: TemplateListItem[] }>(
+        "/api/v1/templates/",
+      );
+      return envelope.data;
+    },
   });
 
-  const installedTemplates = (templatesData?.data ?? [])
+  const installedTemplates = (templatesData ?? [])
     .filter((t) => t.state === "active")
     .map((t) => ({ id: t.id, name: t.name }));
 
