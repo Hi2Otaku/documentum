@@ -4,6 +4,7 @@ import { EndNode } from './EndNode';
 import { ManualNode } from './ManualNode';
 import { AutoNode } from './AutoNode';
 import { SubWorkflowNode } from './SubWorkflowNode';
+import { EventNode } from './EventNode';
 
 export const nodeTypes: NodeTypes = {
   start: StartNode,
@@ -11,9 +12,11 @@ export const nodeTypes: NodeTypes = {
   manual: ManualNode,
   auto: AutoNode,
   sub_workflow: SubWorkflowNode,
+  event: EventNode,
   startNode: StartNode,
   endNode: EndNode,
   manualNode: ManualNode,
   autoNode: AutoNode,
-  subWorkflowNode: SubWorkflowNode,
+  sub_workflowNode: SubWorkflowNode,
+  eventNode: EventNode,
 };

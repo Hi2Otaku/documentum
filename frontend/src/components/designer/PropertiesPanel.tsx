@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { useDesignerStore } from '../../stores/designerStore';
 import type { ActivityNodeData, FlowEdgeData } from '../../types/designer';
 import type { ProcessVariable } from '../../types/workflow';
@@ -35,7 +35,9 @@ function NodeProperties({
                     ? 'bg-blue-100 text-blue-800'
                     : data.activityType === 'sub_workflow'
                       ? 'bg-purple-100 text-purple-800'
-                      : 'bg-orange-100 text-orange-800'
+                      : data.activityType === 'event'
+                        ? 'bg-amber-100 text-amber-800'
+                        : 'bg-orange-100 text-orange-800'
             }`}
           >
             {data.activityType}
@@ -219,78 +221,35 @@ function NodeProperties({
       {(data.activityType === 'manual' || data.activityType === 'auto') && (
         <div className="space-y-3 border-t pt-4 mt-4">
           <h4 className="text-sm font-semibold text-muted-foreground">Timer & Escalation</h4>
-
-          {/* Deadline Duration */}
           <div>
-            <label className="text-sm font-medium" htmlFor="deadline-hours">
-              Deadline Duration (hours)
-            </label>
-            <input
-              id="deadline-hours"
-              type="number"
-              min="0"
-              step="0.5"
-              placeholder="No deadline"
+            <label className="text-sm font-medium" htmlFor="deadline-hours">Deadline Duration (hours)</label>
+            <input id="deadline-hours" type="number" min="0" step="0.5" placeholder="No deadline"
               className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               value={data.expectedDurationHours ?? ''}
-              onChange={(e) =>
-                updateNodeData(nodeId, {
-                  expectedDurationHours: e.target.value ? parseFloat(e.target.value) : null,
-                })
-              }
+              onChange={(e) => updateNodeData(nodeId, { expectedDurationHours: e.target.value ? parseFloat(e.target.value) : null })}
             />
-            <p className="text-xs text-muted-foreground mt-1">
-              Hours from work item creation until deadline
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">Hours from work item creation until deadline</p>
           </div>
-
-          {/* Escalation Action */}
           <div>
-            <label className="text-sm font-medium" htmlFor="escalation-action">
-              Escalation Action
-            </label>
-            <select
-              id="escalation-action"
-              className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            <label className="text-sm font-medium" htmlFor="escalation-action">Escalation Action</label>
+            <select id="escalation-action" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               value={data.escalationAction ?? ''}
-              onChange={(e) =>
-                updateNodeData(nodeId, {
-                  escalationAction: e.target.value || null,
-                })
-              }
-            >
+              onChange={(e) => updateNodeData(nodeId, { escalationAction: e.target.value || null })}>
               <option value="">None</option>
               <option value="priority_bump">Priority Bump</option>
               <option value="reassign">Reassign to Supervisor</option>
               <option value="notify">Notify Only</option>
             </select>
-            <p className="text-xs text-muted-foreground mt-1">
-              Action taken when the deadline passes
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">Action taken when the deadline passes</p>
           </div>
-
-          {/* Warning Threshold */}
           <div>
-            <label className="text-sm font-medium" htmlFor="warning-hours">
-              Warning Before Deadline (hours)
-            </label>
-            <input
-              id="warning-hours"
-              type="number"
-              min="0"
-              step="0.5"
-              placeholder="Auto (25% of deadline)"
+            <label className="text-sm font-medium" htmlFor="warning-hours">Warning Before Deadline (hours)</label>
+            <input id="warning-hours" type="number" min="0" step="0.5" placeholder="Auto (25% of deadline)"
               className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               value={data.warningThresholdHours ?? ''}
-              onChange={(e) =>
-                updateNodeData(nodeId, {
-                  warningThresholdHours: e.target.value ? parseFloat(e.target.value) : null,
-                })
-              }
+              onChange={(e) => updateNodeData(nodeId, { warningThresholdHours: e.target.value ? parseFloat(e.target.value) : null })}
             />
-            <p className="text-xs text-muted-foreground mt-1">
-              Hours before deadline to send warning notification (default: 25% of duration)
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">Hours before deadline to send warning notification (default: 25% of duration)</p>
           </div>
         </div>
       )}
@@ -301,6 +260,15 @@ function NodeProperties({
           nodeId={nodeId}
           subTemplateId={data.subTemplateId ?? null}
           variableMapping={data.variableMapping ?? null}
+        />
+      )}
+
+      {/* Event configuration (event nodes only) */}
+      {data.activityType === 'event' && (
+        <EventConfig
+          nodeId={nodeId}
+          eventTypeFilter={data.eventTypeFilter ?? null}
+          eventFilterConfig={data.eventFilterConfig ?? null}
         />
       )}
     </div>
@@ -326,28 +294,19 @@ function SubWorkflowConfig({
   const [templates, setTemplates] = useState<TemplateSummary[]>([]);
   const [mappingRows, setMappingRows] = useState<{ parentVar: string; childVar: string }[]>([]);
 
-  // Fetch available templates
   useEffect(() => {
     fetch('/api/templates?state=active')
       .then((res) => (res.ok ? res.json() : { data: [] }))
       .then((json) => {
         const list = Array.isArray(json.data) ? json.data : Array.isArray(json) ? json : [];
-        setTemplates(
-          list.map((t: { id: string; name: string }) => ({ id: t.id, name: t.name })),
-        );
+        setTemplates(list.map((t: { id: string; name: string }) => ({ id: t.id, name: t.name })));
       })
       .catch(() => setTemplates([]));
   }, []);
 
-  // Sync mapping rows from data prop
   useEffect(() => {
     if (variableMapping) {
-      setMappingRows(
-        Object.entries(variableMapping).map(([parentVar, childVar]) => ({
-          parentVar,
-          childVar,
-        })),
-      );
+      setMappingRows(Object.entries(variableMapping).map(([parentVar, childVar]) => ({ parentVar, childVar })));
     } else {
       setMappingRows([]);
     }
@@ -360,100 +319,158 @@ function SubWorkflowConfig({
   const syncMapping = (rows: { parentVar: string; childVar: string }[]) => {
     const obj: Record<string, string> = {};
     for (const row of rows) {
-      if (row.parentVar.trim()) {
-        obj[row.parentVar.trim()] = row.childVar.trim();
+      if (row.parentVar.trim()) obj[row.parentVar.trim()] = row.childVar.trim();
+    }
+    updateNodeData(nodeId, { variableMapping: Object.keys(obj).length > 0 ? obj : null });
+  };
+
+  const addRow = () => { setMappingRows([...mappingRows, { parentVar: '', childVar: '' }]); };
+  const removeRow = (index: number) => { const next = mappingRows.filter((_, i) => i !== index); setMappingRows(next); syncMapping(next); };
+  const updateRow = (index: number, field: 'parentVar' | 'childVar', value: string) => {
+    const next = [...mappingRows]; next[index] = { ...next[index], [field]: value }; setMappingRows(next); syncMapping(next);
+  };
+
+  return (
+    <div className="space-y-3">
+      <h4 className="text-sm font-semibold text-muted-foreground">Sub-Workflow</h4>
+      <div>
+        <label className="text-sm font-medium" htmlFor="sub-template">Sub-Workflow Template</label>
+        <select id="sub-template" className="mt-1 w-full rounded border px-3 py-2 text-sm"
+          value={subTemplateId ?? ''} onChange={(e) => handleTemplateChange(e.target.value)}>
+          <option value="" disabled>Select a template...</option>
+          {templates.map((t) => (<option key={t.id} value={t.id}>{t.name}</option>))}
+        </select>
+      </div>
+      <div>
+        <label className="text-sm font-medium">Variable Mapping (Parent -&gt; Child)</label>
+        <div className="mt-1 space-y-2">
+          {mappingRows.map((row, idx) => (
+            <div key={idx} className="flex items-center gap-1">
+              <input type="text" className="flex-1 rounded border px-2 py-1 text-sm" placeholder="Parent var"
+                value={row.parentVar} onChange={(e) => updateRow(idx, 'parentVar', e.target.value)} />
+              <span className="text-muted-foreground">→</span>
+              <input type="text" className="flex-1 rounded border px-2 py-1 text-sm" placeholder="Child var"
+                value={row.childVar} onChange={(e) => updateRow(idx, 'childVar', e.target.value)} />
+              <button onClick={() => removeRow(idx)} className="px-2 text-red-500 hover:text-red-700 text-sm" aria-label="Remove mapping">x</button>
+            </div>
+          ))}
+          <button onClick={addRow} className="text-sm text-primary hover:underline">+ Add Mapping</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---- Event Configuration ----
+function EventConfig({
+  nodeId,
+  eventTypeFilter,
+  eventFilterConfig,
+}: {
+  nodeId: string;
+  eventTypeFilter: string | null;
+  eventFilterConfig: Record<string, string> | null;
+}) {
+  const updateNodeData = useDesignerStore((s) => s.updateNodeData);
+
+  const filterRows = eventFilterConfig
+    ? Object.entries(eventFilterConfig).map(([key, value]) => ({ key, value }))
+    : [];
+
+  const syncFilterConfig = (rows: { key: string; value: string }[]) => {
+    if (rows.length === 0) {
+      updateNodeData(nodeId, { eventFilterConfig: null });
+      return;
+    }
+    const obj: Record<string, string> = {};
+    for (const row of rows) {
+      if (row.key.trim()) {
+        obj[row.key.trim()] = row.value;
       }
     }
     updateNodeData(nodeId, {
-      variableMapping: Object.keys(obj).length > 0 ? obj : null,
+      eventFilterConfig: Object.keys(obj).length > 0 ? obj : null,
     });
   };
 
-  const addRow = () => {
-    const next = [...mappingRows, { parentVar: '', childVar: '' }];
-    setMappingRows(next);
+  const addFilterRow = () => {
+    syncFilterConfig([...filterRows, { key: '', value: '' }]);
   };
 
-  const removeRow = (index: number) => {
-    const next = mappingRows.filter((_, i) => i !== index);
-    setMappingRows(next);
-    syncMapping(next);
+  const removeFilterRow = (index: number) => {
+    syncFilterConfig(filterRows.filter((_, i) => i !== index));
   };
 
-  const updateRow = (index: number, field: 'parentVar' | 'childVar', value: string) => {
-    const next = [...mappingRows];
-    next[index] = { ...next[index], [field]: value };
-    setMappingRows(next);
-    syncMapping(next);
+  const updateFilterRow = (index: number, field: 'key' | 'value', val: string) => {
+    const updated = [...filterRows];
+    updated[index] = { ...updated[index], [field]: val };
+    syncFilterConfig(updated);
   };
 
   return (
     <div className="space-y-3">
       <h4 className="text-sm font-semibold text-muted-foreground">
-        Sub-Workflow
+        Event Configuration
       </h4>
 
-      {/* Template selector */}
+      {/* Event Type */}
       <div>
-        <label className="text-sm font-medium" htmlFor="sub-template">
-          Sub-Workflow Template
+        <label className="text-sm font-medium" htmlFor="event-type-filter">
+          Event Type
         </label>
         <select
-          id="sub-template"
+          id="event-type-filter"
           className="mt-1 w-full rounded border px-3 py-2 text-sm"
-          value={subTemplateId ?? ''}
-          onChange={(e) => handleTemplateChange(e.target.value)}
+          value={eventTypeFilter ?? ''}
+          onChange={(e) =>
+            updateNodeData(nodeId, {
+              eventTypeFilter: e.target.value || null,
+            })
+          }
         >
           <option value="" disabled>
-            Select a template...
+            Select event type...
           </option>
-          {templates.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name}
-            </option>
-          ))}
+          <option value="document.uploaded">Document Uploaded</option>
+          <option value="lifecycle.changed">Lifecycle Changed</option>
+          <option value="workflow.completed">Workflow Completed</option>
         </select>
       </div>
 
-      {/* Variable mapping editor */}
-      <div>
-        <label className="text-sm font-medium">
-          Variable Mapping (Parent -&gt; Child)
-        </label>
-        <div className="mt-1 space-y-2">
-          {mappingRows.map((row, idx) => (
-            <div key={idx} className="flex items-center gap-1">
-              <input
-                type="text"
-                className="flex-1 rounded border px-2 py-1 text-sm"
-                placeholder="Parent var"
-                value={row.parentVar}
-                onChange={(e) => updateRow(idx, 'parentVar', e.target.value)}
-              />
-              <span className="text-xs text-muted-foreground shrink-0">-&gt;</span>
-              <input
-                type="text"
-                className="flex-1 rounded border px-2 py-1 text-sm"
-                placeholder="Child var"
-                value={row.childVar}
-                onChange={(e) => updateRow(idx, 'childVar', e.target.value)}
-              />
-              <button
-                onClick={() => removeRow(idx)}
-                className="px-2 text-red-500 hover:text-red-700 text-sm"
-                aria-label="Remove mapping"
-              >
-                x
-              </button>
-            </div>
-          ))}
-          <button
-            onClick={addRow}
-            className="text-sm text-primary hover:underline"
-          >
-            + Add Mapping
-          </button>
-        </div>
+      {/* Filter Criteria */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Filter Criteria (optional)</label>
+        {filterRows.map((row, idx) => (
+          <div key={idx} className="flex gap-1">
+            <input
+              type="text"
+              className="flex-1 rounded border px-2 py-1 text-sm"
+              placeholder="Key"
+              value={row.key}
+              onChange={(e) => updateFilterRow(idx, 'key', e.target.value)}
+            />
+            <input
+              type="text"
+              className="flex-1 rounded border px-2 py-1 text-sm"
+              placeholder="Value"
+              value={row.value}
+              onChange={(e) => updateFilterRow(idx, 'value', e.target.value)}
+            />
+            <button
+              onClick={() => removeFilterRow(idx)}
+              className="px-2 text-red-500 hover:text-red-700 text-sm"
+              aria-label="Remove filter"
+            >
+              x
+            </button>
+          </div>
+        ))}
+        <button
+          onClick={addFilterRow}
+          className="text-sm text-primary hover:underline"
+        >
+          + Add filter
+        </button>
       </div>
     </div>
   );

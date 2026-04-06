@@ -1,4 +1,4 @@
-import { Play, User, Zap, Square, GitBranch, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Play, User, Zap, GitBranch, Radio, Square, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useUiStore } from '../../stores/uiStore';
 
 interface PaletteItem {
@@ -28,10 +28,16 @@ const PALETTE_ITEMS: PaletteItem[] = [
     accentColor: 'border-l-orange-500',
   },
   {
-    nodeType: 'subWorkflowNode',
+    nodeType: 'sub_workflowNode',
     label: 'Sub-Workflow',
     icon: <GitBranch className="w-4 h-4" />,
     accentColor: 'border-l-purple-500',
+  },
+  {
+    nodeType: 'eventNode',
+    label: 'Event',
+    icon: <Radio className="w-4 h-4" />,
+    accentColor: 'border-l-amber-500',
   },
   {
     nodeType: 'endNode',
