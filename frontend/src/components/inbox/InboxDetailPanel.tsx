@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Card, CardContent } from "../ui/card";
@@ -8,6 +9,9 @@ import { WorkItemStateBadge } from "./WorkItemStateBadge";
 import { PriorityIcon } from "./PriorityIcon";
 import { CommentList } from "./CommentList";
 import { CommentCompose } from "./CommentCompose";
+import { CompleteDialog } from "./CompleteDialog";
+import { RejectDialog } from "./RejectDialog";
+import { DelegateDialog } from "./DelegateDialog";
 import { fetchInboxItem, fetchComments, acquireWorkItem } from "../../api/inbox";
 import { useAuthStore } from "../../stores/authStore";
 
@@ -18,6 +22,9 @@ interface InboxDetailPanelProps {
 export function InboxDetailPanel({ workItemId }: InboxDetailPanelProps) {
   const userId = useAuthStore((s) => s.userId);
   const queryClient = useQueryClient();
+  const [completeOpen, setCompleteOpen] = useState(false);
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [delegateOpen, setDelegateOpen] = useState(false);
 
   const { data: item, isLoading: itemLoading } = useQuery({
     queryKey: ["inbox", workItemId],
@@ -134,7 +141,6 @@ export function InboxDetailPanel({ workItemId }: InboxDetailPanelProps) {
 
       {/* Actions */}
       <div className="px-6 pb-4" id="inbox-actions-slot">
-        {/* Action buttons added by Plan 03 */}
         <div className="flex gap-2">
           {item.state === "available" && (
             <Button
@@ -148,18 +154,45 @@ export function InboxDetailPanel({ workItemId }: InboxDetailPanelProps) {
           )}
           {item.state === "acquired" && item.performer_id === userId && (
             <>
-              <Button variant="default" size="sm">
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => setCompleteOpen(true)}
+              >
                 Complete
               </Button>
-              <Button variant="outline" size="sm" className="text-destructive">
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-destructive hover:text-destructive"
+                onClick={() => setRejectOpen(true)}
+              >
                 Reject
               </Button>
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDelegateOpen(true)}
+              >
                 Delegate
               </Button>
             </>
           )}
         </div>
+        <CompleteDialog
+          workItemId={workItemId}
+          open={completeOpen}
+          onOpenChange={setCompleteOpen}
+        />
+        <RejectDialog
+          workItemId={workItemId}
+          open={rejectOpen}
+          onOpenChange={setRejectOpen}
+        />
+        <DelegateDialog
+          open={delegateOpen}
+          onOpenChange={setDelegateOpen}
+        />
       </div>
 
       <Separator />
