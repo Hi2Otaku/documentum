@@ -55,8 +55,8 @@ Requirements for milestone v1.2: Advanced Engine & Document Platform.
 
 ### Retention & Records Management
 
-- [ ] **RET-01**: Admin can create retention policies with retention period and disposition action
-- [ ] **RET-02**: Admin can assign retention policies to documents
+- [x] **RET-01**: Admin can create retention policies with retention period and disposition action
+- [x] **RET-02**: Admin can assign retention policies to documents
 - [ ] **RET-03**: System blocks deletion of documents under active retention
 - [ ] **RET-04**: Admin can place legal holds on documents that override retention expiration
 
@@ -157,8 +157,8 @@ Explicitly excluded from v1.2.
 | VDOC-02 | Phase 21 | Pending |
 | VDOC-03 | Phase 21 | Pending |
 | VDOC-04 | Phase 21 | Pending |
-| RET-01 | Phase 22 | Pending |
-| RET-02 | Phase 22 | Pending |
+| RET-01 | Phase 22 | Complete |
+| RET-02 | Phase 22 | Complete |
 | RET-03 | Phase 22 | Pending |
 | RET-04 | Phase 22 | Pending |
 | SIG-01 | Phase 23 | Pending |

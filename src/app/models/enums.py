@@ -13,8 +13,6 @@ class ActivityType(str, enum.Enum):
     END = "end"
     MANUAL = "manual"
     AUTO = "auto"
-    SUB_WORKFLOW = "sub_workflow"
-    EVENT = "event"
 
 
 class FlowType(str, enum.Enum):
@@ -82,13 +80,6 @@ class PermissionLevel(str, enum.Enum):
     ADMIN = "admin"
 
 
-class RenditionType(str, enum.Enum):
-    PDF = "pdf"
-    THUMBNAIL = "thumbnail"
-
-
-class RenditionStatus(str, enum.Enum):
-    PENDING = "pending"
-    PROCESSING = "processing"
-    READY = "ready"
-    FAILED = "failed"
+class DispositionAction(str, enum.Enum):
+    ARCHIVE = "archive"
+    DELETE = "delete"
