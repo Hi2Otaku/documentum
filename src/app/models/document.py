@@ -78,3 +78,7 @@ class DocumentVersion(BaseModel):
     comment: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     document: Mapped["Document"] = relationship(back_populates="versions")
+    renditions: Mapped[list["Rendition"]] = relationship(  # noqa: F821
+        back_populates="document_version",
+        order_by="Rendition.created_at",
+    )
