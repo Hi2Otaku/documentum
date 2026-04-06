@@ -158,6 +158,23 @@ async def update_document_metadata(
     """Update document metadata fields. Only non-None fields are changed."""
     document = await get_document(db, document_id)
 
+    # Block metadata update if the current version is signed (immutability)
+    latest_result = await db.execute(
+        select(DocumentVersion)
+        .where(DocumentVersion.document_id == document_id)
+        .order_by(
+            DocumentVersion.major_version.desc(),
+            DocumentVersion.minor_version.desc(),
+        )
+        .limit(1)
+    )
+    latest_ver = latest_result.scalar_one_or_none()
+    if latest_ver is not None and latest_ver.is_signed:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Cannot modify metadata: the current version is digitally signed and immutable",
+        )
+
     before_state = {
         "title": document.title,
         "author": document.author,
@@ -199,6 +216,23 @@ async def checkout_document(
 ) -> Document:
     """Check out (lock) a document for editing."""
     document = await get_document(db, document_id)
+
+    # Block checkout if the current version is signed (immutability)
+    latest_result = await db.execute(
+        select(DocumentVersion)
+        .where(DocumentVersion.document_id == document_id)
+        .order_by(
+            DocumentVersion.major_version.desc(),
+            DocumentVersion.minor_version.desc(),
+        )
+        .limit(1)
+    )
+    latest_ver = latest_result.scalar_one_or_none()
+    if latest_ver is not None and latest_ver.is_signed:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Cannot check out: the current version is digitally signed and immutable",
+        )
 
     if document.locked_by is not None:
         raise HTTPException(
@@ -257,6 +291,13 @@ async def checkin_document(
         .limit(1)
     )
     latest_version = result.scalar_one_or_none()
+
+    # Block check-in if the latest version is signed (immutability)
+    if latest_version is not None and latest_version.is_signed:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Cannot check in a new version: the current version is digitally signed and immutable",
+        )
 
     # SHA-256 dedup: if content unchanged, just release lock
     if latest_version is not None and latest_version.content_hash == content_hash:

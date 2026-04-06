@@ -55,17 +55,17 @@ Requirements for milestone v1.2: Advanced Engine & Document Platform.
 
 ### Retention & Records Management
 
-- [x] **RET-01**: Admin can create retention policies with retention period and disposition action
-- [x] **RET-02**: Admin can assign retention policies to documents
-- [x] **RET-03**: System blocks deletion of documents under active retention
-- [x] **RET-04**: Admin can place legal holds on documents that override retention expiration
+- [ ] **RET-01**: Admin can create retention policies with retention period and disposition action
+- [ ] **RET-02**: Admin can assign retention policies to documents
+- [ ] **RET-03**: System blocks deletion of documents under active retention
+- [ ] **RET-04**: Admin can place legal holds on documents that override retention expiration
 
 ### Digital Signatures
 
-- [ ] **SIG-01**: User can digitally sign a specific document version (PKCS7/CMS signature)
-- [ ] **SIG-02**: User can verify the signature on a signed document version
-- [ ] **SIG-03**: User can view all signatures on a document with signer, timestamp, and validity
-- [ ] **SIG-04**: System enforces immutability on signed document versions (no re-upload or modification)
+- [x] **SIG-01**: User can digitally sign a specific document version (PKCS7/CMS signature)
+- [x] **SIG-02**: User can verify the signature on a signed document version
+- [x] **SIG-03**: User can view all signatures on a document with signer, timestamp, and validity
+- [x] **SIG-04**: System enforces immutability on signed document versions (no re-upload or modification)
 
 ## Future Requirements
 
@@ -157,14 +157,14 @@ Explicitly excluded from v1.2.
 | VDOC-02 | Phase 21 | Pending |
 | VDOC-03 | Phase 21 | Pending |
 | VDOC-04 | Phase 21 | Pending |
-| RET-01 | Phase 22 | Complete |
-| RET-02 | Phase 22 | Complete |
-| RET-03 | Phase 22 | Complete |
-| RET-04 | Phase 22 | Complete |
-| SIG-01 | Phase 23 | Pending |
-| SIG-02 | Phase 23 | Pending |
-| SIG-03 | Phase 23 | Pending |
-| SIG-04 | Phase 23 | Pending |
+| RET-01 | Phase 22 | Pending |
+| RET-02 | Phase 22 | Pending |
+| RET-03 | Phase 22 | Pending |
+| RET-04 | Phase 22 | Pending |
+| SIG-01 | Phase 23 | Complete |
+| SIG-02 | Phase 23 | Complete |
+| SIG-03 | Phase 23 | Complete |
+| SIG-04 | Phase 23 | Complete |
 
 **Coverage:**
 - v1.2 requirements: 36 total
