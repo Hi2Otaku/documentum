@@ -6,7 +6,7 @@ activities, and expression-based conditional routing.
 """
 import logging
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from sqlalchemy import func, select
@@ -130,6 +130,20 @@ def _set_variable_value(pv: ProcessVariable, value: Any) -> None:
             pv.date_value = value
         case _:
             pv.string_value = str(value) if value is not None else None
+
+
+# ---------------------------------------------------------------------------
+# Section 2b-0: Due date computation (Phase 17 - Timer/Escalation)
+# ---------------------------------------------------------------------------
+
+
+def _compute_due_date(activity_template) -> datetime | None:
+    """Calculate work item due date from activity template deadline config."""
+    if activity_template and activity_template.expected_duration_hours is not None:
+        return datetime.now(timezone.utc) + timedelta(
+            hours=activity_template.expected_duration_hours
+        )
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -572,6 +586,7 @@ async def _advance_from_activity(
                             queue_id=uuid.UUID(target_at.performer_id),
                             state=WorkItemState.AVAILABLE,
                             created_by=user_id,
+                            due_date=_compute_due_date(target_at),
                         )
                         db.add(work_item)
                     elif target_at.performer_type == "sequential":
@@ -592,6 +607,7 @@ async def _advance_from_activity(
                                 performer_id=perf_id,
                                 state=WorkItemState.AVAILABLE,
                                 created_by=user_id,
+                                due_date=_compute_due_date(target_at),
                             )
                             db.add(work_item)
                     elif target_at.performer_type == "runtime_selection" and next_performer_id:
@@ -605,6 +621,7 @@ async def _advance_from_activity(
                                 performer_id=perf_id,
                                 state=WorkItemState.AVAILABLE,
                                 created_by=user_id,
+                                due_date=_compute_due_date(target_at),
                             )
                             db.add(work_item)
                     else:
@@ -626,6 +643,7 @@ async def _advance_from_activity(
                                 performer_id=perf_id,
                                 state=WorkItemState.AVAILABLE,
                                 created_by=user_id,
+                                due_date=_compute_due_date(target_at),
                             )
                             db.add(work_item)
 
@@ -799,6 +817,7 @@ async def complete_work_item(
                 performer_id=next_perf_id,
                 state=WorkItemState.AVAILABLE,
                 created_by=user_id,
+                due_date=_compute_due_date(activity_template),
             )
             db.add(new_wi)
             await db.flush()
@@ -945,6 +964,7 @@ async def reject_work_item(
             performer_id=prev_perf_id,
             state=WorkItemState.AVAILABLE,
             created_by=user_id,
+            due_date=_compute_due_date(activity_template),
         )
         db.add(new_wi)
         await db.flush()
@@ -1009,6 +1029,7 @@ async def reject_work_item(
                     performer_id=perf_id,
                     state=WorkItemState.AVAILABLE,
                     created_by=user_id,
+                    due_date=_compute_due_date(target_at),
                 )
                 db.add(new_wi)
 
