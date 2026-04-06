@@ -88,5 +88,5 @@ Phases execute in numeric order: 12 -> 13 -> 14 -> 15
 |-------|----------------|--------|-----------|
 | 12. Navigation & App Shell | 2/2 | Complete    | 2026-04-06 |
 | 13. Inbox & Work Items | 3/3 | Complete    | 2026-04-06 |
-| 14. Document Management | 3/3 | Complete   | 2026-04-06 |
+| 14. Document Management | 3/3 | Complete    | 2026-04-06 |
 | 15. Workflow Operations | 0/TBD | Not started | - |
