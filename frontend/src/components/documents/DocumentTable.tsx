@@ -13,6 +13,7 @@ import {
   TableHead,
   TableCell,
 } from "../ui/table";
+import { File, FileText, FileSpreadsheet, Image } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Skeleton } from "../ui/skeleton";
@@ -61,6 +62,23 @@ function formatRelativeDate(dateStr: string): string {
   return date.toLocaleDateString();
 }
 
+function FileTypeIcon({ contentType }: { contentType: string }) {
+  if (contentType.startsWith("image/")) {
+    return <Image className="h-5 w-5 text-muted-foreground" />;
+  }
+  if (contentType === "application/pdf") {
+    return <FileText className="h-5 w-5 text-muted-foreground" />;
+  }
+  if (
+    contentType.includes("spreadsheet") ||
+    contentType.includes("excel") ||
+    contentType === "text/csv"
+  ) {
+    return <FileSpreadsheet className="h-5 w-5 text-muted-foreground" />;
+  }
+  return <File className="h-5 w-5 text-muted-foreground" />;
+}
+
 const columnHelper = createColumnHelper<DocumentResponse>();
 
 export function DocumentTable({
@@ -81,6 +99,14 @@ export function DocumentTable({
 }: DocumentTableProps) {
   const columns = useMemo(
     () => [
+      columnHelper.accessor("content_type", {
+        id: "thumbnail",
+        header: "",
+        cell: (info) => (
+          <FileTypeIcon contentType={info.getValue()} />
+        ),
+        size: 40,
+      }),
       columnHelper.accessor("title", {
         header: "Title",
         cell: (info) => (
