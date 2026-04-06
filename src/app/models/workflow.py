@@ -104,8 +104,15 @@ class ActivityTemplate(BaseModel):
     performer_list: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     lifecycle_action: Mapped[str | None] = mapped_column(String(255), nullable=True)
     expected_duration_hours: Mapped[float | None] = mapped_column(Float, nullable=True)
+    sub_template_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid(), ForeignKey("process_templates.id"), nullable=True
+    )
+    variable_mapping: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
-    process_template: Mapped["ProcessTemplate"] = relationship(back_populates="activity_templates")
+    process_template: Mapped["ProcessTemplate"] = relationship(
+        back_populates="activity_templates", foreign_keys=[process_template_id]
+    )
+    sub_template: Mapped["ProcessTemplate"] = relationship(foreign_keys=[sub_template_id])
 
 
 class FlowTemplate(BaseModel):
@@ -146,8 +153,19 @@ class WorkflowInstance(BaseModel):
         Uuid(), ForeignKey("users.id"), nullable=True
     )
     alias_snapshot: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    parent_workflow_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid(), ForeignKey("workflow_instances.id"), nullable=True
+    )
+    parent_activity_instance_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid(), ForeignKey("activity_instances.id"), nullable=True
+    )
+    nesting_depth: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)
 
     process_template: Mapped["ProcessTemplate"] = relationship(foreign_keys=[process_template_id])
+    parent_workflow: Mapped["WorkflowInstance | None"] = relationship(
+        foreign_keys=[parent_workflow_id], remote_side="WorkflowInstance.id"
+    )
+    parent_activity_instance: Mapped["ActivityInstance | None"] = relationship(foreign_keys=[parent_activity_instance_id])
     activity_instances: Mapped[list["ActivityInstance"]] = relationship(back_populates="workflow_instance", foreign_keys="[ActivityInstance.workflow_instance_id]")
     work_items: Mapped[list["WorkItem"]] = relationship(
         primaryjoin="WorkflowInstance.id == ActivityInstance.workflow_instance_id",
