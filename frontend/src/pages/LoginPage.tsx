@@ -18,7 +18,7 @@ export function LoginPage() {
 
   // If already authenticated, redirect
   if (isAuthenticated) {
-    navigate("/templates", { replace: true });
+    navigate("/inbox", { replace: true });
     return null;
   }
 
@@ -30,7 +30,8 @@ export function LoginPage() {
     try {
       const token = await loginApi(username, password);
       setToken(token);
-      navigate("/templates");
+      await useAuthStore.getState().loadProfile();
+      navigate("/inbox");
     } catch {
       setError("Invalid username or password.");
     } finally {
