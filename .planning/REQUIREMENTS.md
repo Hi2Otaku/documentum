@@ -41,10 +41,10 @@ Requirements for milestone v1.2: Advanced Engine & Document Platform.
 
 ### Document Renditions
 
-- [x] **REND-01**: System auto-generates PDF rendition when a document is uploaded (via LibreOffice headless worker)
-- [x] **REND-02**: System auto-generates thumbnail image for uploaded documents
-- [x] **REND-03**: User can download the PDF rendition of any document version
-- [x] **REND-04**: Rendition status is visible in the document detail view (pending, ready, failed)
+- [ ] **REND-01**: System auto-generates PDF rendition when a document is uploaded (via LibreOffice headless worker)
+- [ ] **REND-02**: System auto-generates thumbnail image for uploaded documents
+- [ ] **REND-03**: User can download the PDF rendition of any document version
+- [ ] **REND-04**: Rendition status is visible in the document detail view (pending, ready, failed)
 
 ### Virtual Documents
 
@@ -57,8 +57,8 @@ Requirements for milestone v1.2: Advanced Engine & Document Platform.
 
 - [x] **RET-01**: Admin can create retention policies with retention period and disposition action
 - [x] **RET-02**: Admin can assign retention policies to documents
-- [ ] **RET-03**: System blocks deletion of documents under active retention
-- [ ] **RET-04**: Admin can place legal holds on documents that override retention expiration
+- [x] **RET-03**: System blocks deletion of documents under active retention
+- [x] **RET-04**: Admin can place legal holds on documents that override retention expiration
 
 ### Digital Signatures
 
@@ -149,18 +149,18 @@ Explicitly excluded from v1.2.
 | EVTACT-01 | Phase 19 | Pending |
 | EVTACT-02 | Phase 19 | Pending |
 | EVTACT-03 | Phase 19 | Pending |
-| REND-01 | Phase 20 | Complete |
-| REND-02 | Phase 20 | Complete |
-| REND-03 | Phase 20 | Complete |
-| REND-04 | Phase 20 | Complete |
+| REND-01 | Phase 20 | Pending |
+| REND-02 | Phase 20 | Pending |
+| REND-03 | Phase 20 | Pending |
+| REND-04 | Phase 20 | Pending |
 | VDOC-01 | Phase 21 | Pending |
 | VDOC-02 | Phase 21 | Pending |
 | VDOC-03 | Phase 21 | Pending |
 | VDOC-04 | Phase 21 | Pending |
 | RET-01 | Phase 22 | Complete |
 | RET-02 | Phase 22 | Complete |
-| RET-03 | Phase 22 | Pending |
-| RET-04 | Phase 22 | Pending |
+| RET-03 | Phase 22 | Complete |
+| RET-04 | Phase 22 | Complete |
 | SIG-01 | Phase 23 | Pending |
 | SIG-02 | Phase 23 | Pending |
 | SIG-03 | Phase 23 | Pending |
