@@ -12,7 +12,7 @@ Requirements for milestone v1.2: Advanced Engine & Document Platform.
 - [x] **NOTIF-01**: User receives in-app notification when a work item is assigned to them
 - [x] **NOTIF-02**: User receives in-app notification when a task is delegated to them
 - [ ] **NOTIF-03**: User receives in-app notification when a work item deadline is approaching
-- [ ] **NOTIF-04**: User receives email notification for task assignment and deadline events
+- [x] **NOTIF-04**: User receives email notification for task assignment and deadline events
 - [x] **NOTIF-05**: User can view notification list with unread count badge in the UI
 - [x] **NOTIF-06**: User can mark notifications as read individually or in bulk
 - [x] **EVENT-01**: System emits domain events on document upload, lifecycle change, and workflow state transitions
@@ -132,7 +132,7 @@ Explicitly excluded from v1.2.
 | NOTIF-01 | Phase 16 | Complete |
 | NOTIF-02 | Phase 16 | Complete |
 | NOTIF-03 | Phase 16 | Pending |
-| NOTIF-04 | Phase 16 | Pending |
+| NOTIF-04 | Phase 16 | Complete |
 | NOTIF-05 | Phase 16 | Complete |
 | NOTIF-06 | Phase 16 | Complete |
 | EVENT-01 | Phase 16 | Complete |
