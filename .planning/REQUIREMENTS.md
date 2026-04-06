@@ -41,10 +41,10 @@ Requirements for milestone v1.2: Advanced Engine & Document Platform.
 
 ### Document Renditions
 
-- [ ] **REND-01**: System auto-generates PDF rendition when a document is uploaded (via LibreOffice headless worker)
-- [ ] **REND-02**: System auto-generates thumbnail image for uploaded documents
-- [ ] **REND-03**: User can download the PDF rendition of any document version
-- [ ] **REND-04**: Rendition status is visible in the document detail view (pending, ready, failed)
+- [x] **REND-01**: System auto-generates PDF rendition when a document is uploaded (via LibreOffice headless worker)
+- [x] **REND-02**: System auto-generates thumbnail image for uploaded documents
+- [x] **REND-03**: User can download the PDF rendition of any document version
+- [x] **REND-04**: Rendition status is visible in the document detail view (pending, ready, failed)
 
 ### Virtual Documents
 
@@ -149,10 +149,10 @@ Explicitly excluded from v1.2.
 | EVTACT-01 | Phase 19 | Pending |
 | EVTACT-02 | Phase 19 | Pending |
 | EVTACT-03 | Phase 19 | Pending |
-| REND-01 | Phase 20 | Pending |
-| REND-02 | Phase 20 | Pending |
-| REND-03 | Phase 20 | Pending |
-| REND-04 | Phase 20 | Pending |
+| REND-01 | Phase 20 | Complete |
+| REND-02 | Phase 20 | Complete |
+| REND-03 | Phase 20 | Complete |
+| REND-04 | Phase 20 | Complete |
 | VDOC-01 | Phase 21 | Pending |
 | VDOC-02 | Phase 21 | Pending |
 | VDOC-03 | Phase 21 | Pending |
