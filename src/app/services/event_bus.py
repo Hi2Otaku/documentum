@@ -87,3 +87,26 @@ class EventBus:
 
 # Singleton event bus instance
 event_bus = EventBus()
+
+
+async def get_events(
+    db: AsyncSession,
+    *,
+    event_type: str | None = None,
+    entity_id: uuid.UUID | None = None,
+    limit: int = 50,
+    offset: int = 0,
+) -> list[DomainEvent]:
+    """Query persisted domain events with optional filters."""
+    from sqlalchemy import select
+
+    stmt = select(DomainEvent).order_by(DomainEvent.created_at.desc())
+
+    if event_type is not None:
+        stmt = stmt.where(DomainEvent.event_type == event_type)
+    if entity_id is not None:
+        stmt = stmt.where(DomainEvent.entity_id == entity_id)
+
+    stmt = stmt.offset(offset).limit(limit)
+    result = await db.execute(stmt)
+    return list(result.scalars().all())
