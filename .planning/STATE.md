@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Advanced Engine & Document Platform
 status: executing
-stopped_at: Completed 17-01-PLAN.md
-last_updated: "2026-04-06T16:31:29.799Z"
+stopped_at: Completed 17-02-PLAN.md
+last_updated: "2026-04-06T16:43:15.144Z"
 last_activity: 2026-04-06
 progress:
   total_phases: 8
-  completed_phases: 1
-  total_plans: 7
-  completed_plans: 5
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 2
   percent: 10
 ---
 
@@ -56,6 +56,7 @@ Progress: [=.........] 10% (v1.2: 2/3 plans in phase 16)
 | Phase 16 P02 | 3m | 2 tasks | 9 files |
 | Phase 16 P04 | 2m | 2 tasks | 4 files |
 | Phase 17 P01 | 4min | 2 tasks | 4 files |
+| Phase 17 P02 | 9min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,7 @@ Recent decisions affecting current work:
 - [Phase 16]: Redis publish placed in create_notification() covering all notification creation paths
 - [Phase 16]: NOTIF-03 deferred to Phase 17 (requires WorkItem.due_date)
 - [Phase 17]: escalation_action stored as String(50) not Enum for flexible extension
+- [Phase 17]: Default warning threshold is 25% of expected_duration_hours; priority bump decreases by 2 clamped at 1
 
 ### Pending Todos
 
@@ -88,6 +90,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-06T16:31:29.795Z
-Stopped at: Completed 17-01-PLAN.md
+Last session: 2026-04-06T16:43:15.140Z
+Stopped at: Completed 17-02-PLAN.md
 Resume file: None
