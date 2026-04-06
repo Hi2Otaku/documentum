@@ -13,7 +13,7 @@ This roadmap delivers the full frontend experience for the Documentum Workflow C
 
 - [x] **Phase 12: Navigation & App Shell** - Persistent sidebar, page routing, active state indicators, role-based visibility, and user menu (completed 2026-04-06)
 - [x] **Phase 13: Inbox & Work Items** - Work item list with filtering, detail view, complete/reject actions, delegation, availability toggle, and work queue browsing (completed 2026-04-06)
-- [x] **Phase 14: Document Management** - Document upload, browsing with filters, version history, check-in/check-out, and lifecycle state transitions (completed 2026-04-06)
+- [x] **Phase 14: Document Management** - Document upload, browsing with filters, version history, check-in/check-out, and lifecycle state transitions (completed 2026-04-06)
 - [ ] **Phase 15: Workflow Operations** - Start workflow wizard, instance list with monitoring, admin controls, and read-only React Flow progress view
 
 ## Phase Details
@@ -76,7 +76,11 @@ Plans:
   2. User can view running workflow instances in a paginated list with filters for template, state, and date range
   3. Admin can halt, resume, or terminate a workflow instance directly from the instance list or detail view
   4. User can view a workflow's current progress on a read-only React Flow graph where completed activities are visually distinct from active and pending ones
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 15-01-PLAN.md — API module, TypeScript types, shared components (WorkflowStateBadge, EmptyState), install Checkbox/Switch
+- [ ] 15-02-PLAN.md — WorkflowsPage split-pane layout, WorkflowTable with filters/pagination, WorkflowDetailPanel with admin actions
+- [ ] 15-03-PLAN.md — Start Workflow wizard dialog (4 steps) and read-only React Flow progress graph
 **UI hint**: yes
 
 ## Progress
@@ -89,4 +93,4 @@ Phases execute in numeric order: 12 -> 13 -> 14 -> 15
 | 12. Navigation & App Shell | 2/2 | Complete    | 2026-04-06 |
 | 13. Inbox & Work Items | 3/3 | Complete    | 2026-04-06 |
 | 14. Document Management | 3/3 | Complete    | 2026-04-06 |
-| 15. Workflow Operations | 0/TBD | Not started | - |
+| 15. Workflow Operations | 0/3 | Not started | - |
