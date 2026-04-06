@@ -145,7 +145,7 @@ Phases execute in numeric order: 16 -> 17 -> 18 -> 19 -> 20 -> 21 -> 22 -> 23
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 16. Notifications & Event Bus | 2/3 | In Progress|  |
+| 16. Notifications & Event Bus | 3/3 | Complete   | 2026-04-06 |
 | 17. Timer Activities & Escalation | 0/? | Not started | - |
 | 18. Sub-Workflows | 0/? | Not started | - |
 | 19. Event-Driven Activities | 0/? | Not started | - |
