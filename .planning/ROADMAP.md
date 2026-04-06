@@ -111,7 +111,10 @@ Phases 12-15 delivered the complete web UI: navigation shell, inbox with work it
   2. User can reorder children via drag-and-drop or controls, and remove children from the virtual document
   3. System detects and prevents circular references when adding children (no document can be its own ancestor)
   4. User can generate a merged PDF from all children of a virtual document, downloading a single combined file
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 21-01-PLAN.md -- Backend model, service with cycle detection, API, PDF merge
+- [ ] 21-02-PLAN.md -- Frontend virtual document UI with children management and PDF download
 **UI hint**: yes
 
 ### Phase 22: Retention & Records Management
