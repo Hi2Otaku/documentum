@@ -1,5 +1,6 @@
 from app.models.base import Base, BaseModel
-from app.models.enums import ActivityState, ActivityType, FlowType, LifecycleState, PerformerType, PermissionLevel, ProcessState, TriggerType, WorkflowState, WorkItemState
+from app.models.enums import ActivityState, ActivityType, DispositionAction, FlowType, LifecycleState, PerformerType, PermissionLevel, ProcessState, TriggerType, WorkflowState, WorkItemState
+from app.models.retention import DocumentRetention, LegalHold, RetentionPolicy
 from app.models.user import Group, Role, User, user_groups, user_roles
 from app.models.audit import AuditLog
 from app.models.document import Document, DocumentVersion
@@ -52,4 +53,8 @@ __all__ = [
     "LifecycleACLRule",
     "AutoActivityLog",
     "MetricsSummary",
+    "DispositionAction",
+    "RetentionPolicy",
+    "DocumentRetention",
+    "LegalHold",
 ]

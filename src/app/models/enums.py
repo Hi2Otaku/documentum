@@ -78,3 +78,8 @@ class PermissionLevel(str, enum.Enum):
     WRITE = "write"
     DELETE = "delete"
     ADMIN = "admin"
+
+
+class DispositionAction(str, enum.Enum):
+    ARCHIVE = "archive"
+    DELETE = "delete"
