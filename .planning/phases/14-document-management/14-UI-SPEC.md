@@ -1,7 +1,7 @@
 ---
 phase: 14
 slug: document-management
-status: draft
+status: approved
 shadcn_initialized: true
 preset: none (manual install, no components.json)
 created: 2026-04-06
@@ -287,7 +287,7 @@ Inherited from Phase 13.
 
 1. Detail panel shows "Check In" button when document is locked by the current user.
 2. Click opens CheckInDialog.
-3. Dialog contents: "Check In Document" heading, file picker button ("Select new version"), selected filename display, optional comment Textarea (placeholder: "Version comment (optional)"), Cancel + "Check In" buttons.
+3. Dialog contents: "Check In Document" heading, file picker button ("Select new version"), selected filename display, optional comment Textarea (placeholder: "Version comment (optional)"), "Keep Checked Out" + "Check In" buttons.
 4. "Check In" button disabled until a file is selected.
 5. Calls `POST /api/documents/{id}/checkin` with multipart form data (file + comment).
 6. On success: close dialog, invalidate document + versions queries, show toast "New version checked in". Lock releases automatically.
@@ -310,7 +310,7 @@ Inherited from Phase 13.
    - Review -> Draft (reject back)
    - Approved -> Archived
 3. Selecting a target state opens LifecycleTransitionDialog.
-4. Dialog contents: "Change Lifecycle State" heading, "Current: [badge]" -> "New: [badge]" visual, Cancel + "Confirm Transition" buttons.
+4. Dialog contents: "Change Lifecycle State" heading, "Current: [badge]" -> "New: [badge]" visual, "Keep Current State" + "Confirm Transition" buttons.
 5. Confirm calls `POST /api/documents/{id}/lifecycle/transition` with `{ target_state: selectedState }`.
 6. On success: close dialog, update document query, show toast "State changed to [new state]".
 7. On error: keep dialog open, show error in toast.
@@ -374,7 +374,7 @@ Inherited from Phase 13 pattern.
 | Check-in dialog file button | Select new version |
 | Check-in dialog file selected | {filename} selected |
 | Check-in dialog comment placeholder | Version comment (optional) |
-| Check-in dialog cancel | Cancel |
+| Check-in dialog cancel | Keep Checked Out |
 | Check-in dialog confirm | Check In |
 | Check-in dialog validation | A file is required to check in a new version. |
 | Cancel checkout dialog title | Cancel Checkout |
@@ -384,7 +384,7 @@ Inherited from Phase 13 pattern.
 | Lifecycle dialog title | Change Lifecycle State |
 | Lifecycle dialog current label | Current |
 | Lifecycle dialog new label | New |
-| Lifecycle dialog cancel | Cancel |
+| Lifecycle dialog cancel | Keep Current State |
 | Lifecycle dialog confirm | Confirm Transition |
 | Version history heading | Version History |
 | Version label prefix | v |
