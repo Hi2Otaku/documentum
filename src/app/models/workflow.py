@@ -74,7 +74,9 @@ class ProcessTemplate(BaseModel):
         Uuid(), ForeignKey("alias_sets.id"), nullable=True
     )
 
-    activity_templates: Mapped[list["ActivityTemplate"]] = relationship(back_populates="process_template")
+    activity_templates: Mapped[list["ActivityTemplate"]] = relationship(
+        back_populates="process_template", foreign_keys="[ActivityTemplate.process_template_id]"
+    )
     flow_templates: Mapped[list["FlowTemplate"]] = relationship(back_populates="process_template")
     process_variables: Mapped[list["ProcessVariable"]] = relationship(back_populates="process_template")
 

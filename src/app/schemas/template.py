@@ -54,6 +54,8 @@ class ActivityTemplateCreate(BaseModel):
     position_y: float | None = None
     routing_type: str | None = None
     performer_list: list[str] | None = None
+    sub_template_id: uuid.UUID | None = None
+    variable_mapping: dict[str, str] | None = None
 
 
 class ActivityTemplateUpdate(BaseModel):
@@ -67,6 +69,8 @@ class ActivityTemplateUpdate(BaseModel):
     position_y: float | None = None
     routing_type: str | None = None
     performer_list: list[str] | None = None
+    sub_template_id: uuid.UUID | None = None
+    variable_mapping: dict[str, str] | None = None
 
 
 class ActivityTemplateResponse(BaseModel):
@@ -83,6 +87,8 @@ class ActivityTemplateResponse(BaseModel):
     position_y: float | None
     routing_type: str | None = None
     performer_list: list | None = None
+    sub_template_id: uuid.UUID | None = None
+    variable_mapping: dict | None = None
     created_at: datetime
     updated_at: datetime
     is_deleted: bool
