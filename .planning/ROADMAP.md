@@ -45,7 +45,7 @@ Plans:
   5. User can switch to a Work Queues tab, browse shared task pools, and claim a task from a queue for themselves
 **Plans**: 3 plans
 Plans:
-- [ ] 13-01-PLAN.md — API modules, TypeScript types, shared components (badge, priority icon, empty state, textarea)
+- [x] 13-01-PLAN.md — API modules, TypeScript types, shared components (badge, priority icon, empty state, textarea)
 - [ ] 13-02-PLAN.md — InboxPage split-pane layout, InboxTable with filtering/pagination, InboxDetailPanel with comments
 - [ ] 13-03-PLAN.md — Complete/Reject/Delegate dialogs, Queues tab with queue list and details
 **UI hint**: yes
