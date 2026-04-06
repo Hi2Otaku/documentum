@@ -20,6 +20,7 @@ const DEFAULT_NODE_DATA: Record<string, { name: string; activityType: string }> 
   endNode: { name: 'End', activityType: 'end' },
   manualNode: { name: 'New Manual Activity', activityType: 'manual' },
   autoNode: { name: 'New Auto Activity', activityType: 'auto' },
+  subWorkflowNode: { name: 'New Sub-Workflow', activityType: 'sub_workflow' },
 };
 
 interface CanvasProps {
@@ -155,6 +156,9 @@ export function Canvas({ onNodeContextMenu, onEdgeContextMenu, onPaneContextMenu
                 return '#3b82f6';
               case 'auto':
               case 'autoNode':
+                return '#f97316';
+              case 'sub_workflow':
+              case 'subWorkflowNode':
                 return '#a855f7';
               default:
                 return '#94a3b8';

@@ -3,7 +3,7 @@
 export interface ActivityNodeData extends Record<string, unknown> {
   name: string;
   description?: string;
-  activityType: 'start' | 'end' | 'manual' | 'auto';
+  activityType: 'start' | 'end' | 'manual' | 'auto' | 'sub_workflow';
   performerType?: string | null;
   performerId?: string | null;
   triggerType?: 'and_join' | 'or_join';
@@ -11,6 +11,10 @@ export interface ActivityNodeData extends Record<string, unknown> {
   routingType?: string | null;
   performerList?: string[] | null;
   apiId?: string;
+  /** Sub-workflow: referenced template ID */
+  subTemplateId?: string | null;
+  /** Sub-workflow: parent->child variable mapping */
+  variableMapping?: Record<string, string> | null;
   /** Backend ID -- undefined for newly created nodes not yet saved */
   backendId?: string;
 }
