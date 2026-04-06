@@ -1,98 +1,176 @@
 # Requirements: Documentum Workflow Clone
 
 **Defined:** 2026-04-06
-**Milestone:** v1.1 -- Full Frontend Experience
-**Core Value:** Every backend capability accessible through the web UI -- users never need the API or Swagger to operate the system.
+**Core Value:** Any workflow use case described in the Documentum specification can be modeled and executed end-to-end through the system.
 
-## v1.1 Requirements
+## v1.2 Requirements
 
-Requirements for this milestone. Each maps to roadmap phases.
+Requirements for milestone v1.2: Advanced Engine & Document Platform.
 
-### Navigation
+### Notifications & Event Bus
 
-- [x] **NAV-01**: User can navigate between all pages (Templates, Inbox, Documents, Workflows, Dashboard, Query) via a persistent sidebar menu
-- [x] **NAV-02**: User can see which page is currently active via highlighted sidebar item
-- [x] **NAV-03**: Admin-only pages (Dashboard, Query) are hidden from non-admin users
-- [x] **NAV-04**: User can see their username, toggle availability, and log out from a user menu
+- [ ] **NOTIF-01**: User receives in-app notification when a work item is assigned to them
+- [ ] **NOTIF-02**: User receives in-app notification when a task is delegated to them
+- [ ] **NOTIF-03**: User receives in-app notification when a work item deadline is approaching
+- [ ] **NOTIF-04**: User receives email notification for task assignment and deadline events
+- [ ] **NOTIF-05**: User can view notification list with unread count badge in the UI
+- [ ] **NOTIF-06**: User can mark notifications as read individually or in bulk
+- [ ] **EVENT-01**: System emits domain events on document upload, lifecycle change, and workflow state transitions
+- [ ] **EVENT-02**: Events are persisted in a durable event table for reliability
 
-### Inbox
+### Timer Activities & Escalation
 
-- [x] **INB-01**: User can view their pending work items in a filterable, paginated list with state badges
-- [x] **INB-02**: User can click a work item to view full details (activity info, workflow context, comments)
-- [x] **INB-03**: User can acquire, complete, or reject a work item with an optional comment
-- [x] **INB-04**: User can delegate a work item to another user
-- [x] **INB-05**: User can set themselves as unavailable so tasks auto-route to delegates
-- [x] **INB-06**: User can browse shared work queues and claim tasks from the queue pool
+- [ ] **TIMER-01**: Admin can configure deadline duration on activity templates in the workflow designer
+- [ ] **TIMER-02**: Work items automatically receive due dates based on activity template deadline configuration
+- [ ] **TIMER-03**: Celery Beat periodically checks for overdue work items and triggers escalation
+- [ ] **TIMER-04**: Overdue work items are automatically escalated (priority bump, reassignment, or notification)
 
-### Documents
+### Sub-Workflows
 
-- [ ] **DOC-01**: User can upload documents via drag-and-drop or file picker
-- [ ] **DOC-02**: User can browse documents in a paginated list with title, author, and lifecycle state filters
-- [x] **DOC-03**: User can view version history for a document and download any specific version
-- [x] **DOC-04**: User can check out a document for editing and check in a new version
-- [x] **DOC-05**: User can transition a document's lifecycle state (Draft → Review → Approved → Archived) with confirmation
+- [ ] **SUBWF-01**: Admin can add a SUB_WORKFLOW activity type in the workflow designer that references another template
+- [ ] **SUBWF-02**: When a SUB_WORKFLOW activity executes, a child workflow instance is spawned from the referenced template
+- [ ] **SUBWF-03**: Parent workflow pauses at the SUB_WORKFLOW activity until the child workflow completes
+- [ ] **SUBWF-04**: Variables can be mapped from parent to child workflow on spawn
+- [ ] **SUBWF-05**: System enforces depth limits to prevent recursive sub-workflow chains
 
-### Workflows
+### Event-Driven Activities
 
-- [x] **WF-01**: User can start a workflow by selecting a template, attaching documents, setting initial variables, and launching
-- [x] **WF-02**: User can view running workflow instances in a filterable, paginated list with state indicators
-- [x] **WF-03**: Admin can halt, resume, or terminate a workflow instance from the UI
-- [x] **WF-04**: User can view a workflow's progress on a read-only React Flow graph showing the current position
+- [ ] **EVTACT-01**: Admin can add an EVENT activity type in the workflow designer with event filter configuration
+- [ ] **EVTACT-02**: EVENT activities complete automatically when a matching domain event fires
+- [ ] **EVTACT-03**: Supported event types include document.uploaded, lifecycle.changed, and workflow.completed
+
+### Document Renditions
+
+- [ ] **REND-01**: System auto-generates PDF rendition when a document is uploaded (via LibreOffice headless worker)
+- [ ] **REND-02**: System auto-generates thumbnail image for uploaded documents
+- [ ] **REND-03**: User can download the PDF rendition of any document version
+- [ ] **REND-04**: Rendition status is visible in the document detail view (pending, ready, failed)
+
+### Virtual Documents
+
+- [ ] **VDOC-01**: User can create a virtual document and add child documents in a specified order
+- [ ] **VDOC-02**: User can reorder or remove children from a virtual document
+- [ ] **VDOC-03**: System detects and prevents circular references in virtual document trees
+- [ ] **VDOC-04**: User can generate a merged PDF from a virtual document's children
+
+### Retention & Records Management
+
+- [ ] **RET-01**: Admin can create retention policies with retention period and disposition action
+- [ ] **RET-02**: Admin can assign retention policies to documents
+- [ ] **RET-03**: System blocks deletion of documents under active retention
+- [ ] **RET-04**: Admin can place legal holds on documents that override retention expiration
+
+### Digital Signatures
+
+- [ ] **SIG-01**: User can digitally sign a specific document version (PKCS7/CMS signature)
+- [ ] **SIG-02**: User can verify the signature on a signed document version
+- [ ] **SIG-03**: User can view all signatures on a document with signer, timestamp, and validity
+- [ ] **SIG-04**: System enforces immutability on signed document versions (no re-upload or modification)
 
 ## Future Requirements
 
-Deferred to future milestones. Tracked but not in current roadmap.
+Deferred beyond v1.2.
 
-### Notifications
+### Notifications (deferred)
 
-- **NOTF-01**: User receives real-time toast notifications when new work items arrive
-- **NOTF-02**: Inbox badge count updates in real-time via WebSocket/SSE
+- **NOTIF-07**: User can configure notification preferences (opt-in/out per type and channel)
+- **NOTIF-08**: User receives push notifications via browser push API
 
-### Document Enhancement
+### Timer Activities (deferred)
 
-- **DOCE-01**: User can preview document content inline (PDF viewer, image preview)
-- **DOCE-02**: User can add custom metadata properties to documents from the UI
+- **TIMER-05**: Admin can configure recurring timer activities
+- **TIMER-06**: Admin can use expression-based deadline calculation
+- **TIMER-07**: Multi-level escalation chains (escalate -> reassign -> notify supervisor)
+
+### Sub-Workflows (deferred)
+
+- **SUBWF-06**: Output variable mapping from child back to parent on completion
+- **SUBWF-07**: Partial completion (wait for any-of-N children)
+- **SUBWF-08**: Parallel sub-workflows spawned from a single activity
+
+### Event-Driven Activities (deferred)
+
+- **EVTACT-04**: Complex filter expressions on event payloads
+- **EVTACT-05**: Event replay for debugging
+- **EVTACT-06**: External webhook authentication for inbound events
+
+### Renditions (deferred)
+
+- **REND-05**: Custom rendition profiles (resolution, format options)
+- **REND-06**: Rendition for image format conversions
+
+### Virtual Documents (deferred)
+
+- **VDOC-05**: Nested virtual documents (depth > 1)
+- **VDOC-06**: Late-bound version resolution (always use latest child version)
+
+### Digital Signatures (deferred)
+
+- **SIG-05**: Certificate management UI
+- **SIG-06**: Sign-on-checkin automation
+- **SIG-07**: requires_signature flag on workflow activities
+- **SIG-08**: Certificate revocation checking
 
 ## Out of Scope
 
+Explicitly excluded from v1.2.
+
 | Feature | Reason |
 |---------|--------|
-| Backend API changes | All APIs already exist from v1.0 -- this is frontend-only |
-| Mobile-specific layouts | Web-responsive is sufficient per project constraints |
-| Drag-and-drop file reordering | Over-engineering for v1.1; basic list is sufficient |
-| Inline document preview | Requires PDF.js integration; defer to future |
+| Real-time collaborative editing | Massive OT/CRDT complexity; check-in/check-out prevents conflicts |
+| Calendar/scheduling UI for timers | Timer durations configured in template designer; no calendar needed |
+| Full PKI/CA infrastructure | Internal tool; self-signed certs stored in DB suffice |
+| Email-based workflow actions | Web UI is the interaction point; email parsing too complex |
+| Multi-tenant isolation | Internal/personal use; adds complexity everywhere |
+| Rendition preview editing | View-only; editing happens on source document |
+| Complex retention schedule builder UI | Simple form suffices; retention policies rarely change |
 
 ## Traceability
 
-Which phases cover which requirements. Updated during roadmap creation.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| NAV-01 | Phase 12 | Complete |
-| NAV-02 | Phase 12 | Complete |
-| NAV-03 | Phase 12 | Complete |
-| NAV-04 | Phase 12 | Complete |
-| INB-01 | Phase 13 | Complete |
-| INB-02 | Phase 13 | Complete |
-| INB-03 | Phase 13 | Complete |
-| INB-04 | Phase 13 | Complete |
-| INB-05 | Phase 13 | Complete |
-| INB-06 | Phase 13 | Complete |
-| DOC-01 | Phase 14 | Pending |
-| DOC-02 | Phase 14 | Pending |
-| DOC-03 | Phase 14 | Complete |
-| DOC-04 | Phase 14 | Complete |
-| DOC-05 | Phase 14 | Complete |
-| WF-01 | Phase 15 | Complete |
-| WF-02 | Phase 15 | Complete |
-| WF-03 | Phase 15 | Complete |
-| WF-04 | Phase 15 | Complete |
+| NOTIF-01 | TBD | Pending |
+| NOTIF-02 | TBD | Pending |
+| NOTIF-03 | TBD | Pending |
+| NOTIF-04 | TBD | Pending |
+| NOTIF-05 | TBD | Pending |
+| NOTIF-06 | TBD | Pending |
+| EVENT-01 | TBD | Pending |
+| EVENT-02 | TBD | Pending |
+| TIMER-01 | TBD | Pending |
+| TIMER-02 | TBD | Pending |
+| TIMER-03 | TBD | Pending |
+| TIMER-04 | TBD | Pending |
+| SUBWF-01 | TBD | Pending |
+| SUBWF-02 | TBD | Pending |
+| SUBWF-03 | TBD | Pending |
+| SUBWF-04 | TBD | Pending |
+| SUBWF-05 | TBD | Pending |
+| EVTACT-01 | TBD | Pending |
+| EVTACT-02 | TBD | Pending |
+| EVTACT-03 | TBD | Pending |
+| REND-01 | TBD | Pending |
+| REND-02 | TBD | Pending |
+| REND-03 | TBD | Pending |
+| REND-04 | TBD | Pending |
+| VDOC-01 | TBD | Pending |
+| VDOC-02 | TBD | Pending |
+| VDOC-03 | TBD | Pending |
+| VDOC-04 | TBD | Pending |
+| RET-01 | TBD | Pending |
+| RET-02 | TBD | Pending |
+| RET-03 | TBD | Pending |
+| RET-04 | TBD | Pending |
+| SIG-01 | TBD | Pending |
+| SIG-02 | TBD | Pending |
+| SIG-03 | TBD | Pending |
+| SIG-04 | TBD | Pending |
 
 **Coverage:**
-- v1.1 requirements: 19 total
-- Mapped to phases: 19
-- Unmapped: 0
+- v1.2 requirements: 35 total
+- Mapped to phases: 0
+- Unmapped: 35
 
 ---
 *Requirements defined: 2026-04-06*
-*Last updated: 2026-04-06 after roadmap creation*
+*Last updated: 2026-04-06 after initial definition*
