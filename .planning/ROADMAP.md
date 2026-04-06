@@ -57,7 +57,7 @@ Phases 12-15 delivered the complete web UI: navigation shell, inbox with work it
 ### Phase 17: Timer Activities & Escalation
 **Goal**: Work items automatically enforce deadlines and escalate when overdue, so tasks do not silently stall
 **Depends on**: Phase 16 (notifications deliver escalation alerts)
-**Requirements**: TIMER-01, TIMER-02, TIMER-03, TIMER-04
+**Requirements**: NOTIF-03, TIMER-01, TIMER-02, TIMER-03, TIMER-04
 **Success Criteria** (what must be TRUE):
   1. Admin can set a deadline duration on an activity template in the workflow designer, and it persists across template saves
   2. When a workflow reaches a timed activity, the resulting work item automatically receives a due date calculated from the template configuration
