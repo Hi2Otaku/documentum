@@ -25,7 +25,7 @@ async def _notify_work_item_assigned(db: AsyncSession, event: DomainEvent) -> No
         return
 
     import uuid
-    await notification_service.create_notification(
+    notification = await notification_service.create_notification(
         db,
         user_id=uuid.UUID(performer_id),
         title="New task assigned",
@@ -34,6 +34,10 @@ async def _notify_work_item_assigned(db: AsyncSession, event: DomainEvent) -> No
         entity_type="work_item",
         entity_id=event.entity_id,
     )
+
+    # Dispatch email notification via Celery
+    from app.tasks.notification import send_notification_email
+    send_notification_email.delay(str(notification.id))
 
 
 @event_bus.on("work_item.delegated")
@@ -45,7 +49,7 @@ async def _notify_work_item_delegated(db: AsyncSession, event: DomainEvent) -> N
         return
 
     import uuid
-    await notification_service.create_notification(
+    notification = await notification_service.create_notification(
         db,
         user_id=uuid.UUID(delegate_id),
         title="Task delegated to you",
@@ -54,3 +58,7 @@ async def _notify_work_item_delegated(db: AsyncSession, event: DomainEvent) -> N
         entity_type="work_item",
         entity_id=event.entity_id,
     )
+
+    # Dispatch email notification via Celery
+    from app.tasks.notification import send_notification_email
+    send_notification_email.delay(str(notification.id))
