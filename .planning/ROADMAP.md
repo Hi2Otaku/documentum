@@ -46,7 +46,7 @@ Plans:
 **Plans**: 3 plans
 Plans:
 - [x] 13-01-PLAN.md — API modules, TypeScript types, shared components (badge, priority icon, empty state, textarea)
-- [ ] 13-02-PLAN.md — InboxPage split-pane layout, InboxTable with filtering/pagination, InboxDetailPanel with comments
+- [x] 13-02-PLAN.md — InboxPage split-pane layout, InboxTable with filtering/pagination, InboxDetailPanel with comments
 - [ ] 13-03-PLAN.md — Complete/Reject/Delegate dialogs, Queues tab with queue list and details
 **UI hint**: yes
 
@@ -83,6 +83,6 @@ Phases execute in numeric order: 12 -> 13 -> 14 -> 15
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 12. Navigation & App Shell | 2/2 | Complete    | 2026-04-06 |
-| 13. Inbox & Work Items | 0/3 | Not started | - |
+| 13. Inbox & Work Items | 2/3 | In Progress|  |
 | 14. Document Management | 0/TBD | Not started | - |
 | 15. Workflow Operations | 0/TBD | Not started | - |
