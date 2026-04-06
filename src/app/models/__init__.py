@@ -3,10 +3,10 @@ from app.models.enums import ActivityState, ActivityType, FlowType, LifecycleSta
 from app.models.user import Group, Role, User, user_groups, user_roles
 from app.models.audit import AuditLog
 from app.models.document import Document, DocumentVersion
-from app.models.signature import DigitalSignature
 from app.models.acl import DocumentACL, LifecycleACLRule
 from app.models.execution_log import AutoActivityLog
 from app.models.metrics import MetricsSummary
+from app.models.signature import DocumentSignature
 from app.models.workflow import (
     ActivityInstance,
     ActivityTemplate,
@@ -53,5 +53,5 @@ __all__ = [
     "LifecycleACLRule",
     "AutoActivityLog",
     "MetricsSummary",
-    "DigitalSignature",
+    "DocumentSignature",
 ]

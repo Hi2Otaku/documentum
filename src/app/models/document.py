@@ -2,7 +2,6 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import (
-    Boolean,
     DateTime,
     Enum,
     ForeignKey,
@@ -77,12 +76,9 @@ class DocumentVersion(BaseModel):
         String(255), default="application/octet-stream", nullable=False
     )
     comment: Mapped[str | None] = mapped_column(Text, nullable=True)
-    is_signed: Mapped[bool] = mapped_column(
-        Boolean, default=False, nullable=False
-    )
 
     document: Mapped["Document"] = relationship(back_populates="versions")
-    signatures: Mapped[list["DigitalSignature"]] = relationship(  # noqa: F821
+    signatures: Mapped[list["DocumentSignature"]] = relationship(  # noqa: F821
         back_populates="version",
-        order_by="DigitalSignature.signed_at",
+        order_by="DocumentSignature.signed_at",
     )

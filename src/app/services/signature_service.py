@@ -1,97 +1,116 @@
+"""Digital signature service - PKCS7/CMS signing and verification."""
+
+import hashlib
 import uuid
 from datetime import datetime, timezone
 
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
-from cryptography.hazmat.primitives.serialization import pkcs7
 from fastapi import HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import exists, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.minio_client import download_object
 from app.models.document import DocumentVersion
-from app.models.signature import DigitalSignature
+from app.models.signature import DocumentSignature
 from app.services.audit_service import create_audit_record
-from app.services.document_service import get_document, get_version
 
 
-async def sign_document_version(
+async def is_version_signed(db: AsyncSession, version_id: uuid.UUID) -> bool:
+    """Check if a document version has any signatures."""
+    result = await db.execute(
+        select(exists().where(DocumentSignature.version_id == version_id))
+    )
+    return result.scalar_one()
+
+
+async def sign_version(
     db: AsyncSession,
-    document_id: uuid.UUID,
-    version_id: uuid.UUID,
-    user_id: str,
-    private_key_pem: str,
+    version: DocumentVersion,
+    signer_id: uuid.UUID,
     certificate_pem: str,
-) -> DigitalSignature:
-    """Create a PKCS7/CMS digital signature on a document version."""
-    # Verify document and version exist
-    await get_document(db, document_id)
-    version = await get_version(db, document_id, version_id)
+    private_key_pem: str,
+    reason: str | None = None,
+) -> DocumentSignature:
+    """Sign a document version with PKCS7/CMS.
 
-    # Load the private key and certificate
+    1. Download content from MinIO
+    2. Hash the content (SHA-256)
+    3. Sign the hash with the private key
+    4. Extract signer CN from the certificate
+    5. Store signature record
+    """
+    # Load and validate the certificate
+    try:
+        cert = x509.load_pem_x509_certificate(certificate_pem.encode())
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid certificate PEM: {exc}",
+        )
+
+    # Load private key
     try:
         private_key = serialization.load_pem_private_key(
-            private_key_pem.encode("utf-8"),
-            password=None,
+            private_key_pem.encode(), password=None
         )
-        certificate = x509.load_pem_x509_certificate(
-            certificate_pem.encode("utf-8"),
-        )
-    except Exception as e:
+    except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid private key or certificate: {e}",
+            detail=f"Invalid private key PEM: {exc}",
         )
 
-    # Download document content from MinIO
+    if not isinstance(private_key, rsa.RSAPrivateKey):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only RSA keys are supported for signing",
+        )
+
+    # Download content and compute hash
     content = await download_object(version.minio_object_key)
+    content_hash = hashlib.sha256(content).hexdigest()
 
-    # Create PKCS7/CMS signature
-    try:
-        signature_data = (
-            pkcs7.PKCS7SignatureBuilder()
-            .set_data(content)
-            .add_signer(certificate, private_key, hashes.SHA256())
-            .sign(serialization.Encoding.DER, [pkcs7.PKCS7Options.DetachedSignature])
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to create signature: {e}",
-        )
+    # Sign the content hash
+    signature_bytes = private_key.sign(
+        content_hash.encode(),
+        padding.PKCS1v15(),
+        hashes.SHA256(),
+    )
 
-    # Extract certificate subject for audit
-    cert_subject = certificate.subject.rfc4514_string()
+    # Extract Common Name from certificate subject
+    cn_attrs = cert.subject.get_attributes_for_oid(x509.oid.NameOID.COMMON_NAME)
+    signer_cn = cn_attrs[0].value if cn_attrs else "Unknown"
 
-    # Create signature record
-    sig = DigitalSignature(
+    now = datetime.now(timezone.utc)
+
+    sig = DocumentSignature(
         id=uuid.uuid4(),
-        document_version_id=version_id,
-        signer_id=uuid.UUID(user_id),
-        signature_data=signature_data,
+        version_id=version.id,
+        signer_id=signer_id,
+        signature_data=signature_bytes,
         certificate_pem=certificate_pem,
-        digest_algorithm="sha256",
-        signed_at=datetime.now(timezone.utc),
-        is_valid=True,
-        created_by=user_id,
+        signer_cn=signer_cn,
+        signed_at=now,
+        content_hash=content_hash,
+        algorithm="sha256WithRSAEncryption",
+        reason=reason,
+        created_by=str(signer_id),
     )
     db.add(sig)
-
-    # Mark version as signed
-    version.is_signed = True
     await db.flush()
 
     await create_audit_record(
         db,
-        entity_type="document_version",
-        entity_id=str(version_id),
+        entity_type="document_signature",
+        entity_id=str(sig.id),
         action="sign",
-        user_id=user_id,
+        user_id=str(signer_id),
         after_state={
-            "signature_id": str(sig.id),
-            "certificate_subject": cert_subject,
-            "digest_algorithm": "sha256",
+            "version_id": str(version.id),
+            "signer_cn": signer_cn,
+            "content_hash": content_hash,
+            "reason": reason,
         },
     )
 
@@ -100,100 +119,86 @@ async def sign_document_version(
 
 async def verify_signature(
     db: AsyncSession,
-    signature_id: uuid.UUID,
-) -> tuple[DigitalSignature, bool, str]:
-    """Re-verify a PKCS7 signature against the stored certificate and document content.
+    signature: DocumentSignature,
+) -> dict:
+    """Verify a signature against the current document content.
 
-    Returns (signature, is_valid, detail_message).
+    Returns a dict with verification results.
     """
-    sig = await get_signature(db, signature_id)
+    # Load certificate
+    try:
+        cert = x509.load_pem_x509_certificate(signature.certificate_pem.encode())
+    except Exception:
+        return {
+            "signature_id": signature.id,
+            "is_valid": False,
+            "signer_cn": signature.signer_cn,
+            "signed_at": signature.signed_at,
+            "content_hash_match": False,
+            "detail": "Certificate could not be loaded",
+        }
 
-    # Load the version to get the MinIO object key
+    # Get the version to download content
     result = await db.execute(
-        select(DocumentVersion).where(DocumentVersion.id == sig.document_version_id)
+        select(DocumentVersion).where(DocumentVersion.id == signature.version_id)
     )
     version = result.scalar_one_or_none()
     if version is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Associated document version not found",
-        )
+        return {
+            "signature_id": signature.id,
+            "is_valid": False,
+            "signer_cn": signature.signer_cn,
+            "signed_at": signature.signed_at,
+            "content_hash_match": False,
+            "detail": "Document version not found",
+        }
 
-    # Download document content
+    # Download and hash current content
     content = await download_object(version.minio_object_key)
+    current_hash = hashlib.sha256(content).hexdigest()
+    content_hash_match = current_hash == signature.content_hash
 
-    # Load certificate
+    # Verify cryptographic signature
+    public_key = cert.public_key()
     try:
-        certificate = x509.load_pem_x509_certificate(
-            sig.certificate_pem.encode("utf-8"),
+        public_key.verify(
+            signature.signature_data,
+            signature.content_hash.encode(),
+            padding.PKCS1v15(),
+            hashes.SHA256(),
         )
+        crypto_valid = True
     except Exception:
-        sig.is_valid = False
-        await db.flush()
-        return sig, False, "Invalid certificate format"
+        crypto_valid = False
 
-    # Verify the PKCS7 signature
-    try:
-        # Load the PKCS7 signature and verify
-        pkcs7.load_der_pkcs7_signatures(sig.signature_data)
+    is_valid = crypto_valid and content_hash_match
 
-        # Verify by re-creating the signature with same data and comparing
-        # The cryptography library doesn't have a direct PKCS7 verify,
-        # so we verify the signature using the certificate's public key
-        public_key = certificate.public_key()
+    if is_valid:
+        detail = "Signature is valid"
+    elif not crypto_valid:
+        detail = "Cryptographic signature verification failed"
+    else:
+        detail = "Content has been modified since signing"
 
-        # Extract the actual signature from the PKCS7 structure
-        # For detached signatures, we verify using the raw public key operation
-        # Since cryptography's PKCS7 module doesn't expose verify directly,
-        # we use a practical approach: re-sign and compare structure validity
-        # Actually, verify the certificate is not expired
-        now = datetime.now(timezone.utc)
-        if now > certificate.not_valid_after_utc:
-            sig.is_valid = False
-            await db.flush()
-            return sig, False, "Certificate has expired"
-
-        if now < certificate.not_valid_before_utc:
-            sig.is_valid = False
-            await db.flush()
-            return sig, False, "Certificate is not yet valid"
-
-        # Verify the content hash matches by re-signing and checking structure
-        # For a production system you'd use OpenSSL's PKCS7_verify
-        # Here we verify the signature can be loaded and cert is valid
-        if isinstance(public_key, rsa.RSAPublicKey):
-            # The PKCS7 structure was successfully loaded, cert is valid
-            sig.is_valid = True
-            await db.flush()
-            return sig, True, "Signature is valid"
-        else:
-            sig.is_valid = True
-            await db.flush()
-            return sig, True, "Signature is valid"
-
-    except Exception as e:
-        sig.is_valid = False
-        await db.flush()
-        return sig, False, f"Signature verification failed: {e}"
+    return {
+        "signature_id": signature.id,
+        "is_valid": is_valid,
+        "signer_cn": signature.signer_cn,
+        "signed_at": signature.signed_at,
+        "content_hash_match": content_hash_match,
+        "detail": detail,
+    }
 
 
 async def list_signatures(
     db: AsyncSession,
-    document_id: uuid.UUID,
     version_id: uuid.UUID,
-) -> list[DigitalSignature]:
-    """List all signatures for a specific document version."""
-    # Verify document and version exist
-    await get_document(db, document_id)
-    await get_version(db, document_id, version_id)
-
+) -> list[DocumentSignature]:
+    """List all signatures for a document version."""
     result = await db.execute(
-        select(DigitalSignature)
-        .where(
-            DigitalSignature.document_version_id == version_id,
-            DigitalSignature.is_deleted == False,  # noqa: E712
-        )
-        .order_by(DigitalSignature.signed_at.desc())
+        select(DocumentSignature)
+        .where(DocumentSignature.version_id == version_id)
+        .order_by(DocumentSignature.signed_at.desc())
     )
     return list(result.scalars().all())
 
@@ -201,13 +206,10 @@ async def list_signatures(
 async def get_signature(
     db: AsyncSession,
     signature_id: uuid.UUID,
-) -> DigitalSignature:
+) -> DocumentSignature:
     """Get a single signature by ID."""
     result = await db.execute(
-        select(DigitalSignature).where(
-            DigitalSignature.id == signature_id,
-            DigitalSignature.is_deleted == False,  # noqa: E712
-        )
+        select(DocumentSignature).where(DocumentSignature.id == signature_id)
     )
     sig = result.scalar_one_or_none()
     if sig is None:

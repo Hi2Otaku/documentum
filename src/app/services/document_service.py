@@ -86,9 +86,6 @@ async def upload_document(
         # Create ADMIN ACL for document creator (Phase 7)
         from app.services import acl_service
         await acl_service.create_owner_acl(db, document.id, uuid.UUID(user_id))
-
-        # Auto-trigger rendition generation (Phase 20)
-        await _trigger_renditions(db, document.id, version.id, user_id)
     except Exception:
         await delete_object(object_name)
         raise
@@ -158,22 +155,8 @@ async def update_document_metadata(
     """Update document metadata fields. Only non-None fields are changed."""
     document = await get_document(db, document_id)
 
-    # Block metadata update if the current version is signed (immutability)
-    latest_result = await db.execute(
-        select(DocumentVersion)
-        .where(DocumentVersion.document_id == document_id)
-        .order_by(
-            DocumentVersion.major_version.desc(),
-            DocumentVersion.minor_version.desc(),
-        )
-        .limit(1)
-    )
-    latest_ver = latest_result.scalar_one_or_none()
-    if latest_ver is not None and latest_ver.is_signed:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Cannot modify metadata: the current version is digitally signed and immutable",
-        )
+    # Immutability guard: block metadata update if latest version is signed
+    await _check_version_not_signed(db, document_id)
 
     before_state = {
         "title": document.title,
@@ -217,23 +200,6 @@ async def checkout_document(
     """Check out (lock) a document for editing."""
     document = await get_document(db, document_id)
 
-    # Block checkout if the current version is signed (immutability)
-    latest_result = await db.execute(
-        select(DocumentVersion)
-        .where(DocumentVersion.document_id == document_id)
-        .order_by(
-            DocumentVersion.major_version.desc(),
-            DocumentVersion.minor_version.desc(),
-        )
-        .limit(1)
-    )
-    latest_ver = latest_result.scalar_one_or_none()
-    if latest_ver is not None and latest_ver.is_signed:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Cannot check out: the current version is digitally signed and immutable",
-        )
-
     if document.locked_by is not None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -256,6 +222,27 @@ async def checkout_document(
     return document
 
 
+async def _check_version_not_signed(db: AsyncSession, document_id: uuid.UUID) -> None:
+    """Raise 409 if the latest version of a document has signatures (immutability guard)."""
+    from app.services.signature_service import is_version_signed
+
+    result = await db.execute(
+        select(DocumentVersion)
+        .where(DocumentVersion.document_id == document_id)
+        .order_by(
+            DocumentVersion.major_version.desc(),
+            DocumentVersion.minor_version.desc(),
+        )
+        .limit(1)
+    )
+    latest = result.scalar_one_or_none()
+    if latest is not None and await is_version_signed(db, latest.id):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Cannot modify document: the current version has been digitally signed",
+        )
+
+
 async def checkin_document(
     db: AsyncSession,
     document_id: uuid.UUID,
@@ -269,6 +256,9 @@ async def checkin_document(
     Releases the lock in all cases.
     """
     document = await get_document(db, document_id)
+
+    # Immutability guard: block check-in if latest version is signed
+    await _check_version_not_signed(db, document_id)
 
     # Verify caller holds the lock
     if document.locked_by is None or str(document.locked_by) != user_id:
@@ -291,13 +281,6 @@ async def checkin_document(
         .limit(1)
     )
     latest_version = result.scalar_one_or_none()
-
-    # Block check-in if the latest version is signed (immutability)
-    if latest_version is not None and latest_version.is_signed:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Cannot check in a new version: the current version is digitally signed and immutable",
-        )
 
     # SHA-256 dedup: if content unchanged, just release lock
     if latest_version is not None and latest_version.content_hash == content_hash:
@@ -357,9 +340,6 @@ async def checkin_document(
                 "comment": comment,
             },
         )
-
-        # Auto-trigger rendition generation (Phase 20)
-        await _trigger_renditions(db, document_id, new_version.id, user_id)
     except Exception:
         await delete_object(object_name)
         raise
@@ -516,36 +496,3 @@ async def promote_to_major_version(
     )
 
     return new_version
-
-
-async def _trigger_renditions(
-    db: AsyncSession,
-    document_id: uuid.UUID,
-    version_id: uuid.UUID,
-    user_id: str,
-) -> None:
-    """Create PENDING rendition records and dispatch Celery tasks for a new version."""
-    import logging
-
-    from app.models.enums import RenditionType
-    from app.services import rendition_service
-
-    logger = logging.getLogger(__name__)
-
-    for rtype in (RenditionType.PDF, RenditionType.THUMBNAIL):
-        try:
-            await rendition_service.create_rendition_request(
-                db,
-                document_id=document_id,
-                version_id=version_id,
-                rendition_type=rtype,
-                user_id=user_id,
-            )
-        except Exception as exc:
-            # Rendition failures should not block document operations
-            logger.warning(
-                "Failed to queue %s rendition for version %s: %s",
-                rtype.value,
-                version_id,
-                exc,
-            )

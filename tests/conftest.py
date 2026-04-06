@@ -131,7 +131,26 @@ def mock_minio(monkeypatch):
     monkeypatch.setattr("app.services.document_service.upload_object", mock_upload)
     monkeypatch.setattr("app.services.document_service.download_object", mock_download)
     monkeypatch.setattr("app.services.document_service.delete_object", mock_delete)
+    # Patch on signature_service consumer (imports download_object directly)
+    try:
+        monkeypatch.setattr("app.services.signature_service.download_object", mock_download)
+    except AttributeError:
+        pass  # signature_service may not import download_object in all versions
     return storage
+
+
+@pytest.fixture(autouse=True)
+def mock_celery_tasks(monkeypatch):
+    """Prevent Celery tasks from dispatching during tests (no Redis needed)."""
+    def noop_dispatch(*args, **kwargs):
+        pass
+
+    try:
+        monkeypatch.setattr(
+            "app.services.rendition_service._dispatch_rendition_task", noop_dispatch
+        )
+    except (AttributeError, ModuleNotFoundError):
+        pass  # rendition_service may not exist in this worktree
 
 
 @pytest.fixture

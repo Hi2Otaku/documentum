@@ -1,38 +1,42 @@
-import uuid
-from datetime import datetime, timezone
+"""Digital signature model for document version signing (PKCS7/CMS)."""
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, LargeBinary, String, Text, Uuid
+import uuid
+from datetime import datetime
+
+from sqlalchemy import DateTime, ForeignKey, LargeBinary, String, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import BaseModel
 
 
-class DigitalSignature(BaseModel):
-    __tablename__ = "digital_signatures"
+class DocumentSignature(BaseModel):
+    __tablename__ = "document_signatures"
 
-    document_version_id: Mapped[uuid.UUID] = mapped_column(
+    version_id: Mapped[uuid.UUID] = mapped_column(
         Uuid(), ForeignKey("document_versions.id"), nullable=False, index=True
     )
     signer_id: Mapped[uuid.UUID] = mapped_column(
         Uuid(), ForeignKey("users.id"), nullable=False
     )
     signature_data: Mapped[bytes] = mapped_column(
-        LargeBinary, nullable=False
+        LargeBinary, nullable=False, doc="DER-encoded PKCS7/CMS signature"
     )
     certificate_pem: Mapped[str] = mapped_column(
-        Text, nullable=False
+        Text, nullable=False, doc="PEM-encoded X.509 certificate used for signing"
     )
-    digest_algorithm: Mapped[str] = mapped_column(
-        String(50), default="sha256", nullable=False
+    signer_cn: Mapped[str] = mapped_column(
+        String(500), nullable=False, doc="Common Name from the signing certificate"
     )
     signed_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
-        nullable=False,
+        DateTime(timezone=True), nullable=False
     )
-    is_valid: Mapped[bool] = mapped_column(
-        Boolean, default=True, nullable=False
+    content_hash: Mapped[str] = mapped_column(
+        String(64), nullable=False, doc="SHA-256 hash of the signed content"
     )
+    algorithm: Mapped[str] = mapped_column(
+        String(50), default="sha256WithRSAEncryption", nullable=False
+    )
+    reason: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     version: Mapped["DocumentVersion"] = relationship(  # noqa: F821
         back_populates="signatures",
