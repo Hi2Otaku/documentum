@@ -38,7 +38,7 @@ Phases 12-15 delivered the complete web UI: navigation shell, inbox with work it
 - [ ] **Phase 20: Document Renditions** - Auto-generated PDF and thumbnail renditions via LibreOffice headless worker, rendition status in document UI
 - [ ] **Phase 21: Virtual Documents** - Parent-child document assembly, ordering, cycle detection, merged PDF generation
 - [ ] **Phase 22: Retention & Records Management** - Retention policies, document assignment, deletion blocking, legal holds
-- [ ] **Phase 23: Digital Signatures** - PKCS7/CMS signing on document versions, verification, signature listing, post-signing immutability
+- [x] **Phase 23: Digital Signatures** - PKCS7/CMS signing on document versions, verification, signature listing, post-signing immutability (completed 2026-04-06)
 
 ## Phase Details
 
@@ -152,4 +152,4 @@ Phases execute in numeric order: 16 -> 17 -> 18 -> 19 -> 20 -> 21 -> 22 -> 23
 | 20. Document Renditions | 0/? | Not started | - |
 | 21. Virtual Documents | 0/? | Not started | - |
 | 22. Retention & Records Management | 0/? | Not started | - |
-| 23. Digital Signatures | 1/1 | Complete | 2026-04-06 |
+| 23. Digital Signatures | 1/1 | Complete    | 2026-04-06 |
