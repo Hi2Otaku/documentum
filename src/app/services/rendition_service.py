@@ -63,6 +63,22 @@ async def get_renditions_for_version(
     version_id: uuid.UUID,
 ) -> list[Rendition]:
     """List all renditions for a specific document version."""
+    # Verify the version belongs to the document
+    from app.models.document import DocumentVersion
+
+    ver_result = await db.execute(
+        select(DocumentVersion).where(
+            DocumentVersion.id == version_id,
+            DocumentVersion.document_id == document_id,
+        )
+    )
+    version = ver_result.scalar_one_or_none()
+    if version is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document version not found or does not belong to this document",
+        )
+
     result = await db.execute(
         select(Rendition)
         .where(
@@ -74,14 +90,20 @@ async def get_renditions_for_version(
     return list(result.scalars().all())
 
 
-async def get_rendition(db: AsyncSession, rendition_id: uuid.UUID) -> Rendition:
-    """Get a single rendition by ID. Raises 404 if not found."""
-    result = await db.execute(
-        select(Rendition).where(
-            Rendition.id == rendition_id,
-            Rendition.is_deleted == False,  # noqa: E712
-        )
-    )
+async def get_rendition(
+    db: AsyncSession,
+    rendition_id: uuid.UUID,
+    version_id: uuid.UUID | None = None,
+) -> Rendition:
+    """Get a single rendition by ID. Optionally verify version ownership. Raises 404 if not found."""
+    conditions = [
+        Rendition.id == rendition_id,
+        Rendition.is_deleted == False,  # noqa: E712
+    ]
+    if version_id is not None:
+        conditions.append(Rendition.document_version_id == version_id)
+
+    result = await db.execute(select(Rendition).where(*conditions))
     rendition = result.scalar_one_or_none()
     if rendition is None:
         raise HTTPException(
@@ -94,14 +116,15 @@ async def get_rendition(db: AsyncSession, rendition_id: uuid.UUID) -> Rendition:
 async def retry_rendition(
     db: AsyncSession,
     rendition_id: uuid.UUID,
+    version_id: uuid.UUID | None = None,
 ) -> Rendition:
     """Retry a failed rendition by resetting status and re-dispatching."""
-    rendition = await get_rendition(db, rendition_id)
+    rendition = await get_rendition(db, rendition_id, version_id)
 
     if rendition.status != RenditionStatus.FAILED:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Can only retry failed renditions, current status: {rendition.status}",
+            detail="Only failed renditions can be retried",
         )
 
     rendition.status = RenditionStatus.PENDING
@@ -136,20 +159,21 @@ async def retry_rendition(
 async def download_rendition(
     db: AsyncSession,
     rendition_id: uuid.UUID,
+    version_id: uuid.UUID | None = None,
 ) -> tuple[bytes, Rendition]:
     """Download the content of a ready rendition from MinIO."""
-    rendition = await get_rendition(db, rendition_id)
+    rendition = await get_rendition(db, rendition_id, version_id)
 
     if rendition.status != RenditionStatus.READY:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Rendition is not ready, current status: {rendition.status}",
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Rendition not ready",
         )
 
     if rendition.minio_object_key is None:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Rendition marked ready but has no storage key",
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Rendition file not found",
         )
 
     from app.core.minio_client import download_object

@@ -33,54 +33,47 @@ async def list_renditions(
 
 
 @router.get(
-    "/renditions/{rendition_id}",
-    response_model=EnvelopeResponse[RenditionResponse],
-)
-async def get_rendition(
-    rendition_id: uuid.UUID,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """Get a single rendition by ID."""
-    rendition = await rendition_service.get_rendition(db, rendition_id)
-    return EnvelopeResponse(data=RenditionResponse.model_validate(rendition))
-
-
-@router.get(
-    "/renditions/{rendition_id}/download",
+    "/documents/{document_id}/versions/{version_id}/renditions/{rendition_id}/download",
 )
 async def download_rendition(
+    document_id: uuid.UUID,
+    version_id: uuid.UUID,
     rendition_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """Download the content of a ready rendition."""
-    content, rendition = await rendition_service.download_rendition(db, rendition_id)
+    content, rendition = await rendition_service.download_rendition(
+        db, rendition_id, version_id
+    )
 
-    filename = "rendition"
     if rendition.content_type == "application/pdf":
-        filename = "rendition.pdf"
+        ext = "pdf"
     elif rendition.content_type == "image/png":
-        filename = "thumbnail.png"
+        ext = "png"
+    else:
+        ext = "bin"
 
     return Response(
         content=content,
         media_type=rendition.content_type or "application/octet-stream",
         headers={
-            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Content-Disposition": f'attachment; filename="rendition_{rendition.rendition_type}.{ext}"',
         },
     )
 
 
 @router.post(
-    "/renditions/{rendition_id}/retry",
+    "/documents/{document_id}/versions/{version_id}/renditions/{rendition_id}/retry",
     response_model=EnvelopeResponse[RenditionResponse],
 )
 async def retry_rendition(
+    document_id: uuid.UUID,
+    version_id: uuid.UUID,
     rendition_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """Retry a failed rendition."""
-    rendition = await rendition_service.retry_rendition(db, rendition_id)
+    rendition = await rendition_service.retry_rendition(db, rendition_id, version_id)
     return EnvelopeResponse(data=RenditionResponse.model_validate(rendition))

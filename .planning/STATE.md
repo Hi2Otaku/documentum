@@ -2,7 +2,7 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Advanced Engine & Document Platform
-status: executing
+status: planning
 stopped_at: null
 last_updated: "2026-04-06"
 last_activity: 2026-04-06
@@ -10,8 +10,8 @@ progress:
   total_phases: 8
   completed_phases: 0
   total_plans: 0
-  completed_plans: 1
-  percent: 12
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,21 +21,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-06)
 
 **Core value:** Any workflow use case described in the Documentum specification can be modeled and executed end-to-end through the system.
-**Current focus:** Phase 20 - Document Renditions
+**Current focus:** Phase 16 - Notifications & Event Bus
 
 ## Current Position
 
 Phase: 20 of 23 (Document Renditions)
-Plan: 1 of 1 in current phase
-Status: Plan 20-01 complete
-Last activity: 2026-04-06 — Completed 20-01 Rendition Model, Celery Tasks, and API
+Plan: 2 of 3 in current phase
+Status: Executing
+Last activity: 2026-04-06 — Completed 20-02 Rendition API and Docker Worker
 
-Progress: [#.........] 12% (v1.2: 1/8 phases in progress)
+Progress: [===.......] 30% (v1.2: phase 20 in progress)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1 (v1.2)
+- Total plans completed: 0 (v1.2)
 - Average duration: -
 - Total execution time: 0 hours
 
@@ -43,7 +43,7 @@ Progress: [#.........] 12% (v1.2: 1/8 phases in progress)
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| Phase 20 P01 | 4m | 4 tasks | 12 files |
+| - | - | - | - |
 
 **Recent Trend (from v1.1):**
 
@@ -63,8 +63,6 @@ Recent decisions affecting current work:
 - [v1.2 Roadmap]: Database-backed Beat polling for all timers -- never use Celery ETA tasks
 - [v1.2 Roadmap]: Dedicated Celery rendition worker with LibreOffice -- isolated from API process
 - [v1.2 Roadmap]: Sub-workflow depth limit enforced at template installation and runtime
-- [Phase 20-01]: Rendition failures non-blocking -- upload/checkin succeeds even if rendition queuing fails
-- [Phase 20-01]: LibreOffice headless for Office-to-PDF, Pillow for image thumbnails
 
 ### Pending Todos
 
@@ -80,5 +78,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-06
-Stopped at: Completed 20-01-PLAN.md (Rendition Model, Celery Tasks, and API)
+Stopped at: Completed 20-02-PLAN.md (Rendition API + Docker Worker)
 Resume file: None

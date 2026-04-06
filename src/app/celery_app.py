@@ -22,6 +22,9 @@ celery_app.conf.update(
     enable_utc=True,
     task_acks_late=True,
     worker_prefetch_multiplier=1,
+    task_routes={
+        "app.tasks.rendition.*": {"queue": "renditions"},
+    },
     beat_schedule={
         "poll-auto-activities": {
             "task": "app.tasks.auto_activity.poll_auto_activities",

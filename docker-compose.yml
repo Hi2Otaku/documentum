@@ -93,6 +93,25 @@ services:
         condition: service_healthy
     command: celery -A app.celery_app beat --loglevel=info
 
+  celery-rendition-worker:
+    build: .
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://docuser:docpass@db:5432/documentum
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=change-me-in-production
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - MINIO_SECURE=false
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    command: celery -A app.celery_app worker --loglevel=info -Q renditions --concurrency=1
+
 volumes:
   pgdata:
   miniodata:
