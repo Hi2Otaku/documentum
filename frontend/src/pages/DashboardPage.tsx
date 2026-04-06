@@ -74,14 +74,14 @@ export function DashboardPage() {
 
           {/* Template filter */}
           <Select
-            value={templateId ?? ''}
-            onValueChange={(v) => setTemplateId(v || undefined)}
+            value={templateId ?? 'all'}
+            onValueChange={(v) => setTemplateId(v === 'all' ? undefined : v)}
           >
             <SelectTrigger className="w-[220px]">
               <SelectValue placeholder="All Templates" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Templates</SelectItem>
+              <SelectItem value="all">All Templates</SelectItem>
               {templateOptions.map((t) => (
                 <SelectItem key={t.value} value={t.value}>
                   {t.label}

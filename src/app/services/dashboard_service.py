@@ -47,10 +47,9 @@ async def get_workflow_summary(db: AsyncSession) -> WorkflowSummary:
     # Average completion time for finished workflows
     avg_stmt = select(
         func.avg(
-            func.julianday(WorkflowInstance.completed_at)
-            - func.julianday(WorkflowInstance.started_at)
-        )
-        * 86400  # Convert days to seconds
+            func.extract('epoch', WorkflowInstance.completed_at)
+            - func.extract('epoch', WorkflowInstance.started_at)
+        )  # Already in seconds
     ).where(
         WorkflowInstance.state == WorkflowState.FINISHED,
         WorkflowInstance.completed_at.isnot(None),
@@ -72,12 +71,9 @@ async def get_bottleneck_activities(
 ) -> list[BottleneckActivity]:
     """Identify activities with the longest average duration."""
     # Average duration for completed activity instances
-    avg_duration = (
-        func.avg(
-            func.julianday(ActivityInstance.completed_at)
-            - func.julianday(ActivityInstance.started_at)
-        )
-        * 86400
+    avg_duration = func.avg(
+        func.extract('epoch', ActivityInstance.completed_at)
+        - func.extract('epoch', ActivityInstance.started_at)
     )
 
     # Count currently active instances
@@ -188,19 +184,14 @@ async def get_template_metrics(db: AsyncSession) -> list[TemplateMetric]:
     failed_count = func.sum(
         case((WorkflowInstance.state == WorkflowState.FAILED, 1), else_=0)
     )
-    avg_completion = (
-        func.avg(
-            case(
-                (
-                    WorkflowInstance.state == WorkflowState.FINISHED,
-                    (
-                        func.julianday(WorkflowInstance.completed_at)
-                        - func.julianday(WorkflowInstance.started_at)
-                    )
-                    * 86400,
-                ),
-                else_=None,
-            )
+    avg_completion = func.avg(
+        case(
+            (
+                WorkflowInstance.state == WorkflowState.FINISHED,
+                func.extract('epoch', WorkflowInstance.completed_at)
+                - func.extract('epoch', WorkflowInstance.started_at),
+            ),
+            else_=None,
         )
     )
 
@@ -249,10 +240,11 @@ async def get_sla_data(
     Only includes activities where ActivityTemplate.expected_duration_hours IS NOT NULL
     and only COMPLETED work items.
     """
-    # Duration in hours: julianday difference * 24
+    # Duration in hours: epoch difference / 3600
     duration_hours = (
-        func.julianday(WorkItem.completed_at) - func.julianday(WorkItem.created_at)
-    ) * 24
+        func.extract('epoch', WorkItem.completed_at)
+        - func.extract('epoch', WorkItem.created_at)
+    ) / 3600
 
     on_time_count = func.sum(
         case(
@@ -347,10 +339,10 @@ async def get_kpi_metrics(
     avg_stmt = select(
         func.avg(
             (
-                func.julianday(WorkflowInstance.completed_at)
-                - func.julianday(WorkflowInstance.started_at)
+                func.extract('epoch', WorkflowInstance.completed_at)
+                - func.extract('epoch', WorkflowInstance.started_at)
             )
-            * 24  # days -> hours
+            / 3600  # seconds -> hours
         )
     ).where(
         WorkflowInstance.state == WorkflowState.FINISHED,

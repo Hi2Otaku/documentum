@@ -17,7 +17,7 @@ def aggregate_dashboard_metrics():
 async def _aggregate_async():
     from sqlalchemy import delete
 
-    from app.core.database import async_session_factory
+    from app.core.database import create_task_session_factory
     from app.models.metrics import MetricsSummary
     from app.services.dashboard_service import (
         get_bottleneck_activities,
@@ -25,7 +25,8 @@ async def _aggregate_async():
         get_user_workload,
     )
 
-    async with async_session_factory() as session:
+    session_factory = create_task_session_factory()
+    async with session_factory() as session:
         now = datetime.now(timezone.utc)
 
         # Clear old summaries

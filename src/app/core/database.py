@@ -29,3 +29,19 @@ async def get_db():
         except Exception:
             await session.rollback()
             raise
+
+
+def create_task_session_factory():
+    """Create a fresh engine + session factory for use in Celery tasks.
+
+    Each ``asyncio.run()`` call creates a new event loop, so the module-level
+    engine (whose pool is tied to the loop that first used it) cannot be reused.
+    This function returns a session factory bound to a brand-new engine that
+    will work on the *current* event loop.
+    """
+    task_engine = create_async_engine(settings.database_url, **_engine_kwargs)
+    return async_sessionmaker(
+        task_engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+    )

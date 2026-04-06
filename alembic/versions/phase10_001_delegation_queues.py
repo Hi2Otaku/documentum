@@ -54,13 +54,14 @@ def upgrade() -> None:
         'queue_id', sa.Uuid(), sa.ForeignKey('work_queues.id'), nullable=True
     ))
 
-    # Extend PostgreSQL enums (skip for SQLite in tests)
-    try:
-        op.execute("ALTER TYPE workitemstate ADD VALUE IF NOT EXISTS 'suspended'")
-        op.execute("ALTER TYPE performertype ADD VALUE IF NOT EXISTS 'queue'")
-    except Exception:
-        # SQLite does not have enum types
-        pass
+    # Extend PostgreSQL enums outside the transaction block.
+    # ALTER TYPE ... ADD VALUE cannot run inside a transaction in PostgreSQL.
+    # Note: performer_type is stored as String(50), not a PG enum, so only
+    # workitemstate needs extending.
+    dialect = op.get_bind().dialect.name
+    if dialect != "sqlite":
+        with op.get_context().autocommit_block():
+            op.execute("ALTER TYPE workitemstate ADD VALUE IF NOT EXISTS 'suspended'")
 
 
 def downgrade() -> None:

@@ -24,7 +24,7 @@ import {
 const PAGE_SIZE = 20;
 
 const WORK_ITEM_STATES = [
-  { value: "", label: "All States" },
+  { value: "all", label: "All States" },
   { value: "AVAILABLE", label: "Available" },
   { value: "ACQUIRED", label: "Acquired" },
   { value: "COMPLETED", label: "Completed" },
@@ -33,7 +33,7 @@ const WORK_ITEM_STATES = [
 ];
 
 const PRIORITY_OPTIONS = [
-  { value: "", label: "All Priorities" },
+  { value: "all", label: "All Priorities" },
   { value: "1", label: "Low" },
   { value: "3", label: "Normal" },
   { value: "5", label: "High" },
@@ -125,10 +125,10 @@ const columns: ColumnDef<WorkItemQueryResponse, unknown>[] = [
 ];
 
 export function WorkItemQueryTab() {
-  const [assigneeId, setAssigneeId] = useState("");
-  const [state, setState] = useState("");
+  const [assigneeId, setAssigneeId] = useState("all");
+  const [state, setState] = useState("all");
   const [workflowId, setWorkflowId] = useState("");
-  const [priority, setPriority] = useState("");
+  const [priority, setPriority] = useState("all");
   const [skip, setSkip] = useState(0);
   const [searchTriggered, setSearchTriggered] = useState(false);
   const [activeFilters, setActiveFilters] = useState<WorkItemQueryParams>({});
@@ -153,20 +153,20 @@ export function WorkItemQueryTab() {
 
   const handleSearch = useCallback(() => {
     const filters: WorkItemQueryParams = {};
-    if (assigneeId) filters.assignee_id = assigneeId;
-    if (state) filters.state = state;
+    if (assigneeId && assigneeId !== "all") filters.assignee_id = assigneeId;
+    if (state && state !== "all") filters.state = state;
     if (workflowId) filters.workflow_id = workflowId;
-    if (priority) filters.priority = Number(priority);
+    if (priority && priority !== "all") filters.priority = Number(priority);
     setActiveFilters(filters);
     setSkip(0);
     setSearchTriggered(true);
   }, [assigneeId, state, workflowId, priority]);
 
   const handleClear = useCallback(() => {
-    setAssigneeId("");
-    setState("");
+    setAssigneeId("all");
+    setState("all");
     setWorkflowId("");
-    setPriority("");
+    setPriority("all");
     setSkip(0);
     setActiveFilters({});
     setSearchTriggered(false);
@@ -196,7 +196,7 @@ export function WorkItemQueryTab() {
               <SelectValue placeholder="All Users" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Users</SelectItem>
+              <SelectItem value="all">All Users</SelectItem>
               {users?.map((u) => (
                 <SelectItem key={u.id} value={u.id}>
                   {u.username}

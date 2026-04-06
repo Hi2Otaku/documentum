@@ -27,13 +27,14 @@ def poll_auto_activities():
 async def _poll_async():
     """Async implementation of poll: query for active auto activities."""
     from sqlalchemy import select
-    from sqlalchemy.orm import selectinload
+    from sqlalchemy.orm import joinedload
 
-    from app.core.database import async_session_factory
+    from app.core.database import create_task_session_factory
     from app.models.enums import ActivityState, ActivityType
     from app.models.workflow import ActivityInstance, ActivityTemplate
 
-    async with async_session_factory() as session:
+    session_factory = create_task_session_factory()
+    async with session_factory() as session:
         stmt = (
             select(ActivityInstance)
             .join(
@@ -44,7 +45,7 @@ async def _poll_async():
                 ActivityInstance.state == ActivityState.ACTIVE,
                 ActivityTemplate.activity_type == ActivityType.AUTO,
             )
-            .options(selectinload(ActivityInstance.activity_template))
+            .options(joinedload(ActivityInstance.activity_template))
         )
 
         # Use row-level locking on PostgreSQL to prevent duplicate dispatch
@@ -53,7 +54,7 @@ async def _poll_async():
             stmt = stmt.with_for_update(skip_locked=True)
 
         result = await session.execute(stmt)
-        active_auto_activities = result.scalars().all()
+        active_auto_activities = result.unique().scalars().all()
 
         for ai in active_auto_activities:
             logger.info(
@@ -80,11 +81,11 @@ def execute_auto_activity(self, activity_instance_id: str, workflow_instance_id:
 async def _execute_async(task, activity_instance_id: str, workflow_instance_id: str):
     """Async implementation of auto activity execution."""
     from sqlalchemy import func, select
-    from sqlalchemy.orm import selectinload
+    from sqlalchemy.orm import joinedload, selectinload
 
     from app.auto_methods import get_auto_method
     from app.auto_methods.context import ActivityContext
-    from app.core.database import async_session_factory
+    from app.core.database import create_task_session_factory
     from app.models.enums import ActivityState, ActivityType
     from app.models.execution_log import AutoActivityLog
     from app.models.workflow import (
@@ -99,14 +100,15 @@ async def _execute_async(task, activity_instance_id: str, workflow_instance_id: 
     ai_id = uuid.UUID(activity_instance_id)
     wf_id = uuid.UUID(workflow_instance_id)
 
-    async with async_session_factory() as session:
+    session_factory = create_task_session_factory()
+    async with session_factory() as session:
         # Load activity instance with template
         result = await session.execute(
             select(ActivityInstance)
             .where(ActivityInstance.id == ai_id)
-            .options(selectinload(ActivityInstance.activity_template))
+            .options(joinedload(ActivityInstance.activity_template))
         )
-        activity_instance = result.scalar_one_or_none()
+        activity_instance = result.unique().scalar_one_or_none()
 
         if activity_instance is None:
             logger.warning("Activity instance %s not found", ai_id)
@@ -262,7 +264,7 @@ async def _execute_async(task, activity_instance_id: str, workflow_instance_id: 
             # Timeout handling
             await session.rollback()
 
-            async with async_session_factory() as err_session:
+            async with session_factory() as err_session:
                 log_entry_timeout = AutoActivityLog(
                     activity_instance_id=ai_id,
                     method_name=activity_template.method_name,
@@ -288,7 +290,7 @@ async def _execute_async(task, activity_instance_id: str, workflow_instance_id: 
             # Error handling
             await session.rollback()
 
-            async with async_session_factory() as err_session:
+            async with session_factory() as err_session:
                 log_entry_err = AutoActivityLog(
                     activity_instance_id=ai_id,
                     method_name=activity_template.method_name,
@@ -327,7 +329,7 @@ async def _execute_async(task, activity_instance_id: str, workflow_instance_id: 
                     try:
                         raise task.retry(exc=e, countdown=backoff)
                     except MaxRetriesExceededError:
-                        async with async_session_factory() as max_session:
+                        async with session_factory() as max_session:
                             ai_reload2 = await max_session.get(ActivityInstance, ai_id)
                             if ai_reload2:
                                 ai_reload2.state = ActivityState.ERROR

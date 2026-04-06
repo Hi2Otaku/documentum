@@ -25,7 +25,7 @@ import {
 const PAGE_SIZE = 20;
 
 const WORKFLOW_STATES = [
-  { value: "", label: "All States" },
+  { value: "all", label: "All States" },
   { value: "RUNNING", label: "Running" },
   { value: "HALTED", label: "Halted" },
   { value: "FINISHED", label: "Finished" },
@@ -108,9 +108,9 @@ const columns: ColumnDef<WorkflowQueryResponse, unknown>[] = [
 
 export function WorkflowQueryTab() {
   // Filter state
-  const [templateId, setTemplateId] = useState("");
-  const [state, setState] = useState("");
-  const [startedBy, setStartedBy] = useState("");
+  const [templateId, setTemplateId] = useState("all");
+  const [state, setState] = useState("all");
+  const [startedBy, setStartedBy] = useState("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [skip, setSkip] = useState(0);
@@ -145,9 +145,9 @@ export function WorkflowQueryTab() {
 
   const handleSearch = useCallback(() => {
     const filters: WorkflowQueryParams = {};
-    if (templateId) filters.template_id = templateId;
-    if (state) filters.state = state;
-    if (startedBy) filters.started_by = startedBy;
+    if (templateId && templateId !== "all") filters.template_id = templateId;
+    if (state && state !== "all") filters.state = state;
+    if (startedBy && startedBy !== "all") filters.started_by = startedBy;
     if (dateFrom) filters.date_from = dateFrom;
     if (dateTo) filters.date_to = dateTo;
     setActiveFilters(filters);
@@ -156,9 +156,9 @@ export function WorkflowQueryTab() {
   }, [templateId, state, startedBy, dateFrom, dateTo]);
 
   const handleClear = useCallback(() => {
-    setTemplateId("");
-    setState("");
-    setStartedBy("");
+    setTemplateId("all");
+    setState("all");
+    setStartedBy("all");
     setDateFrom("");
     setDateTo("");
     setSkip(0);
@@ -190,7 +190,7 @@ export function WorkflowQueryTab() {
               <SelectValue placeholder="All Templates" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Templates</SelectItem>
+              <SelectItem value="all">All Templates</SelectItem>
               {templates?.map((t) => (
                 <SelectItem key={t.id} value={t.id}>
                   {t.name}
@@ -223,7 +223,7 @@ export function WorkflowQueryTab() {
               <SelectValue placeholder="All Users" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Users</SelectItem>
+              <SelectItem value="all">All Users</SelectItem>
               {users?.map((u) => (
                 <SelectItem key={u.id} value={u.id}>
                   {u.username}

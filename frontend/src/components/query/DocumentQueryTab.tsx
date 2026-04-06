@@ -23,7 +23,7 @@ import {
 const PAGE_SIZE = 20;
 
 const LIFECYCLE_STATES = [
-  { value: "", label: "All States" },
+  { value: "all", label: "All States" },
   { value: "DRAFT", label: "Draft" },
   { value: "REVIEW", label: "Review" },
   { value: "APPROVED", label: "Approved" },
@@ -88,7 +88,7 @@ const columns: ColumnDef<DocumentQueryResponse, unknown>[] = [
 ];
 
 export function DocumentQueryTab() {
-  const [lifecycleState, setLifecycleState] = useState("");
+  const [lifecycleState, setLifecycleState] = useState("all");
   const [metadataKey, setMetadataKey] = useState("");
   const [metadataValue, setMetadataValue] = useState("");
   const [version, setVersion] = useState("");
@@ -110,7 +110,7 @@ export function DocumentQueryTab() {
 
   const handleSearch = useCallback(() => {
     const filters: DocumentQueryParams = {};
-    if (lifecycleState) filters.lifecycle_state = lifecycleState;
+    if (lifecycleState && lifecycleState !== "all") filters.lifecycle_state = lifecycleState;
     if (metadataKey) filters.metadata_key = metadataKey;
     if (metadataValue) filters.metadata_value = metadataValue;
     if (version) filters.version = version;
@@ -120,7 +120,7 @@ export function DocumentQueryTab() {
   }, [lifecycleState, metadataKey, metadataValue, version]);
 
   const handleClear = useCallback(() => {
-    setLifecycleState("");
+    setLifecycleState("all");
     setMetadataKey("");
     setMetadataValue("");
     setVersion("");
