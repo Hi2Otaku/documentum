@@ -1,7 +1,7 @@
 ---
 phase: 12
 slug: navigation-app-shell
-status: draft
+status: approved
 shadcn_initialized: true
 preset: none (manual install, no components.json)
 created: 2026-04-06
@@ -51,7 +51,7 @@ Exceptions:
 | Role | Size | Weight | Line Height | Usage in this phase |
 |------|------|--------|-------------|---------------------|
 | Body | 14px | 400 (regular) | 1.5 | Nav item labels, username text |
-| Label | 12px | 500 (medium) | 1.33 | Section divider labels ("Main", "Admin"), availability status text |
+| Label | 12px | 400 (regular) | 1.33 | Section divider labels ("Main", "Admin"), availability status text |
 | Heading | 16px | 600 (semibold) | 1.25 | "Documentum" branding text in sidebar header |
 | Display | Not used | -- | -- | Not applicable for this phase |
 
