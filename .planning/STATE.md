@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
+milestone: v1.2
 milestone_name: milestone
-status: verifying
-stopped_at: Completed 15-03-PLAN.md
-last_updated: "2026-04-06T10:26:16.821Z"
+status: planning
+stopped_at: null
+last_updated: "2026-04-06"
 last_activity: 2026-04-06
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 11
-  completed_plans: 11
-  percent: 75
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-06)
 
 **Core value:** Every workflow use case in the Documentum specification can be modeled and executed end-to-end
-**Current focus:** Phase 15 — workflow-operations
+**Current focus:** Defining requirements for v1.2
 
 ## Current Position
 
-Phase: 15
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-04-06
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-06 — Milestone v1.2 started
 
-Progress: [########--] 75%
+Progress: [----------] 0%
 
 ## Performance Metrics
 

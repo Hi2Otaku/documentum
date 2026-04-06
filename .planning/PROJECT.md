@@ -52,15 +52,19 @@ Any workflow use case described in the Documentum specification (sequential, par
 - Process Integrator protocol support (JMS, FTP, SOAP) — use modern REST/webhook instead
 - Mobile native app — web-responsive UI is sufficient
 
-## Current Milestone: v1.1 Full Frontend Experience
+## Current Milestone: v1.2 Advanced Engine & Document Platform
 
-**Goal:** Make every backend capability accessible through the web UI — users should never need the API or Swagger to operate the system.
+**Goal:** Close the major functional gaps between this system and Documentum — timer-driven automation, sub-workflow orchestration, event-driven activities, notifications, document renditions, virtual documents, retention policies, and digital signatures.
 
 **Target features:**
-- Inbox page — view/acquire/complete/reject work items, comments & history, delegate tasks, browse & claim from work queues, toast/badge notifications
-- Documents page — upload & browse files, check-in/check-out locking, version history with download, lifecycle state transitions
-- Workflows page — start workflows (template picker + document attachment + variables), instance monitoring, admin controls (halt/resume/terminate), visual progress with React Flow read-only view
-- Navigation — proper sidebar/nav menu connecting all pages (Templates, Inbox, Documents, Workflows, Dashboard, Query)
+- Timer Activities & Escalation — Celery Beat scheduled/delayed activities, SLA deadline triggers, auto-priority escalation
+- Sub-Workflows — parent-child workflow spawning, variable passing, wait-for-completion
+- Event-Driven Activities — activities triggered by document/system events rather than user action
+- Notifications Framework — email/in-app notifications on task assignment, delegation, deadlines
+- Renditions & Transformations — auto-generate PDF/thumbnail renditions via Celery workers
+- Virtual/Compound Documents — parent-child document assembly with binding rules
+- Retention & Records Management — retention policies, hold/disposition schedules, records declaration
+- Digital Signatures — cryptographic signing on documents and workflow approvals
 
 ## Context
 
@@ -104,4 +108,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-06 — Phase 15 complete (Workflow Operations) — Milestone v1.1 all phases complete*
+*Last updated: 2026-04-06 — Milestone v1.2 started (Advanced Engine & Document Platform)*
