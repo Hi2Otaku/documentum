@@ -62,10 +62,10 @@ Requirements for milestone v1.2: Advanced Engine & Document Platform.
 
 ### Digital Signatures
 
-- [ ] **SIG-01**: User can digitally sign a specific document version (PKCS7/CMS signature)
-- [ ] **SIG-02**: User can verify the signature on a signed document version
-- [ ] **SIG-03**: User can view all signatures on a document with signer, timestamp, and validity
-- [ ] **SIG-04**: System enforces immutability on signed document versions (no re-upload or modification)
+- [x] **SIG-01**: User can digitally sign a specific document version (PKCS7/CMS signature)
+- [x] **SIG-02**: User can verify the signature on a signed document version
+- [x] **SIG-03**: User can view all signatures on a document with signer, timestamp, and validity
+- [x] **SIG-04**: System enforces immutability on signed document versions (no re-upload or modification)
 
 ## Future Requirements
 
@@ -161,10 +161,10 @@ Explicitly excluded from v1.2.
 | RET-02 | Phase 22 | Pending |
 | RET-03 | Phase 22 | Pending |
 | RET-04 | Phase 22 | Pending |
-| SIG-01 | Phase 23 | Pending |
-| SIG-02 | Phase 23 | Pending |
-| SIG-03 | Phase 23 | Pending |
-| SIG-04 | Phase 23 | Pending |
+| SIG-01 | Phase 23 | Complete |
+| SIG-02 | Phase 23 | Complete |
+| SIG-03 | Phase 23 | Complete |
+| SIG-04 | Phase 23 | Complete |
 
 **Coverage:**
 - v1.2 requirements: 36 total
