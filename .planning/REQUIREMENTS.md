@@ -1,8 +1,8 @@
 # Requirements: Documentum Workflow Clone
 
 **Defined:** 2026-04-06
-**Milestone:** v1.1 — Full Frontend Experience
-**Core Value:** Every backend capability accessible through the web UI — users never need the API or Swagger to operate the system.
+**Milestone:** v1.1 -- Full Frontend Experience
+**Core Value:** Every backend capability accessible through the web UI -- users never need the API or Swagger to operate the system.
 
 ## v1.1 Requirements
 
@@ -57,7 +57,7 @@ Deferred to future milestones. Tracked but not in current roadmap.
 
 | Feature | Reason |
 |---------|--------|
-| Backend API changes | All APIs already exist from v1.0 — this is frontend-only |
+| Backend API changes | All APIs already exist from v1.0 -- this is frontend-only |
 | Mobile-specific layouts | Web-responsive is sufficient per project constraints |
 | Drag-and-drop file reordering | Over-engineering for v1.1; basic list is sufficient |
 | Inline document preview | Requires PDF.js integration; defer to future |
@@ -68,31 +68,31 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| NAV-01 | — | Pending |
-| NAV-02 | — | Pending |
-| NAV-03 | — | Pending |
-| NAV-04 | — | Pending |
-| INB-01 | — | Pending |
-| INB-02 | — | Pending |
-| INB-03 | — | Pending |
-| INB-04 | — | Pending |
-| INB-05 | — | Pending |
-| INB-06 | — | Pending |
-| DOC-01 | — | Pending |
-| DOC-02 | — | Pending |
-| DOC-03 | — | Pending |
-| DOC-04 | — | Pending |
-| DOC-05 | — | Pending |
-| WF-01 | — | Pending |
-| WF-02 | — | Pending |
-| WF-03 | — | Pending |
-| WF-04 | — | Pending |
+| NAV-01 | Phase 12 | Pending |
+| NAV-02 | Phase 12 | Pending |
+| NAV-03 | Phase 12 | Pending |
+| NAV-04 | Phase 12 | Pending |
+| INB-01 | Phase 13 | Pending |
+| INB-02 | Phase 13 | Pending |
+| INB-03 | Phase 13 | Pending |
+| INB-04 | Phase 13 | Pending |
+| INB-05 | Phase 13 | Pending |
+| INB-06 | Phase 13 | Pending |
+| DOC-01 | Phase 14 | Pending |
+| DOC-02 | Phase 14 | Pending |
+| DOC-03 | Phase 14 | Pending |
+| DOC-04 | Phase 14 | Pending |
+| DOC-05 | Phase 14 | Pending |
+| WF-01 | Phase 15 | Pending |
+| WF-02 | Phase 15 | Pending |
+| WF-03 | Phase 15 | Pending |
+| WF-04 | Phase 15 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 19 total
-- Mapped to phases: 0
-- Unmapped: 19
+- Mapped to phases: 19
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-06*
-*Last updated: 2026-04-06 after initial definition*
+*Last updated: 2026-04-06 after roadmap creation*
