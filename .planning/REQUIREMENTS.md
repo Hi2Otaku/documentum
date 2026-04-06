@@ -129,48 +129,48 @@ Explicitly excluded from v1.2.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| NOTIF-01 | TBD | Pending |
-| NOTIF-02 | TBD | Pending |
-| NOTIF-03 | TBD | Pending |
-| NOTIF-04 | TBD | Pending |
-| NOTIF-05 | TBD | Pending |
-| NOTIF-06 | TBD | Pending |
-| EVENT-01 | TBD | Pending |
-| EVENT-02 | TBD | Pending |
-| TIMER-01 | TBD | Pending |
-| TIMER-02 | TBD | Pending |
-| TIMER-03 | TBD | Pending |
-| TIMER-04 | TBD | Pending |
-| SUBWF-01 | TBD | Pending |
-| SUBWF-02 | TBD | Pending |
-| SUBWF-03 | TBD | Pending |
-| SUBWF-04 | TBD | Pending |
-| SUBWF-05 | TBD | Pending |
-| EVTACT-01 | TBD | Pending |
-| EVTACT-02 | TBD | Pending |
-| EVTACT-03 | TBD | Pending |
-| REND-01 | TBD | Pending |
-| REND-02 | TBD | Pending |
-| REND-03 | TBD | Pending |
-| REND-04 | TBD | Pending |
-| VDOC-01 | TBD | Pending |
-| VDOC-02 | TBD | Pending |
-| VDOC-03 | TBD | Pending |
-| VDOC-04 | TBD | Pending |
-| RET-01 | TBD | Pending |
-| RET-02 | TBD | Pending |
-| RET-03 | TBD | Pending |
-| RET-04 | TBD | Pending |
-| SIG-01 | TBD | Pending |
-| SIG-02 | TBD | Pending |
-| SIG-03 | TBD | Pending |
-| SIG-04 | TBD | Pending |
+| NOTIF-01 | Phase 16 | Pending |
+| NOTIF-02 | Phase 16 | Pending |
+| NOTIF-03 | Phase 16 | Pending |
+| NOTIF-04 | Phase 16 | Pending |
+| NOTIF-05 | Phase 16 | Pending |
+| NOTIF-06 | Phase 16 | Pending |
+| EVENT-01 | Phase 16 | Pending |
+| EVENT-02 | Phase 16 | Pending |
+| TIMER-01 | Phase 17 | Pending |
+| TIMER-02 | Phase 17 | Pending |
+| TIMER-03 | Phase 17 | Pending |
+| TIMER-04 | Phase 17 | Pending |
+| SUBWF-01 | Phase 18 | Pending |
+| SUBWF-02 | Phase 18 | Pending |
+| SUBWF-03 | Phase 18 | Pending |
+| SUBWF-04 | Phase 18 | Pending |
+| SUBWF-05 | Phase 18 | Pending |
+| EVTACT-01 | Phase 19 | Pending |
+| EVTACT-02 | Phase 19 | Pending |
+| EVTACT-03 | Phase 19 | Pending |
+| REND-01 | Phase 20 | Pending |
+| REND-02 | Phase 20 | Pending |
+| REND-03 | Phase 20 | Pending |
+| REND-04 | Phase 20 | Pending |
+| VDOC-01 | Phase 21 | Pending |
+| VDOC-02 | Phase 21 | Pending |
+| VDOC-03 | Phase 21 | Pending |
+| VDOC-04 | Phase 21 | Pending |
+| RET-01 | Phase 22 | Pending |
+| RET-02 | Phase 22 | Pending |
+| RET-03 | Phase 22 | Pending |
+| RET-04 | Phase 22 | Pending |
+| SIG-01 | Phase 23 | Pending |
+| SIG-02 | Phase 23 | Pending |
+| SIG-03 | Phase 23 | Pending |
+| SIG-04 | Phase 23 | Pending |
 
 **Coverage:**
-- v1.2 requirements: 35 total
-- Mapped to phases: 0
-- Unmapped: 35
+- v1.2 requirements: 36 total
+- Mapped to phases: 36/36
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-06*
-*Last updated: 2026-04-06 after initial definition*
+*Last updated: 2026-04-06 after roadmap creation*

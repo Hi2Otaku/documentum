@@ -1,13 +1,13 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.2
-milestone_name: milestone
+milestone_name: Advanced Engine & Document Platform
 status: planning
 stopped_at: null
 last_updated: "2026-04-06"
 last_activity: 2026-04-06
 progress:
-  total_phases: 0
+  total_phases: 8
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -20,23 +20,22 @@ progress:
 
 See: .planning/PROJECT.md (updated 2026-04-06)
 
-**Core value:** Every workflow use case in the Documentum specification can be modeled and executed end-to-end
-**Current focus:** Defining requirements for v1.2
+**Core value:** Any workflow use case described in the Documentum specification can be modeled and executed end-to-end through the system.
+**Current focus:** Phase 16 - Notifications & Event Bus
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-04-06 — Milestone v1.2 started
+Phase: 16 of 23 (Notifications & Event Bus)
+Plan: 0 of ? in current phase
+Status: Ready to plan
+Last activity: 2026-04-06 — Roadmap created for milestone v1.2
 
-Progress: [----------] 0%
+Progress: [..........] 0% (v1.2: 0/8 phases)
 
 ## Performance Metrics
 
 **Velocity:**
-
-- Total plans completed: 0
+- Total plans completed: 0 (v1.2)
 - Average duration: -
 - Total execution time: 0 hours
 
@@ -46,19 +45,8 @@ Progress: [----------] 0%
 |-------|-------|-------|----------|
 | - | - | - | - |
 
-**Recent Trend (from v1.0):**
+**Recent Trend (from v1.1):**
 
-| Phase 11 P01 | 9min | 4 tasks | 9 files |
-| Phase 11 P04 | 2m | 2 tasks | 11 files |
-| Phase 11 P05 | 20m | 2 tasks | 7 files |
-| Phase 11 P06 | 2m | 2 tasks | 2 files |
-| Phase 11 P07 | 5m | 2 tasks | 8 files |
-| Phase 12 P02 | 3m | 3 tasks | 8 files |
-| Phase 13 P01 | 2m | 2 tasks | 6 files |
-| Phase 13 P02 | 3min | 2 tasks | 5 files |
-| Phase 13 P03 | 3min | 2 tasks | 7 files |
-| Phase 14 P01 | 2m | 2 tasks | 7 files |
-| Phase 14 P02 | 3m | 2 tasks | 4 files |
 | Phase 14 P03 | 3m | 2 tasks | 6 files |
 | Phase 15 P01 | 2m | 2 tasks | 7 files |
 | Phase 15 P02 | 3min | 2 tasks | 6 files |
@@ -71,19 +59,10 @@ Progress: [----------] 0%
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- v1.1 is FRONTEND-ONLY: all backend APIs already exist from v1.0
-- Tech stack: React 19, TypeScript, Vite, shadcn/ui, TanStack Query, TanStack Table, Zustand, React Flow, React Router 7, Recharts, Tailwind CSS
-- Existing frontend pages: LoginPage, TemplateListPage, DesignerPage, DashboardPage, QueryPage
-- Navigation (Phase 12) is prerequisite for all other v1.1 phases
-- [Phase 12]: Sidebar defaults to collapsed; localStorage persists preference; hover-to-peek overlays without margin shift
-- [Phase 12]: Mobile renders dual main areas with responsive visibility classes instead of matchMedia
-- [Phase 13]: State filter uses 'all' default instead of empty string for Radix Select compatibility
-- [Phase 13]: Dialogs use controlled open/onOpenChange pattern; DelegateDialog updates authStore directly; QueueDetailPanel has no Claim button per revised D-12
-- [Phase 14]: API helpers duplicated per module (documents.ts follows inbox.ts convention); LockIndicator shows truncated UUID since API returns UUID not username
-- [Phase 14]: Blob download with auth headers for version files; lifecycle transitions as client-side state machine map
-- [Phase 15]: Used /api/v1/workflows prefix (corrected from plan's /api/workflows to match actual backend router)
-- [Phase 15]: Template/state filters shown only for admin users; regular users get client-side supervisor_id filtering
-- [Phase 15]: Progress graph uses lightweight inline node components instead of reusing designer nodes (no Handles for read-only view)
+- [v1.2 Roadmap]: Event bus + notifications first -- 6 of 8 features emit or consume domain events
+- [v1.2 Roadmap]: Database-backed Beat polling for all timers -- never use Celery ETA tasks
+- [v1.2 Roadmap]: Dedicated Celery rendition worker with LibreOffice -- isolated from API process
+- [v1.2 Roadmap]: Sub-workflow depth limit enforced at template installation and runtime
 
 ### Pending Todos
 
@@ -91,10 +70,13 @@ None yet.
 
 ### Blockers/Concerns
 
-None yet.
+- [Phase 17]: RedBeat vs static Beat polling decision needed at planning time
+- [Phase 18]: Sub-workflow failure propagation semantics (auto-fail vs allow retry) -- product decision
+- [Phase 20]: LibreOffice concurrency in Docker needs verification
+- [Phase 23]: Certificate storage encryption strategy (env var vs secrets manager)
 
 ## Session Continuity
 
-Last session: 2026-04-06T10:22:49.853Z
-Stopped at: Completed 15-03-PLAN.md
+Last session: 2026-04-06
+Stopped at: Roadmap v1.2 created with 8 phases (16-23)
 Resume file: None
