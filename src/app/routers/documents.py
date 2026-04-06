@@ -2,7 +2,7 @@ import json
 import math
 import uuid
 
-from fastapi import APIRouter, Depends, Form, Query, Response, UploadFile, status
+from fastapi import APIRouter, Depends, Form, HTTPException, Query, Response, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -118,7 +118,16 @@ async def delete_document(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_admin),
 ):
-    """Soft delete a document (admin only)."""
+    """Soft delete a document (admin only). Blocked if under retention or legal hold."""
+    from app.services import retention_service
+
+    deletable, reason = await retention_service.check_document_deletable(db, document_id)
+    if not deletable:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Cannot delete document: {reason}",
+        )
+
     document = await document_service.get_document(db, document_id)
     document.is_deleted = True
     await db.flush()
