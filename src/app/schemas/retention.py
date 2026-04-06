@@ -53,7 +53,11 @@ class DocumentRetentionResponse(BaseModel):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def is_expired(self) -> bool:
-        return self.expires_at < datetime.now(timezone.utc)
+        now = datetime.now(timezone.utc)
+        expires = self.expires_at
+        if expires.tzinfo is None:
+            expires = expires.replace(tzinfo=timezone.utc)
+        return expires < now
 
 
 class LegalHoldCreate(BaseModel):

@@ -237,3 +237,270 @@ class TestLegalHoldResponseSchema:
             released_by="admin",
         )
         assert resp.is_active is False
+
+
+# === API Tests ===
+
+
+class TestRetentionPolicyAPI:
+    @pytest.mark.asyncio
+    async def test_create_retention_policy(
+        self, async_client: AsyncClient, admin_token: str
+    ):
+        headers = {"Authorization": f"Bearer {admin_token}"}
+        resp = await async_client.post(
+            "/api/v1/retention/",
+            json={
+                "name": "7-Year Financial",
+                "description": "SOX compliance",
+                "retention_period_days": 2555,
+                "disposition_action": "archive",
+            },
+            headers=headers,
+        )
+        assert resp.status_code == 201
+        data = resp.json()["data"]
+        assert data["name"] == "7-Year Financial"
+        assert data["retention_period_days"] == 2555
+        assert data["disposition_action"] == "archive"
+        assert data["is_active"] is True
+        assert data["id"] is not None
+
+    @pytest.mark.asyncio
+    async def test_list_retention_policies(
+        self, async_client: AsyncClient, admin_token: str
+    ):
+        headers = {"Authorization": f"Bearer {admin_token}"}
+        # Create two policies
+        await async_client.post(
+            "/api/v1/retention/",
+            json={
+                "name": "Policy A",
+                "retention_period_days": 30,
+                "disposition_action": "delete",
+            },
+            headers=headers,
+        )
+        await async_client.post(
+            "/api/v1/retention/",
+            json={
+                "name": "Policy B",
+                "retention_period_days": 365,
+                "disposition_action": "archive",
+            },
+            headers=headers,
+        )
+
+        resp = await async_client.get("/api/v1/retention/", headers=headers)
+        assert resp.status_code == 200
+        data = resp.json()["data"]
+        assert len(data) == 2
+        meta = resp.json()["meta"]
+        assert meta["total_count"] == 2
+
+    @pytest.mark.asyncio
+    async def test_get_retention_policy(
+        self, async_client: AsyncClient, admin_token: str
+    ):
+        headers = {"Authorization": f"Bearer {admin_token}"}
+        create_resp = await async_client.post(
+            "/api/v1/retention/",
+            json={
+                "name": "Test Get",
+                "retention_period_days": 90,
+                "disposition_action": "archive",
+            },
+            headers=headers,
+        )
+        policy_id = create_resp.json()["data"]["id"]
+
+        resp = await async_client.get(
+            f"/api/v1/retention/{policy_id}", headers=headers
+        )
+        assert resp.status_code == 200
+        assert resp.json()["data"]["name"] == "Test Get"
+
+    @pytest.mark.asyncio
+    async def test_update_retention_policy(
+        self, async_client: AsyncClient, admin_token: str
+    ):
+        headers = {"Authorization": f"Bearer {admin_token}"}
+        create_resp = await async_client.post(
+            "/api/v1/retention/",
+            json={
+                "name": "Original",
+                "retention_period_days": 90,
+                "disposition_action": "archive",
+            },
+            headers=headers,
+        )
+        policy_id = create_resp.json()["data"]["id"]
+
+        resp = await async_client.put(
+            f"/api/v1/retention/{policy_id}",
+            json={"name": "Updated", "is_active": False},
+            headers=headers,
+        )
+        assert resp.status_code == 200
+        assert resp.json()["data"]["name"] == "Updated"
+        assert resp.json()["data"]["is_active"] is False
+
+    @pytest.mark.asyncio
+    async def test_delete_retention_policy(
+        self, async_client: AsyncClient, admin_token: str
+    ):
+        headers = {"Authorization": f"Bearer {admin_token}"}
+        create_resp = await async_client.post(
+            "/api/v1/retention/",
+            json={
+                "name": "To Delete",
+                "retention_period_days": 30,
+                "disposition_action": "delete",
+            },
+            headers=headers,
+        )
+        policy_id = create_resp.json()["data"]["id"]
+
+        resp = await async_client.delete(
+            f"/api/v1/retention/{policy_id}", headers=headers
+        )
+        assert resp.status_code == 200
+
+        # Should be gone
+        resp = await async_client.get(
+            f"/api/v1/retention/{policy_id}", headers=headers
+        )
+        assert resp.status_code == 404
+
+
+class TestDocumentRetentionAssignmentAPI:
+    @pytest.mark.asyncio
+    async def test_assign_retention_to_document(
+        self, async_client: AsyncClient, admin_token: str
+    ):
+        headers = {"Authorization": f"Bearer {admin_token}"}
+
+        # Upload a document
+        import io
+
+        file_content = b"test document content"
+        resp = await async_client.post(
+            "/api/v1/documents/",
+            files={"file": ("test.txt", io.BytesIO(file_content), "text/plain")},
+            data={"title": "Retention Test Doc"},
+            headers=headers,
+        )
+        assert resp.status_code == 201
+        doc_id = resp.json()["data"]["id"]
+
+        # Create a policy
+        resp = await async_client.post(
+            "/api/v1/retention/",
+            json={
+                "name": "Test Assignment Policy",
+                "retention_period_days": 365,
+                "disposition_action": "archive",
+            },
+            headers=headers,
+        )
+        policy_id = resp.json()["data"]["id"]
+
+        # Assign policy to document
+        resp = await async_client.post(
+            f"/api/v1/retention/documents/{doc_id}/assign",
+            json={"retention_policy_id": policy_id},
+            headers=headers,
+        )
+        assert resp.status_code == 201
+        data = resp.json()["data"]
+        assert data["document_id"] == doc_id
+        assert data["retention_policy_id"] == policy_id
+        assert data["policy_name"] == "Test Assignment Policy"
+        assert data["applied_by"] is not None
+        assert data["expires_at"] is not None
+
+    @pytest.mark.asyncio
+    async def test_list_document_retentions(
+        self, async_client: AsyncClient, admin_token: str
+    ):
+        headers = {"Authorization": f"Bearer {admin_token}"}
+
+        # Upload a document
+        import io
+
+        resp = await async_client.post(
+            "/api/v1/documents/",
+            files={"file": ("test.txt", io.BytesIO(b"content"), "text/plain")},
+            data={"title": "List Retentions Doc"},
+            headers=headers,
+        )
+        doc_id = resp.json()["data"]["id"]
+
+        # Create and assign a policy
+        resp = await async_client.post(
+            "/api/v1/retention/",
+            json={
+                "name": "List Test Policy",
+                "retention_period_days": 180,
+                "disposition_action": "delete",
+            },
+            headers=headers,
+        )
+        policy_id = resp.json()["data"]["id"]
+
+        await async_client.post(
+            f"/api/v1/retention/documents/{doc_id}/assign",
+            json={"retention_policy_id": policy_id},
+            headers=headers,
+        )
+
+        # List retentions
+        resp = await async_client.get(
+            f"/api/v1/retention/documents/{doc_id}", headers=headers
+        )
+        assert resp.status_code == 200
+        data = resp.json()["data"]
+        assert len(data) == 1
+        assert data[0]["policy_name"] == "List Test Policy"
+
+    @pytest.mark.asyncio
+    async def test_duplicate_assignment_returns_409(
+        self, async_client: AsyncClient, admin_token: str
+    ):
+        headers = {"Authorization": f"Bearer {admin_token}"}
+        import io
+
+        resp = await async_client.post(
+            "/api/v1/documents/",
+            files={"file": ("test.txt", io.BytesIO(b"content"), "text/plain")},
+            data={"title": "Duplicate Test"},
+            headers=headers,
+        )
+        doc_id = resp.json()["data"]["id"]
+
+        resp = await async_client.post(
+            "/api/v1/retention/",
+            json={
+                "name": "Dup Policy",
+                "retention_period_days": 30,
+                "disposition_action": "delete",
+            },
+            headers=headers,
+        )
+        policy_id = resp.json()["data"]["id"]
+
+        # First assignment
+        resp = await async_client.post(
+            f"/api/v1/retention/documents/{doc_id}/assign",
+            json={"retention_policy_id": policy_id},
+            headers=headers,
+        )
+        assert resp.status_code == 201
+
+        # Duplicate
+        resp = await async_client.post(
+            f"/api/v1/retention/documents/{doc_id}/assign",
+            json={"retention_policy_id": policy_id},
+            headers=headers,
+        )
+        assert resp.status_code == 409
