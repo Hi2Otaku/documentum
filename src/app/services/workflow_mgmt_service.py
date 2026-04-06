@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models.enums import ActivityState, WorkflowState, WorkItemState
+from app.services.event_bus import event_bus
 from app.models.user import User
 from app.models.workflow import (
     ActivityInstance,
@@ -176,6 +177,17 @@ async def abort_workflow(
     )
 
     await db.flush()
+
+    # Emit workflow.failed so sub-workflow parent resumption handler fires
+    await event_bus.emit(
+        db,
+        event_type="workflow.failed",
+        entity_type="workflow_instance",
+        entity_id=workflow.id,
+        actor_id=uuid.UUID(admin_id),
+        payload={"reason": "aborted"},
+    )
+
     return workflow
 
 
