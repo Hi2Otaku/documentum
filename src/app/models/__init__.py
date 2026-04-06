@@ -6,6 +6,7 @@ from app.models.document import Document, DocumentVersion
 from app.models.acl import DocumentACL, LifecycleACLRule
 from app.models.execution_log import AutoActivityLog
 from app.models.metrics import MetricsSummary
+from app.models.virtual_document import VirtualDocument, VirtualDocumentChild
 from app.models.workflow import (
     ActivityInstance,
     ActivityTemplate,
@@ -52,4 +53,6 @@ __all__ = [
     "LifecycleACLRule",
     "AutoActivityLog",
     "MetricsSummary",
+    "VirtualDocument",
+    "VirtualDocumentChild",
 ]
