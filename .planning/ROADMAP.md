@@ -135,7 +135,10 @@ Phases 12-15 delivered the complete web UI: navigation shell, inbox with work it
   2. User can verify the validity of any signature on a signed document version
   3. User can view a list of all signatures on a document with signer identity, timestamp, and validity status
   4. System prevents re-upload, check-in, or metadata modification of a signed document version, returning a clear error
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 23-01-PLAN.md -- Signature models, schemas, service, and migration
+- [ ] 23-02-PLAN.md -- Signatures router, immutability guards, and tests
 **UI hint**: yes
 
 ## Progress
