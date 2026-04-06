@@ -54,6 +54,9 @@ class ActivityTemplateCreate(BaseModel):
     position_y: float | None = None
     routing_type: str | None = None
     performer_list: list[str] | None = None
+    expected_duration_hours: float | None = None
+    escalation_action: str | None = None  # "priority_bump", "reassign", "notify", or None
+    warning_threshold_hours: float | None = None
 
 
 class ActivityTemplateUpdate(BaseModel):
@@ -67,6 +70,9 @@ class ActivityTemplateUpdate(BaseModel):
     position_y: float | None = None
     routing_type: str | None = None
     performer_list: list[str] | None = None
+    expected_duration_hours: float | None = None
+    escalation_action: str | None = None
+    warning_threshold_hours: float | None = None
 
 
 class ActivityTemplateResponse(BaseModel):
@@ -83,6 +89,9 @@ class ActivityTemplateResponse(BaseModel):
     position_y: float | None
     routing_type: str | None = None
     performer_list: list | None = None
+    expected_duration_hours: float | None = None
+    escalation_action: str | None = None
+    warning_threshold_hours: float | None = None
     created_at: datetime
     updated_at: datetime
     is_deleted: bool
