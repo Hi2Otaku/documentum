@@ -30,7 +30,7 @@ This roadmap delivers the full frontend experience for the Documentum Workflow C
 **Plans**: 2 plans
 Plans:
 - [x] 12-01-PLAN.md — Auth foundation, AdminRoute, placeholder pages, shadcn components
-- [ ] 12-02-PLAN.md — Sidebar UI components, AppShell rewrite, route wiring
+- [x] 12-02-PLAN.md — Sidebar UI components, AppShell rewrite, route wiring
 **UI hint**: yes
 
 ### Phase 13: Inbox & Work Items
@@ -78,7 +78,7 @@ Phases execute in numeric order: 12 -> 13 -> 14 -> 15
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 12. Navigation & App Shell | 1/2 | In Progress|  |
+| 12. Navigation & App Shell | 2/2 | Complete | 2026-04-06 |
 | 13. Inbox & Work Items | 0/TBD | Not started | - |
 | 14. Document Management | 0/TBD | Not started | - |
 | 15. Workflow Operations | 0/TBD | Not started | - |
