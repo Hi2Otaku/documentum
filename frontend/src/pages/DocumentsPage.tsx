@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { DocumentDropZone } from "../components/documents/DocumentDropZone";
 import { DocumentTable } from "../components/documents/DocumentTable";
+import { DocumentDetailPanel } from "../components/documents/DocumentDetailPanel";
 import { fetchDocuments } from "../api/documents";
 import { useAuthStore } from "../stores/authStore";
 
@@ -107,16 +108,12 @@ export function DocumentsPage() {
             currentUserId={userId}
           />
         </div>
-        {/* Right: Detail panel placeholder (Plan 03) */}
+        {/* Right: Detail panel */}
         <div className="w-[420px] border-l overflow-y-auto hidden lg:block">
-          <div className="flex flex-col items-center justify-center h-full">
-            <h3 className="text-lg font-semibold text-foreground">
-              Select a document
-            </h3>
-            <p className="text-sm text-muted-foreground mt-2 text-center max-w-[280px]">
-              Click a row in the table to view its details.
-            </p>
-          </div>
+          <DocumentDetailPanel
+            documentId={selectedDocumentId}
+            currentUserId={userId}
+          />
         </div>
       </div>
     </div>
