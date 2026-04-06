@@ -32,6 +32,7 @@ from app.models.workflow import (
     WorkflowPackage,
     WorkItem,
 )
+from app.core.config import settings
 from app.services.audit_service import create_audit_record
 from app.services.event_bus import event_bus
 from app.services.expression_evaluator import evaluate_expression
@@ -601,6 +602,38 @@ async def _advance_from_activity(
                     # The poll task in Plan 02 will find ACTIVE AUTO activities
                     # and dispatch them as Celery tasks.
                     pass
+
+                elif target_at.activity_type == ActivityType.SUB_WORKFLOW:
+                    # Resolve variable mapping from parent to child
+                    variable_mapping = target_at.variable_mapping or {}
+                    child_initial_vars: dict[str, Any] = {}
+                    for parent_var, child_var in variable_mapping.items():
+                        parent_val = var_context.get(parent_var)
+                        if parent_val is not None:
+                            child_initial_vars[child_var] = parent_val
+
+                    # Check runtime depth limit
+                    current_depth = workflow.nesting_depth or 0
+                    max_depth = settings.max_sub_workflow_depth
+                    if current_depth + 1 > max_depth:
+                        target_ai.state = ActivityState.ERROR
+                        logger.error(
+                            "Sub-workflow depth limit exceeded: depth=%d, max=%d",
+                            current_depth, max_depth,
+                        )
+                        continue
+
+                    # Spawn child workflow
+                    child_wf = await start_workflow(
+                        db,
+                        target_at.sub_template_id,
+                        user_id,
+                        initial_variables=child_initial_vars if child_initial_vars else None,
+                    )
+                    child_wf.parent_workflow_id = workflow.id
+                    child_wf.parent_activity_instance_id = target_ai.id
+                    child_wf.nesting_depth = current_depth + 1
+                    # Parent activity stays ACTIVE -- event handler resumes it
 
                 elif target_at.activity_type == ActivityType.MANUAL:
                     # Per D-06/D-07: resolve performers then create one work item per performer

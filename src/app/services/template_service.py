@@ -627,6 +627,47 @@ async def delete_variable(
 
 
 # ---------------------------------------------------------------------------
+# Sub-workflow depth and cycle validation
+# ---------------------------------------------------------------------------
+
+
+async def _check_sub_workflow_depth(
+    db: AsyncSession,
+    template_id: UUID,
+    visited: set[UUID] | None = None,
+    depth: int = 0,
+    max_depth: int = 5,
+) -> tuple[bool, str | None]:
+    """Check for circular sub-workflow references and depth limits."""
+    if depth > max_depth:
+        return False, f"Sub-workflow nesting exceeds depth limit of {max_depth}"
+    if visited is None:
+        visited = set()
+    if template_id in visited:
+        return False, "Circular sub-workflow reference detected"
+    visited.add(template_id)
+
+    result = await db.execute(
+        select(ActivityTemplate).where(
+            ActivityTemplate.process_template_id == template_id,
+            ActivityTemplate.activity_type == ActivityType.SUB_WORKFLOW,
+            ActivityTemplate.is_deleted == False,  # noqa: E712
+        )
+    )
+    sub_activities = result.scalars().all()
+
+    for sa in sub_activities:
+        if sa.sub_template_id:
+            ok, msg = await _check_sub_workflow_depth(
+                db, sa.sub_template_id, visited.copy(), depth + 1, max_depth
+            )
+            if not ok:
+                return False, msg
+
+    return True, None
+
+
+# ---------------------------------------------------------------------------
 # Validation (TMPL-08)
 # ---------------------------------------------------------------------------
 
@@ -751,6 +792,17 @@ async def validate_template(
                     "entity_id": str(a.id),
                 })
 
+    # 7b. MISSING_SUB_TEMPLATE: Every SUB_WORKFLOW activity needs sub_template_id
+    for a in activities:
+        if a.activity_type == ActivityType.SUB_WORKFLOW:
+            if not a.sub_template_id:
+                errors.append({
+                    "code": "MISSING_SUB_TEMPLATE",
+                    "message": f"Sub-workflow activity '{a.name}' requires a sub_template_id",
+                    "entity_type": "activity_template",
+                    "entity_id": str(a.id),
+                })
+
     # 8. SELF_LOOP: No flow where source == target
     for f in flows:
         if f.source_activity_id == f.target_activity_id:
@@ -850,6 +902,14 @@ async def install_template(
         raise ValueError(
             f"Template must be in VALIDATED state to install (current: {template.state.value})"
         )
+
+    # Check sub-workflow depth limits and circular references before install
+    from app.core.config import settings
+    ok, msg = await _check_sub_workflow_depth(
+        db, template_id, max_depth=settings.max_sub_workflow_depth
+    )
+    if not ok:
+        raise ValueError(msg)
 
     template.state = ProcessState.ACTIVE
     template.is_installed = True
