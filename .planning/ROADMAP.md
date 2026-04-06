@@ -62,7 +62,7 @@ Plans:
   5. User can transition a document through lifecycle states (Draft, Review, Approved, Archived) with a confirmation dialog
 **Plans**: 3 plans
 Plans:
-- [ ] 14-01-PLAN.md — API module, TypeScript types, shared components (LifecycleStateBadge, LockIndicator, Progress)
+- [x] 14-01-PLAN.md — API module, TypeScript types, shared components (LifecycleStateBadge, LockIndicator, Progress)
 - [ ] 14-02-PLAN.md — DocumentsPage with drop zone upload, DocumentTable with filters/pagination, split-pane layout
 - [ ] 14-03-PLAN.md — DocumentDetailPanel, version history, checkout/checkin dialogs, lifecycle transitions
 **UI hint**: yes
@@ -88,5 +88,5 @@ Phases execute in numeric order: 12 -> 13 -> 14 -> 15
 |-------|----------------|--------|-----------|
 | 12. Navigation & App Shell | 2/2 | Complete    | 2026-04-06 |
 | 13. Inbox & Work Items | 3/3 | Complete    | 2026-04-06 |
-| 14. Document Management | 0/3 | Not started | - |
+| 14. Document Management | 1/3 | In progress | - |
 | 15. Workflow Operations | 0/TBD | Not started | - |
