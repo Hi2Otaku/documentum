@@ -1,55 +1,18 @@
-import { Link, Outlet, useNavigate } from "react-router";
+import { useEffect } from "react";
+import { Outlet } from "react-router";
 import { useAuthStore } from "../../stores/authStore";
-import { Button } from "../ui/button";
+import { Sidebar } from "./Sidebar";
 
 export function AppShell() {
-  const navigate = useNavigate();
-  const logout = useAuthStore((s) => s.logout);
+  const loadProfile = useAuthStore((s) => s.loadProfile);
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Top nav bar - 48px height */}
-      <header className="h-12 border-b bg-background flex items-center px-4 shrink-0">
-        {/* Left: App name */}
-        <span className="text-lg font-semibold">Workflow Designer</span>
-
-        {/* Center: Nav links */}
-        <nav className="flex-1 flex justify-center gap-6">
-          <Link
-            to="/templates"
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Templates
-          </Link>
-          <Link
-            to="/dashboard"
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Dashboard
-          </Link>
-          <Link
-            to="/query"
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Query
-          </Link>
-        </nav>
-
-        {/* Right: Logout button */}
-        <Button variant="ghost" size="sm" onClick={handleLogout}>
-          Logout
-        </Button>
-      </header>
-
-      {/* Page content */}
-      <main className="flex-1">
-        <Outlet />
-      </main>
-    </div>
+    <Sidebar>
+      <Outlet />
+    </Sidebar>
   );
 }
