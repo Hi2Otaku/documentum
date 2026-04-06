@@ -14,6 +14,7 @@ from app.models.acl import DocumentACL, LifecycleACLRule
 from app.models.document import Document
 from app.models.enums import LifecycleState, PermissionLevel
 from app.services.audit_service import create_audit_record
+from app.services.event_bus import event_bus
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +80,19 @@ async def transition_lifecycle_state(
     )
 
     await apply_lifecycle_acl_rules(db, document_id, current_state, target_state, user_id)
+
+    # Emit lifecycle.changed domain event
+    await event_bus.emit(
+        db,
+        event_type="lifecycle.changed",
+        entity_type="document",
+        entity_id=document_id,
+        actor_id=uuid.UUID(user_id),
+        payload={
+            "from_state": current_state.value,
+            "to_state": target_state.value,
+        },
+    )
 
     return document
 

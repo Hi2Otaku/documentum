@@ -31,7 +31,7 @@ Phases 12-15 delivered the complete web UI: navigation shell, inbox with work it
 - Integer phases (16-23): Planned milestone work
 - Decimal phases (16.1, 16.2): Urgent insertions if needed
 
-- [ ] **Phase 16: Notifications & Event Bus** - Domain event bus with persistent storage, in-app and email notifications, notification UI with unread badge
+- [x] **Phase 16: Notifications & Event Bus** - Domain event bus with persistent storage, in-app and email notifications, notification UI with unread badge (completed 2026-04-06)
 - [ ] **Phase 17: Timer Activities & Escalation** - Deadline configuration on activities, due date enforcement, Beat-driven overdue detection, escalation actions
 - [ ] **Phase 18: Sub-Workflows** - SUB_WORKFLOW activity type, child instance spawning, parent-child lifecycle, variable mapping, depth limits
 - [ ] **Phase 19: Event-Driven Activities** - EVENT activity type, event subscription matching, auto-completion on domain events
@@ -51,11 +51,7 @@ Phases 12-15 delivered the complete web UI: navigation shell, inbox with work it
   2. User can open a notification list, see all notifications, and mark them as read individually or in bulk
   3. User receives email notifications for task assignments and approaching deadlines
   4. System emits and persists domain events for document uploads, lifecycle changes, and workflow state transitions -- visible in the events table
-**Plans:** 3 plans
-Plans:
-- [ ] 16-01-PLAN.md -- Backend foundation: models, schemas, event bus service, notification service, migration
-- [ ] 16-02-PLAN.md -- Backend API: REST/SSE endpoints, Celery email/deadline tasks, event emission wiring
-- [ ] 16-03-PLAN.md -- Frontend: notification bell, popover, SSE hook, Sonner toast integration
+**Plans**: TBD
 **UI hint**: yes
 
 ### Phase 17: Timer Activities & Escalation
@@ -149,7 +145,7 @@ Phases execute in numeric order: 16 -> 17 -> 18 -> 19 -> 20 -> 21 -> 22 -> 23
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 16. Notifications & Event Bus | 0/3 | Planning complete | - |
+| 16. Notifications & Event Bus | 1/1 | Complete   | 2026-04-06 |
 | 17. Timer Activities & Escalation | 0/? | Not started | - |
 | 18. Sub-Workflows | 0/? | Not started | - |
 | 19. Event-Driven Activities | 0/? | Not started | - |

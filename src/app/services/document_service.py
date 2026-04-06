@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.minio_client import delete_object, download_object, upload_object
 from app.models.document import Document, DocumentVersion
 from app.services.audit_service import create_audit_record
+from app.services.event_bus import event_bus
 
 
 async def upload_document(
@@ -86,6 +87,21 @@ async def upload_document(
         # Create ADMIN ACL for document creator (Phase 7)
         from app.services import acl_service
         await acl_service.create_owner_acl(db, document.id, uuid.UUID(user_id))
+
+        # Emit document.uploaded domain event
+        await event_bus.emit(
+            db,
+            event_type="document.uploaded",
+            entity_type="document",
+            entity_id=document.id,
+            actor_id=uuid.UUID(user_id),
+            payload={
+                "title": title,
+                "filename": filename,
+                "content_type": content_type,
+                "version": "0.1",
+            },
+        )
     except Exception:
         await delete_object(object_name)
         raise
