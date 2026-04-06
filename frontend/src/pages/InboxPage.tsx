@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { InboxTable } from "../components/inbox/InboxTable";
 import { InboxDetailPanel } from "../components/inbox/InboxDetailPanel";
-import { InboxEmptyState } from "../components/inbox/InboxEmptyState";
+import { QueueList } from "../components/inbox/QueueList";
+import { QueueDetailPanel } from "../components/inbox/QueueDetailPanel";
 import { fetchInboxItems } from "../api/inbox";
 
 const PAGE_SIZE = 20;
@@ -13,6 +14,7 @@ export function InboxPage() {
   const [selectedWorkItemId, setSelectedWorkItemId] = useState<string | null>(null);
   const [stateFilter, setStateFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedQueueId, setSelectedQueueId] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: [
@@ -41,11 +43,16 @@ export function InboxPage() {
     setSelectedWorkItemId(null);
   }
 
+  function handleTabChange(tab: string) {
+    setActiveTab(tab as "inbox" | "queues");
+    setSelectedQueueId(null);
+  }
+
   return (
     <div className="h-full flex flex-col">
       <Tabs
         value={activeTab}
-        onValueChange={(v) => setActiveTab(v as "inbox" | "queues")}
+        onValueChange={handleTabChange}
         className="flex flex-col h-full"
       >
         <div className="px-4 pt-2">
@@ -78,11 +85,20 @@ export function InboxPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="queues" className="flex-1 mt-0">
-          <InboxEmptyState
-            heading="No queues"
-            body="Queue browsing will be available soon."
-          />
+        <TabsContent value="queues" className="flex-1 mt-0 overflow-hidden">
+          <div className="flex h-[calc(100vh-theme(spacing.16))]">
+            {/* Left pane: queue list */}
+            <div className="flex-1 min-w-[400px] flex flex-col overflow-hidden">
+              <QueueList
+                selectedQueueId={selectedQueueId}
+                onSelectQueue={setSelectedQueueId}
+              />
+            </div>
+            {/* Right pane: queue detail */}
+            <div className="w-[420px] border-l overflow-y-auto hidden lg:block">
+              <QueueDetailPanel queueId={selectedQueueId} />
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
