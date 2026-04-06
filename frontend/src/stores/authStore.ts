@@ -14,23 +14,39 @@ interface AuthState {
   logout: () => void;
 }
 
-function decodeJwt(token: string): { sub: string; username: string } {
+function decodeJwt(token: string): { sub: string; username: string; exp?: number } {
   const payload = JSON.parse(atob(token.split(".")[1]));
-  return { sub: payload.sub, username: payload.username };
+  return { sub: payload.sub, username: payload.username, exp: payload.exp };
 }
 
-// Initialize from localStorage if token exists
-const storedToken = localStorage.getItem("token");
+function isTokenExpired(token: string): boolean {
+  try {
+    const { exp } = decodeJwt(token);
+    if (!exp) return false;
+    return Date.now() >= exp * 1000;
+  } catch {
+    return true;
+  }
+}
+
+// Initialize from localStorage if token exists and is not expired
+let storedToken = localStorage.getItem("token");
 let initialUserId: string | null = null;
 let initialUsername: string | null = null;
 
 if (storedToken) {
-  try {
-    const decoded = decodeJwt(storedToken);
-    initialUserId = decoded.sub;
-    initialUsername = decoded.username;
-  } catch {
-    // Invalid token in storage; will be cleared on next action
+  if (isTokenExpired(storedToken)) {
+    localStorage.removeItem("token");
+    storedToken = null;
+  } else {
+    try {
+      const decoded = decodeJwt(storedToken);
+      initialUserId = decoded.sub;
+      initialUsername = decoded.username;
+    } catch {
+      localStorage.removeItem("token");
+      storedToken = null;
+    }
   }
 }
 

@@ -1,4 +1,5 @@
 /** Inbox API client — consumes /api/v1/inbox endpoints. */
+import { handle401 } from "./handle401";
 
 // --- Auth helpers (mirrors query.ts pattern) ---
 
@@ -14,6 +15,7 @@ async function apiFetch<T>(url: string): Promise<T> {
       ...authHeaders(),
     },
   });
+  if (res.status === 401) handle401();
   if (!res.ok) {
     const body = await res.text();
     throw new Error(`API error ${res.status}: ${body}`);
@@ -34,6 +36,7 @@ async function apiMutate<T>(
     },
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
+  if (res.status === 401) handle401();
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`API error ${res.status}: ${text}`);

@@ -1,4 +1,5 @@
 import type { ProcessTemplate } from '../types/workflow';
+import { handle401 } from './handle401';
 
 const BASE = '/api/v1';
 
@@ -17,6 +18,7 @@ async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
       ...init?.headers,
     },
   });
+  if (res.status === 401) handle401();
   if (!res.ok) {
     const body = await res.text();
     throw new Error(`API error ${res.status}: ${body}`);

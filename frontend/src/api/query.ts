@@ -1,4 +1,5 @@
 /** Query API client — consumes /api/v1/query endpoints from Plan 02. */
+import { handle401 } from "./handle401";
 
 // --- Response types ---
 
@@ -61,6 +62,7 @@ async function apiFetch<T>(url: string): Promise<T> {
       ...authHeaders(),
     },
   });
+  if (res.status === 401) handle401();
   if (!res.ok) {
     const body = await res.text();
     throw new Error(`API error ${res.status}: ${body}`);

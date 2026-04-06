@@ -1,3 +1,5 @@
+import { handle401 } from "./handle401";
+
 const BASE = "/api/v1/users";
 
 export interface UserProfile {
@@ -23,6 +25,7 @@ export async function fetchUserProfile(
     },
   });
 
+  if (res.status === 401) handle401();
   if (!res.ok) {
     throw new Error("Failed to fetch user profile.");
   }
@@ -52,6 +55,7 @@ export async function updateAvailability(
     }),
   });
 
+  if (res.status === 401) handle401();
   if (!res.ok) {
     throw new Error("Failed to update availability.");
   }

@@ -1,4 +1,5 @@
 /** Queues API client — consumes /api/v1/queues endpoints. */
+import { handle401 } from "./handle401";
 
 // --- Auth helpers (mirrors query.ts pattern) ---
 
@@ -14,6 +15,7 @@ async function apiFetch<T>(url: string): Promise<T> {
       ...authHeaders(),
     },
   });
+  if (res.status === 401) handle401();
   if (!res.ok) {
     const body = await res.text();
     throw new Error(`API error ${res.status}: ${body}`);
