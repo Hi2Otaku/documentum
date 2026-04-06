@@ -8,6 +8,7 @@ import { WorkflowStateBadge } from "./WorkflowStateBadge";
 import { AdminActionBar } from "./AdminActionBar";
 import { TerminateDialog } from "./TerminateDialog";
 import { WorkflowVariablesList } from "./WorkflowVariablesList";
+import { WorkflowProgressGraph } from "./WorkflowProgressGraph";
 import { fetchWorkflowDetail } from "../../api/workflows";
 
 interface WorkflowDetailPanelProps {
@@ -148,11 +149,7 @@ export function WorkflowDetailPanel({ workflowId }: WorkflowDetailPanelProps) {
           </TabsContent>
 
           <TabsContent value="progress" className="mt-4">
-            <div className="flex items-center justify-center py-16">
-              <p className="text-sm text-muted-foreground">
-                Progress graph coming in Plan 03
-              </p>
-            </div>
+            <WorkflowProgressGraph workflowId={workflowId!} />
           </TabsContent>
         </Tabs>
       </div>

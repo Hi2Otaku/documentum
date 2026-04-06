@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { WorkflowTable } from "../components/workflows/WorkflowTable";
 import { WorkflowDetailPanel } from "../components/workflows/WorkflowDetailPanel";
+import { StartWorkflowDialog } from "../components/workflows/StartWorkflowDialog";
 import {
   fetchWorkflows,
   fetchWorkflowsAdmin,
@@ -48,8 +49,6 @@ export function WorkflowsPage() {
   const [stateFilter, setStateFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [wizardOpen, setWizardOpen] = useState(false);
-  // wizardOpen will be consumed by StartWorkflowDialog in Plan 03
-  void wizardOpen;
 
   // Fetch templates for filter dropdown
   const { data: templatesData } = useQuery({
@@ -155,6 +154,8 @@ export function WorkflowsPage() {
           <WorkflowDetailPanel workflowId={selectedWorkflowId} />
         </div>
       </div>
+
+      <StartWorkflowDialog open={wizardOpen} onOpenChange={setWizardOpen} />
     </div>
   );
 }
