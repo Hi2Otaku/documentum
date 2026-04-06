@@ -11,7 +11,7 @@ celery_app = Celery(
     "documentum",
     broker=settings.redis_url,
     backend=settings.redis_url,
-    include=["app.tasks.auto_activity", "app.tasks.metrics_aggregation"],
+    include=["app.tasks.auto_activity", "app.tasks.metrics_aggregation", "app.tasks.rendition"],
 )
 
 celery_app.conf.update(
@@ -22,6 +22,9 @@ celery_app.conf.update(
     enable_utc=True,
     task_acks_late=True,
     worker_prefetch_multiplier=1,
+    task_routes={
+        "app.tasks.rendition.*": {"queue": "renditions"},
+    },
     beat_schedule={
         "poll-auto-activities": {
             "task": "app.tasks.auto_activity.poll_auto_activities",
