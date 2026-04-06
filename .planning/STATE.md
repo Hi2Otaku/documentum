@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: milestone
 status: planning
-stopped_at: Phase 12 UI-SPEC approved
-last_updated: "2026-04-06T03:18:16.812Z"
+stopped_at: Completed 12-01-PLAN.md
+last_updated: "2026-04-06T03:38:10.420Z"
 last_activity: 2026-04-06 -- Roadmap created for v1.1
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 2
+  completed_plans: 1
   percent: 0
 ---
 
@@ -53,6 +53,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 11 P05 | 20m | 2 tasks | 7 files |
 | Phase 11 P06 | 2m | 2 tasks | 2 files |
 | Phase 11 P07 | 5m | 2 tasks | 8 files |
+| Phase 12 P01 | 2m | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -65,6 +66,8 @@ Recent decisions affecting current work:
 - Tech stack: React 19, TypeScript, Vite, shadcn/ui, TanStack Query, TanStack Table, Zustand, React Flow, React Router 7, Recharts, Tailwind CSS
 - Existing frontend pages: LoginPage, TemplateListPage, DesignerPage, DashboardPage, QueryPage
 - Navigation (Phase 12) is prerequisite for all other v1.1 phases
+- [Phase 12]: JWT decoded client-side via atob; isSuperuser fetched from API since not in JWT payload
+- [Phase 12]: LoginPage default redirect changed from /templates to /inbox as daily-use landing page
 
 ### Pending Todos
 
@@ -76,6 +79,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-06T03:18:16.809Z
-Stopped at: Phase 12 UI-SPEC approved
-Resume file: .planning/phases/12-navigation-app-shell/12-UI-SPEC.md
+Last session: 2026-04-06T03:38:10.415Z
+Stopped at: Completed 12-01-PLAN.md
+Resume file: None

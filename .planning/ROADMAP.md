@@ -29,7 +29,7 @@ This roadmap delivers the full frontend experience for the Documentum Workflow C
   4. User can see their username in a user menu, toggle their availability status, and log out -- all from any page
 **Plans**: 2 plans
 Plans:
-- [ ] 12-01-PLAN.md — Auth foundation, AdminRoute, placeholder pages, shadcn components
+- [x] 12-01-PLAN.md — Auth foundation, AdminRoute, placeholder pages, shadcn components
 - [ ] 12-02-PLAN.md — Sidebar UI components, AppShell rewrite, route wiring
 **UI hint**: yes
 
@@ -78,7 +78,7 @@ Phases execute in numeric order: 12 -> 13 -> 14 -> 15
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 12. Navigation & App Shell | 0/2 | Planning complete | - |
+| 12. Navigation & App Shell | 1/2 | In Progress|  |
 | 13. Inbox & Work Items | 0/TBD | Not started | - |
 | 14. Document Management | 0/TBD | Not started | - |
 | 15. Workflow Operations | 0/TBD | Not started | - |

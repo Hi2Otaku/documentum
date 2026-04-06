@@ -12,8 +12,8 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 - [ ] **NAV-01**: User can navigate between all pages (Templates, Inbox, Documents, Workflows, Dashboard, Query) via a persistent sidebar menu
 - [ ] **NAV-02**: User can see which page is currently active via highlighted sidebar item
-- [ ] **NAV-03**: Admin-only pages (Dashboard, Query) are hidden from non-admin users
-- [ ] **NAV-04**: User can see their username, toggle availability, and log out from a user menu
+- [x] **NAV-03**: Admin-only pages (Dashboard, Query) are hidden from non-admin users
+- [x] **NAV-04**: User can see their username, toggle availability, and log out from a user menu
 
 ### Inbox
 
@@ -70,8 +70,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | NAV-01 | Phase 12 | Pending |
 | NAV-02 | Phase 12 | Pending |
-| NAV-03 | Phase 12 | Pending |
-| NAV-04 | Phase 12 | Pending |
+| NAV-03 | Phase 12 | Complete |
+| NAV-04 | Phase 12 | Complete |
 | INB-01 | Phase 13 | Pending |
 | INB-02 | Phase 13 | Pending |
 | INB-03 | Phase 13 | Pending |
