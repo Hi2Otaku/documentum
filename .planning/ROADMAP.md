@@ -79,7 +79,7 @@ Plans:
 **Plans**: 3 plans
 Plans:
 - [x] 15-01-PLAN.md — API module, TypeScript types, shared components (WorkflowStateBadge, EmptyState), install Checkbox/Switch
-- [ ] 15-02-PLAN.md — WorkflowsPage split-pane layout, WorkflowTable with filters/pagination, WorkflowDetailPanel with admin actions
+- [x] 15-02-PLAN.md — WorkflowsPage split-pane layout, WorkflowTable with filters/pagination, WorkflowDetailPanel with admin actions
 - [ ] 15-03-PLAN.md — Start Workflow wizard dialog (4 steps) and read-only React Flow progress graph
 **UI hint**: yes
 
@@ -93,4 +93,4 @@ Phases execute in numeric order: 12 -> 13 -> 14 -> 15
 | 12. Navigation & App Shell | 2/2 | Complete    | 2026-04-06 |
 | 13. Inbox & Work Items | 3/3 | Complete    | 2026-04-06 |
 | 14. Document Management | 3/3 | Complete    | 2026-04-06 |
-| 15. Workflow Operations | 1/3 | In Progress|  |
+| 15. Workflow Operations | 2/3 | In Progress|  |
