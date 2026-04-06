@@ -1,4 +1,4 @@
-import { Play, User, Zap, Square, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Play, User, Zap, Radio, Square, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useUiStore } from '../../stores/uiStore';
 
 interface PaletteItem {
@@ -26,6 +26,12 @@ const PALETTE_ITEMS: PaletteItem[] = [
     label: 'Auto',
     icon: <Zap className="w-4 h-4" />,
     accentColor: 'border-l-orange-500',
+  },
+  {
+    nodeType: 'eventNode',
+    label: 'Event',
+    icon: <Radio className="w-4 h-4" />,
+    accentColor: 'border-l-amber-500',
   },
   {
     nodeType: 'endNode',

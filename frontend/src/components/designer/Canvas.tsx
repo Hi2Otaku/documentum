@@ -20,6 +20,7 @@ const DEFAULT_NODE_DATA: Record<string, { name: string; activityType: string }> 
   endNode: { name: 'End', activityType: 'end' },
   manualNode: { name: 'New Manual Activity', activityType: 'manual' },
   autoNode: { name: 'New Auto Activity', activityType: 'auto' },
+  eventNode: { name: 'New Event Activity', activityType: 'event' },
 };
 
 interface CanvasProps {
@@ -156,6 +157,9 @@ export function Canvas({ onNodeContextMenu, onEdgeContextMenu, onPaneContextMenu
               case 'auto':
               case 'autoNode':
                 return '#a855f7';
+              case 'event':
+              case 'eventNode':
+                return '#f59e0b';
               default:
                 return '#94a3b8';
             }

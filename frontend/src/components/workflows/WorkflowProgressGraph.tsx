@@ -8,7 +8,7 @@ import {
   type NodeTypes,
   type NodeProps,
 } from "@xyflow/react";
-import { Play, Square, Cog } from "lucide-react";
+import { Play, Square, Cog, Radio } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
 import { edgeTypes } from "../edges";
 import { getLayoutedElements } from "../../hooks/useAutoLayout";
@@ -146,11 +146,35 @@ function ProgressAutoNode({ data }: NodeProps) {
   );
 }
 
+function ProgressEventNode({ data }: NodeProps) {
+  const d = data as Record<string, unknown>;
+  const state = (d.activityState as string) ?? "dormant";
+  const name = (d.name as string) ?? "Activity";
+  return (
+    <div
+      className="flex items-center justify-center gap-1.5 rounded-lg px-3"
+      style={{
+        width: 160,
+        height: 64,
+        border: `2px solid ${getBorderColor(state)}`,
+        backgroundColor: getBgColor(state),
+      }}
+    >
+      <Radio className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+      <span className="text-xs font-medium text-foreground truncate">
+        {name}
+      </span>
+    </div>
+  );
+}
+
 const progressNodeTypes: NodeTypes = {
   startNode: ProgressStartNode,
   endNode: ProgressEndNode,
   manualNode: ProgressManualNode,
   autoNode: ProgressAutoNode,
+  event: ProgressEventNode,
+  eventNode: ProgressEventNode,
 };
 
 // --- Main component ---

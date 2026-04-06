@@ -3,7 +3,11 @@
 export interface ActivityNodeData extends Record<string, unknown> {
   name: string;
   description?: string;
-  activityType: 'start' | 'end' | 'manual' | 'auto';
+  activityType: 'start' | 'end' | 'manual' | 'auto' | 'sub_workflow' | 'event';
+  /** EVENT: which domain event type to listen for */
+  eventTypeFilter?: string | null;
+  /** EVENT: optional key-value filter on event payload */
+  eventFilterConfig?: Record<string, string> | null;
   performerType?: string | null;
   performerId?: string | null;
   triggerType?: 'and_join' | 'or_join';
