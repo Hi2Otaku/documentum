@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import { Download } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Download, FileText, RotateCcw } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
 import { Button } from "../ui/button";
 import {
@@ -9,9 +9,14 @@ import {
 } from "../ui/tooltip";
 import {
   fetchVersions,
+  fetchRenditions,
+  renditionDownloadUrl,
+  retryRendition,
   downloadVersionUrl,
   type DocumentVersionResponse,
+  type RenditionResponse,
 } from "../../api/documents";
+import { RenditionStatusBadge } from "./RenditionStatusBadge";
 
 function authHeaders(): HeadersInit {
   const token = localStorage.getItem("token");
@@ -22,6 +27,91 @@ function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+interface VersionRenditionsProps {
+  documentId: string;
+  versionId: string;
+}
+
+function VersionRenditions({ documentId, versionId }: VersionRenditionsProps) {
+  const queryClient = useQueryClient();
+
+  const { data: renditions } = useQuery({
+    queryKey: ["renditions", documentId, versionId],
+    queryFn: () => fetchRenditions(documentId, versionId),
+    refetchInterval: (query) => {
+      const hasPending = query.state.data?.some(
+        (r: RenditionResponse) => r.status === "pending",
+      );
+      return hasPending ? 3000 : false;
+    },
+  });
+
+  const retryMutation = useMutation({
+    mutationFn: (renditionId: string) =>
+      retryRendition(documentId, versionId, renditionId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["renditions", documentId, versionId],
+      });
+    },
+  });
+
+  const pdfRendition = renditions?.find(
+    (r) => r.rendition_type === "pdf",
+  );
+
+  if (!pdfRendition) return null;
+
+  async function handlePdfDownload(rendition: RenditionResponse) {
+    const url = renditionDownloadUrl(documentId, versionId, rendition.id);
+    const res = await fetch(url, { headers: authHeaders() });
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = "rendition.pdf";
+    a.click();
+    URL.revokeObjectURL(blobUrl);
+  }
+
+  return (
+    <div className="flex items-center gap-1">
+      <RenditionStatusBadge status={pdfRendition.status} type="pdf" />
+      {pdfRendition.status === "ready" && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => handlePdfDownload(pdfRendition)}
+            >
+              <FileText size={14} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Download PDF rendition</TooltipContent>
+        </Tooltip>
+      )}
+      {pdfRendition.status === "failed" && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => retryMutation.mutate(pdfRendition.id)}
+              disabled={retryMutation.isPending}
+            >
+              <RotateCcw size={14} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Retry rendition</TooltipContent>
+        </Tooltip>
+      )}
+    </div>
+  );
 }
 
 interface VersionHistoryListProps {
@@ -92,6 +182,7 @@ export function VersionHistoryList({ documentId }: VersionHistoryListProps) {
           <span className="text-xs text-muted-foreground whitespace-nowrap">
             {formatSize(v.content_size)}
           </span>
+          <VersionRenditions documentId={documentId} versionId={v.id} />
           <Tooltip>
             <TooltipTrigger asChild>
               <Button

@@ -234,3 +234,55 @@ export function downloadVersionUrl(
 ): string {
   return `/api/v1/documents/${documentId}/versions/${versionId}/download`;
 }
+
+// --- Rendition types and API functions ---
+
+export interface RenditionResponse {
+  id: string;
+  document_version_id: string;
+  rendition_type: "pdf" | "thumbnail";
+  status: "pending" | "ready" | "failed";
+  content_type: string | null;
+  content_size: number | null;
+  error_message: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function fetchRenditions(
+  documentId: string,
+  versionId: string,
+): Promise<RenditionResponse[]> {
+  const res = await apiFetch<{ data: RenditionResponse[] }>(
+    `/api/v1/documents/${documentId}/versions/${versionId}/renditions`,
+  );
+  return res.data;
+}
+
+export function renditionDownloadUrl(
+  documentId: string,
+  versionId: string,
+  renditionId: string,
+): string {
+  return `/api/v1/documents/${documentId}/versions/${versionId}/renditions/${renditionId}/download`;
+}
+
+export async function retryRendition(
+  documentId: string,
+  versionId: string,
+  renditionId: string,
+): Promise<RenditionResponse> {
+  const res = await apiMutate<{ data: RenditionResponse }>(
+    `/api/v1/documents/${documentId}/versions/${versionId}/renditions/${renditionId}/retry`,
+    "POST",
+  );
+  return res.data;
+}
+
+export function thumbnailUrl(
+  documentId: string,
+  versionId: string,
+  renditionId: string,
+): string {
+  return renditionDownloadUrl(documentId, versionId, renditionId);
+}
