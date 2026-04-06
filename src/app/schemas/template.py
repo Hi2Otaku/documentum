@@ -56,6 +56,8 @@ class ActivityTemplateCreate(BaseModel):
     performer_list: list[str] | None = None
     sub_template_id: uuid.UUID | None = None
     variable_mapping: dict[str, str] | None = None
+    event_type_filter: str | None = None
+    event_filter_config: dict | None = None
 
 
 class ActivityTemplateUpdate(BaseModel):
@@ -71,6 +73,8 @@ class ActivityTemplateUpdate(BaseModel):
     performer_list: list[str] | None = None
     sub_template_id: uuid.UUID | None = None
     variable_mapping: dict[str, str] | None = None
+    event_type_filter: str | None = None
+    event_filter_config: dict | None = None
 
 
 class ActivityTemplateResponse(BaseModel):
@@ -89,6 +93,8 @@ class ActivityTemplateResponse(BaseModel):
     performer_list: list | None = None
     sub_template_id: uuid.UUID | None = None
     variable_mapping: dict | None = None
+    event_type_filter: str | None = None
+    event_filter_config: dict | None = None
     created_at: datetime
     updated_at: datetime
     is_deleted: bool

@@ -110,6 +110,8 @@ class ActivityTemplate(BaseModel):
         Uuid(), ForeignKey("process_templates.id"), nullable=True
     )
     variable_mapping: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    event_type_filter: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    event_filter_config: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
     process_template: Mapped["ProcessTemplate"] = relationship(
         back_populates="activity_templates", foreign_keys=[process_template_id]

@@ -14,6 +14,7 @@ class ActivityType(str, enum.Enum):
     MANUAL = "manual"
     AUTO = "auto"
     SUB_WORKFLOW = "sub_workflow"
+    EVENT = "event"
 
 
 class FlowType(str, enum.Enum):

@@ -803,6 +803,17 @@ async def validate_template(
                     "entity_id": str(a.id),
                 })
 
+    # 7c. MISSING_EVENT_TYPE: Every EVENT activity needs event_type_filter
+    for a in activities:
+        if a.activity_type == ActivityType.EVENT:
+            if not a.event_type_filter:
+                errors.append({
+                    "code": "MISSING_EVENT_TYPE",
+                    "message": f"Event activity '{a.name}' requires an event_type_filter",
+                    "entity_type": "activity_template",
+                    "entity_id": str(a.id),
+                })
+
     # 8. SELF_LOOP: No flow where source == target
     for f in flows:
         if f.source_activity_id == f.target_activity_id:
