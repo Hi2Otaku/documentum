@@ -106,6 +106,9 @@ export function useSaveTemplate(templateId: string, initialData?: ProcessTemplat
           position_y: node.position.y,
           routing_type: data.routingType,
           performer_list: data.performerList,
+          expected_duration_hours: data.expectedDurationHours ?? null,
+          escalation_action: data.escalationAction ?? null,
+          warning_threshold_hours: data.warningThresholdHours ?? null,
         });
         newIdMap.set(node.id, result.id);
         // Update node in store with backendId
@@ -130,6 +133,9 @@ export function useSaveTemplate(templateId: string, initialData?: ProcessTemplat
             position_y: node.position.y,
             routing_type: data.routingType,
             performer_list: data.performerList,
+            expected_duration_hours: data.expectedDurationHours ?? null,
+            escalation_action: data.escalationAction ?? null,
+            warning_threshold_hours: data.warningThresholdHours ?? null,
           });
         }
       }

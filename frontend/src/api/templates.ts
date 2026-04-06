@@ -77,6 +77,9 @@ export async function addActivity(
     position_y?: number | null;
     routing_type?: string | null;
     performer_list?: string[] | null;
+    expected_duration_hours?: number | null;
+    escalation_action?: string | null;
+    warning_threshold_hours?: number | null;
   },
 ): Promise<ActivityTemplate> {
   const res = await apiFetch<ApiResponse<ActivityTemplate>>(
@@ -101,6 +104,9 @@ export async function updateActivity(
     position_y?: number | null;
     routing_type?: string | null;
     performer_list?: string[] | null;
+    expected_duration_hours?: number | null;
+    escalation_action?: string | null;
+    warning_threshold_hours?: number | null;
   },
 ): Promise<ActivityTemplate> {
   const res = await apiFetch<ApiResponse<ActivityTemplate>>(
