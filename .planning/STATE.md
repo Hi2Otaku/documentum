@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-06)
 
 **Core value:** Any workflow use case described in the Documentum specification can be modeled and executed end-to-end through the system.
-**Current focus:** Phase 16 - Notifications & Event Bus
+**Current focus:** Phase 22 - Retention & Records Management
 
 ## Current Position
 
-Phase: 16 of 23 (Notifications & Event Bus)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-04-06 — Roadmap created for milestone v1.2
+Phase: 22 of 23 (Retention & Records Management)
+Plan: 1 of 2 in current phase
+Status: Executing
+Last activity: 2026-04-06 — Completed 22-01 (Retention Policy Models, Service, API)
 
 Progress: [..........] 0% (v1.2: 0/8 phases)
 
@@ -43,7 +43,7 @@ Progress: [..........] 0% (v1.2: 0/8 phases)
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| Phase 22 P01 | 5m | 2 tasks | 9 files |
 
 **Recent Trend (from v1.1):**
 
@@ -59,6 +59,8 @@ Progress: [..........] 0% (v1.2: 0/8 phases)
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- [Phase 22 P01]: Used soft-delete pattern for retention assignments consistent with codebase
+- [Phase 22 P01]: Added timezone-naive datetime handling in is_expired for SQLite test compatibility
 - [v1.2 Roadmap]: Event bus + notifications first -- 6 of 8 features emit or consume domain events
 - [v1.2 Roadmap]: Database-backed Beat polling for all timers -- never use Celery ETA tasks
 - [v1.2 Roadmap]: Dedicated Celery rendition worker with LibreOffice -- isolated from API process
@@ -78,5 +80,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-06
-Stopped at: Roadmap v1.2 created with 8 phases (16-23)
+Stopped at: Completed 22-01-PLAN.md (Retention Policy Models, Service, API)
 Resume file: None
