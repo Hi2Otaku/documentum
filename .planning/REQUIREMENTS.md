@@ -27,7 +27,7 @@ Requirements for milestone v1.2: Advanced Engine & Document Platform.
 
 ### Sub-Workflows
 
-- [x] **SUBWF-01**: Admin can add a SUB_WORKFLOW activity type in the workflow designer that references another template
+- [ ] **SUBWF-01**: Admin can add a SUB_WORKFLOW activity type in the workflow designer that references another template
 - [ ] **SUBWF-02**: When a SUB_WORKFLOW activity executes, a child workflow instance is spawned from the referenced template
 - [ ] **SUBWF-03**: Parent workflow pauses at the SUB_WORKFLOW activity until the child workflow completes
 - [ ] **SUBWF-04**: Variables can be mapped from parent to child workflow on spawn
@@ -35,16 +35,16 @@ Requirements for milestone v1.2: Advanced Engine & Document Platform.
 
 ### Event-Driven Activities
 
-- [x] **EVTACT-01**: Admin can add an EVENT activity type in the workflow designer with event filter configuration
-- [x] **EVTACT-02**: EVENT activities complete automatically when a matching domain event fires
-- [x] **EVTACT-03**: Supported event types include document.uploaded, lifecycle.changed, and workflow.completed
+- [ ] **EVTACT-01**: Admin can add an EVENT activity type in the workflow designer with event filter configuration
+- [ ] **EVTACT-02**: EVENT activities complete automatically when a matching domain event fires
+- [ ] **EVTACT-03**: Supported event types include document.uploaded, lifecycle.changed, and workflow.completed
 
 ### Document Renditions
 
-- [ ] **REND-01**: System auto-generates PDF rendition when a document is uploaded (via LibreOffice headless worker)
-- [ ] **REND-02**: System auto-generates thumbnail image for uploaded documents
-- [ ] **REND-03**: User can download the PDF rendition of any document version
-- [ ] **REND-04**: Rendition status is visible in the document detail view (pending, ready, failed)
+- [x] **REND-01**: System auto-generates PDF rendition when a document is uploaded (via LibreOffice headless worker)
+- [x] **REND-02**: System auto-generates thumbnail image for uploaded documents
+- [x] **REND-03**: User can download the PDF rendition of any document version
+- [x] **REND-04**: Rendition status is visible in the document detail view (pending, ready, failed)
 
 ### Virtual Documents
 
@@ -141,18 +141,18 @@ Explicitly excluded from v1.2.
 | TIMER-02 | Phase 17 | Pending |
 | TIMER-03 | Phase 17 | Pending |
 | TIMER-04 | Phase 17 | Pending |
-| SUBWF-01 | Phase 18 | Complete |
+| SUBWF-01 | Phase 18 | Pending |
 | SUBWF-02 | Phase 18 | Pending |
 | SUBWF-03 | Phase 18 | Pending |
 | SUBWF-04 | Phase 18 | Pending |
 | SUBWF-05 | Phase 18 | Pending |
-| EVTACT-01 | Phase 19 | Complete |
-| EVTACT-02 | Phase 19 | Complete |
-| EVTACT-03 | Phase 19 | Complete |
-| REND-01 | Phase 20 | Pending |
-| REND-02 | Phase 20 | Pending |
-| REND-03 | Phase 20 | Pending |
-| REND-04 | Phase 20 | Pending |
+| EVTACT-01 | Phase 19 | Pending |
+| EVTACT-02 | Phase 19 | Pending |
+| EVTACT-03 | Phase 19 | Pending |
+| REND-01 | Phase 20 | Complete |
+| REND-02 | Phase 20 | Complete |
+| REND-03 | Phase 20 | Complete |
+| REND-04 | Phase 20 | Complete |
 | VDOC-01 | Phase 21 | Pending |
 | VDOC-02 | Phase 21 | Pending |
 | VDOC-03 | Phase 21 | Pending |
