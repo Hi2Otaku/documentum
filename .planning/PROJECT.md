@@ -52,6 +52,16 @@ Any workflow use case described in the Documentum specification (sequential, par
 - Process Integrator protocol support (JMS, FTP, SOAP) — use modern REST/webhook instead
 - Mobile native app — web-responsive UI is sufficient
 
+## Current Milestone: v1.1 Full Frontend Experience
+
+**Goal:** Make every backend capability accessible through the web UI — users should never need the API or Swagger to operate the system.
+
+**Target features:**
+- Inbox page — view/acquire/complete/reject work items, comments & history, delegate tasks, browse & claim from work queues, toast/badge notifications
+- Documents page — upload & browse files, check-in/check-out locking, version history with download, lifecycle state transitions
+- Workflows page — start workflows (template picker + document attachment + variables), instance monitoring, admin controls (halt/resume/terminate), visual progress with React Flow read-only view
+- Navigation — proper sidebar/nav menu connecting all pages (Templates, Inbox, Documents, Workflows, Dashboard, Query)
+
 ## Context
 
 - This is inspired by the OpenText Documentum Workflow Management technical specification (Vietnamese, March 2026)
@@ -94,4 +104,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-04 after Phase 10 completion*
+*Last updated: 2026-04-06 — Milestone v1.1 started*
