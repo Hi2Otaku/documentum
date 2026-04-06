@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Menu } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { Separator } from "../ui/separator";
-import { NotificationBell } from "./NotificationBell";
+import { NotificationBell } from "../notifications/NotificationBell";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarUserMenu } from "./SidebarUserMenu";
 import { SidebarNav } from "./SidebarNav";
