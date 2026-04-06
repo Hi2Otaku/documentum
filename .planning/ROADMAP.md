@@ -27,7 +27,10 @@ This roadmap delivers the full frontend experience for the Documentum Workflow C
   2. The currently active page is visually highlighted in the sidebar so the user always knows where they are
   3. Non-admin users do not see Dashboard or Query links in the sidebar; admin users see all links
   4. User can see their username in a user menu, toggle their availability status, and log out -- all from any page
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 12-01-PLAN.md — Auth foundation, AdminRoute, placeholder pages, shadcn components
+- [ ] 12-02-PLAN.md — Sidebar UI components, AppShell rewrite, route wiring
 **UI hint**: yes
 
 ### Phase 13: Inbox & Work Items
@@ -75,7 +78,7 @@ Phases execute in numeric order: 12 -> 13 -> 14 -> 15
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 12. Navigation & App Shell | 0/TBD | Not started | - |
+| 12. Navigation & App Shell | 0/2 | Planning complete | - |
 | 13. Inbox & Work Items | 0/TBD | Not started | - |
 | 14. Document Management | 0/TBD | Not started | - |
 | 15. Workflow Operations | 0/TBD | Not started | - |
