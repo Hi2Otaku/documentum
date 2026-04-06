@@ -125,7 +125,7 @@ export async function fetchDocuments(
   params: DocumentListParams,
 ): Promise<PaginatedDocumentsResponse> {
   const url = buildUrl(
-    "/api/v1/documents",
+    "/api/v1/documents/",
     params as Record<string, string | number | undefined | null>,
   );
   return apiFetch<PaginatedDocumentsResponse>(url);
