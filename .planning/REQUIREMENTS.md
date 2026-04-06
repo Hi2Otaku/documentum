@@ -19,10 +19,10 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 - [x] **INB-01**: User can view their pending work items in a filterable, paginated list with state badges
 - [x] **INB-02**: User can click a work item to view full details (activity info, workflow context, comments)
-- [ ] **INB-03**: User can acquire, complete, or reject a work item with an optional comment
-- [ ] **INB-04**: User can delegate a work item to another user
-- [ ] **INB-05**: User can set themselves as unavailable so tasks auto-route to delegates
-- [ ] **INB-06**: User can browse shared work queues and claim tasks from the queue pool
+- [x] **INB-03**: User can acquire, complete, or reject a work item with an optional comment
+- [x] **INB-04**: User can delegate a work item to another user
+- [x] **INB-05**: User can set themselves as unavailable so tasks auto-route to delegates
+- [x] **INB-06**: User can browse shared work queues and claim tasks from the queue pool
 
 ### Documents
 
@@ -74,10 +74,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | NAV-04 | Phase 12 | Complete |
 | INB-01 | Phase 13 | Complete |
 | INB-02 | Phase 13 | Complete |
-| INB-03 | Phase 13 | Pending |
-| INB-04 | Phase 13 | Pending |
-| INB-05 | Phase 13 | Pending |
-| INB-06 | Phase 13 | Pending |
+| INB-03 | Phase 13 | Complete |
+| INB-04 | Phase 13 | Complete |
+| INB-05 | Phase 13 | Complete |
+| INB-06 | Phase 13 | Complete |
 | DOC-01 | Phase 14 | Pending |
 | DOC-02 | Phase 14 | Pending |
 | DOC-03 | Phase 14 | Pending |
