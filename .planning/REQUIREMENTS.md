@@ -28,9 +28,9 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 - [ ] **DOC-01**: User can upload documents via drag-and-drop or file picker
 - [ ] **DOC-02**: User can browse documents in a paginated list with title, author, and lifecycle state filters
-- [ ] **DOC-03**: User can view version history for a document and download any specific version
-- [ ] **DOC-04**: User can check out a document for editing and check in a new version
-- [ ] **DOC-05**: User can transition a document's lifecycle state (Draft → Review → Approved → Archived) with confirmation
+- [x] **DOC-03**: User can view version history for a document and download any specific version
+- [x] **DOC-04**: User can check out a document for editing and check in a new version
+- [x] **DOC-05**: User can transition a document's lifecycle state (Draft → Review → Approved → Archived) with confirmation
 
 ### Workflows
 
@@ -80,9 +80,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INB-06 | Phase 13 | Complete |
 | DOC-01 | Phase 14 | Pending |
 | DOC-02 | Phase 14 | Pending |
-| DOC-03 | Phase 14 | Pending |
-| DOC-04 | Phase 14 | Pending |
-| DOC-05 | Phase 14 | Pending |
+| DOC-03 | Phase 14 | Complete |
+| DOC-04 | Phase 14 | Complete |
+| DOC-05 | Phase 14 | Complete |
 | WF-01 | Phase 15 | Pending |
 | WF-02 | Phase 15 | Pending |
 | WF-03 | Phase 15 | Pending |

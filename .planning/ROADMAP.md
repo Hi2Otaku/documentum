@@ -13,7 +13,7 @@ This roadmap delivers the full frontend experience for the Documentum Workflow C
 
 - [x] **Phase 12: Navigation & App Shell** - Persistent sidebar, page routing, active state indicators, role-based visibility, and user menu (completed 2026-04-06)
 - [x] **Phase 13: Inbox & Work Items** - Work item list with filtering, detail view, complete/reject actions, delegation, availability toggle, and work queue browsing (completed 2026-04-06)
-- [ ] **Phase 14: Document Management** - Document upload, browsing with filters, version history, check-in/check-out, and lifecycle state transitions
+- [x] **Phase 14: Document Management** - Document upload, browsing with filters, version history, check-in/check-out, and lifecycle state transitions (completed 2026-04-06)
 - [ ] **Phase 15: Workflow Operations** - Start workflow wizard, instance list with monitoring, admin controls, and read-only React Flow progress view
 
 ## Phase Details
@@ -64,7 +64,7 @@ Plans:
 Plans:
 - [x] 14-01-PLAN.md — API module, TypeScript types, shared components (LifecycleStateBadge, LockIndicator, Progress)
 - [x] 14-02-PLAN.md — DocumentsPage with drop zone upload, DocumentTable with filters/pagination, split-pane layout
-- [ ] 14-03-PLAN.md — DocumentDetailPanel, version history, checkout/checkin dialogs, lifecycle transitions
+- [x] 14-03-PLAN.md — DocumentDetailPanel, version history, checkout/checkin dialogs, lifecycle transitions
 **UI hint**: yes
 
 ### Phase 15: Workflow Operations
@@ -88,5 +88,5 @@ Phases execute in numeric order: 12 -> 13 -> 14 -> 15
 |-------|----------------|--------|-----------|
 | 12. Navigation & App Shell | 2/2 | Complete    | 2026-04-06 |
 | 13. Inbox & Work Items | 3/3 | Complete    | 2026-04-06 |
-| 14. Document Management | 2/3 | In progress | - |
+| 14. Document Management | 3/3 | Complete   | 2026-04-06 |
 | 15. Workflow Operations | 0/TBD | Not started | - |
