@@ -603,6 +603,11 @@ async def _advance_from_activity(
                     # and dispatch them as Celery tasks.
                     pass
 
+                elif target_at.activity_type == ActivityType.EVENT:
+                    # Leave as ACTIVE -- event bus handler will complete when matching event fires.
+                    # No work items created, no Celery task dispatched.
+                    pass
+
                 elif target_at.activity_type == ActivityType.SUB_WORKFLOW:
                     # Resolve variable mapping from parent to child
                     variable_mapping = target_at.variable_mapping or {}
