@@ -212,6 +212,86 @@ function NodeProperties({
           />
         </div>
       )}
+
+      {/* Timer & Escalation section (manual and auto nodes) */}
+      {(data.activityType === 'manual' || data.activityType === 'auto') && (
+        <div className="space-y-3 border-t pt-4 mt-4">
+          <h4 className="text-sm font-semibold text-muted-foreground">Timer & Escalation</h4>
+
+          {/* Deadline Duration */}
+          <div>
+            <label className="text-sm font-medium" htmlFor="deadline-hours">
+              Deadline Duration (hours)
+            </label>
+            <input
+              id="deadline-hours"
+              type="number"
+              min="0"
+              step="0.5"
+              placeholder="No deadline"
+              className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              value={data.expectedDurationHours ?? ''}
+              onChange={(e) =>
+                updateNodeData(nodeId, {
+                  expectedDurationHours: e.target.value ? parseFloat(e.target.value) : null,
+                })
+              }
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Hours from work item creation until deadline
+            </p>
+          </div>
+
+          {/* Escalation Action */}
+          <div>
+            <label className="text-sm font-medium" htmlFor="escalation-action">
+              Escalation Action
+            </label>
+            <select
+              id="escalation-action"
+              className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              value={data.escalationAction ?? ''}
+              onChange={(e) =>
+                updateNodeData(nodeId, {
+                  escalationAction: e.target.value || null,
+                })
+              }
+            >
+              <option value="">None</option>
+              <option value="priority_bump">Priority Bump</option>
+              <option value="reassign">Reassign to Supervisor</option>
+              <option value="notify">Notify Only</option>
+            </select>
+            <p className="text-xs text-muted-foreground mt-1">
+              Action taken when the deadline passes
+            </p>
+          </div>
+
+          {/* Warning Threshold */}
+          <div>
+            <label className="text-sm font-medium" htmlFor="warning-hours">
+              Warning Before Deadline (hours)
+            </label>
+            <input
+              id="warning-hours"
+              type="number"
+              min="0"
+              step="0.5"
+              placeholder="Auto (25% of deadline)"
+              className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              value={data.warningThresholdHours ?? ''}
+              onChange={(e) =>
+                updateNodeData(nodeId, {
+                  warningThresholdHours: e.target.value ? parseFloat(e.target.value) : null,
+                })
+              }
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Hours before deadline to send warning notification (default: 25% of duration)
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
