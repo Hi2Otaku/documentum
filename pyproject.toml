@@ -17,6 +17,7 @@ dependencies = [
     "redis",
     "python-multipart",
     "minio",
+    "cryptography",
 ]
 
 [project.optional-dependencies]
