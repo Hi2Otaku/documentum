@@ -40,6 +40,9 @@ export interface ActivityTemplate {
   position_y: number | null;
   routing_type: string | null;
   performer_list: string[] | null;
+  expected_duration_hours: number | null;
+  escalation_action: string | null;
+  warning_threshold_hours: number | null;
   created_at: string;
   updated_at: string;
   is_deleted: boolean;

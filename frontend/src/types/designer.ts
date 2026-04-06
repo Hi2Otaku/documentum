@@ -10,6 +10,9 @@ export interface ActivityNodeData extends Record<string, unknown> {
   methodName?: string | null;
   routingType?: string | null;
   performerList?: string[] | null;
+  expectedDurationHours?: number | null;
+  escalationAction?: 'priority_bump' | 'reassign' | 'notify' | null;
+  warningThresholdHours?: number | null;
   apiId?: string;
   /** Backend ID -- undefined for newly created nodes not yet saved */
   backendId?: string;

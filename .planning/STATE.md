@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Advanced Engine & Document Platform
-status: executing
-stopped_at: Completed 17-02-PLAN.md
-last_updated: "2026-04-06T16:43:15.144Z"
-last_activity: 2026-04-06
+status: planning
+stopped_at: Completed 17-03-PLAN.md
+last_updated: "2026-04-06T16:35:10.654Z"
+last_activity: 2026-04-06 — Roadmap created for milestone v1.2
 progress:
   total_phases: 8
   completed_phases: 0
   total_plans: 0
-  completed_plans: 2
-  percent: 10
+  completed_plans: 1
+  percent: 0
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-06)
 
 **Core value:** Any workflow use case described in the Documentum specification can be modeled and executed end-to-end through the system.
-**Current focus:** Phase 16 — notifications-event-bus
+**Current focus:** Phase 16 - Notifications & Event Bus
 
 ## Current Position
 
-Phase: 17
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-04-06
+Phase: 16 of 23 (Notifications & Event Bus)
+Plan: 0 of ? in current phase
+Status: Ready to plan
+Last activity: 2026-04-06 — Roadmap created for milestone v1.2
 
-Progress: [=.........] 10% (v1.2: 2/3 plans in phase 16)
+Progress: [..........] 0% (v1.2: 0/8 phases)
 
 ## Performance Metrics
 
@@ -52,11 +52,7 @@ Progress: [=.........] 10% (v1.2: 2/3 plans in phase 16)
 | Phase 15 P01 | 2m | 2 tasks | 7 files |
 | Phase 15 P02 | 3min | 2 tasks | 6 files |
 | Phase 15 P03 | 3min | 2 tasks | 9 files |
-| Phase 16 P01 | 8m | 5 tasks | 16 files |
-| Phase 16 P02 | 3m | 2 tasks | 9 files |
-| Phase 16 P04 | 2m | 2 tasks | 4 files |
-| Phase 17 P01 | 4min | 2 tasks | 4 files |
-| Phase 17 P02 | 9min | 2 tasks | 4 files |
+| Phase 17 P03 | 2m | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -69,13 +65,7 @@ Recent decisions affecting current work:
 - [v1.2 Roadmap]: Database-backed Beat polling for all timers -- never use Celery ETA tasks
 - [v1.2 Roadmap]: Dedicated Celery rendition worker with LibreOffice -- isolated from API process
 - [v1.2 Roadmap]: Sub-workflow depth limit enforced at template installation and runtime
-- [Phase 16]: In-process EventBus singleton with decorator-based handler registration; events persist to domain_events table
-- [Phase 16]: SSE notification stream uses Redis pub/sub on 'notifications' channel; token auth allows all active users
-- [Phase 16]: Deadline beat task is a placeholder until Phase 17 adds WorkItem.due_date
-- [Phase 16]: Redis publish placed in create_notification() covering all notification creation paths
-- [Phase 16]: NOTIF-03 deferred to Phase 17 (requires WorkItem.due_date)
-- [Phase 17]: escalation_action stored as String(50) not Enum for flexible extension
-- [Phase 17]: Default warning threshold is 25% of expected_duration_hours; priority bump decreases by 2 clamped at 1
+- [Phase 17]: Timer fields visible for both manual and auto activity types in designer
 
 ### Pending Todos
 
@@ -90,6 +80,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-06T16:43:15.140Z
-Stopped at: Completed 17-02-PLAN.md
+Last session: 2026-04-06T16:35:10.650Z
+Stopped at: Completed 17-03-PLAN.md
 Resume file: None
