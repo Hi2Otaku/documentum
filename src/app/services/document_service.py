@@ -86,6 +86,9 @@ async def upload_document(
         # Create ADMIN ACL for document creator (Phase 7)
         from app.services import acl_service
         await acl_service.create_owner_acl(db, document.id, uuid.UUID(user_id))
+
+        # Auto-trigger rendition generation (Phase 20)
+        await _trigger_renditions(db, document.id, version.id, user_id)
     except Exception:
         await delete_object(object_name)
         raise
@@ -313,6 +316,9 @@ async def checkin_document(
                 "comment": comment,
             },
         )
+
+        # Auto-trigger rendition generation (Phase 20)
+        await _trigger_renditions(db, document_id, new_version.id, user_id)
     except Exception:
         await delete_object(object_name)
         raise
@@ -469,3 +475,36 @@ async def promote_to_major_version(
     )
 
     return new_version
+
+
+async def _trigger_renditions(
+    db: AsyncSession,
+    document_id: uuid.UUID,
+    version_id: uuid.UUID,
+    user_id: str,
+) -> None:
+    """Create PENDING rendition records and dispatch Celery tasks for a new version."""
+    import logging
+
+    from app.models.enums import RenditionType
+    from app.services import rendition_service
+
+    logger = logging.getLogger(__name__)
+
+    for rtype in (RenditionType.PDF, RenditionType.THUMBNAIL):
+        try:
+            await rendition_service.create_rendition_request(
+                db,
+                document_id=document_id,
+                version_id=version_id,
+                rendition_type=rtype,
+                user_id=user_id,
+            )
+        except Exception as exc:
+            # Rendition failures should not block document operations
+            logger.warning(
+                "Failed to queue %s rendition for version %s: %s",
+                rtype.value,
+                version_id,
+                exc,
+            )
