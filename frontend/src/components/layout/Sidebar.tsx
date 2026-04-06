@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Menu } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { Separator } from "../ui/separator";
+import { NotificationBell } from "./NotificationBell";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarUserMenu } from "./SidebarUserMenu";
 import { SidebarNav } from "./SidebarNav";
@@ -81,6 +82,9 @@ export function Sidebar({ children }: SidebarProps) {
       >
         <SidebarHeader isCollapsed={!effectiveExpanded} />
         <SidebarUserMenu isCollapsed={!effectiveExpanded} />
+        <div className={cn("flex items-center shrink-0 pb-1", effectiveExpanded ? "px-3" : "justify-center")}>
+          <NotificationBell isCollapsed={!effectiveExpanded} />
+        </div>
         <Separator />
         <SidebarNav isCollapsed={!effectiveExpanded} />
         <div className="flex-1" />
@@ -106,8 +110,7 @@ export function Sidebar({ children }: SidebarProps) {
         <span className="flex-1 text-center text-base font-semibold">
           Documentum
         </span>
-        {/* Spacer to center text */}
-        <div className="w-8" />
+        <NotificationBell />
       </div>
 
       {/* Mobile overlay */}
