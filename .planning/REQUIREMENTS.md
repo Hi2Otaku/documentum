@@ -35,9 +35,9 @@ Requirements for milestone v1.2: Advanced Engine & Document Platform.
 
 ### Event-Driven Activities
 
-- [ ] **EVTACT-01**: Admin can add an EVENT activity type in the workflow designer with event filter configuration
-- [ ] **EVTACT-02**: EVENT activities complete automatically when a matching domain event fires
-- [ ] **EVTACT-03**: Supported event types include document.uploaded, lifecycle.changed, and workflow.completed
+- [x] **EVTACT-01**: Admin can add an EVENT activity type in the workflow designer with event filter configuration
+- [x] **EVTACT-02**: EVENT activities complete automatically when a matching domain event fires
+- [x] **EVTACT-03**: Supported event types include document.uploaded, lifecycle.changed, and workflow.completed
 
 ### Document Renditions
 
@@ -146,9 +146,9 @@ Explicitly excluded from v1.2.
 | SUBWF-03 | Phase 18 | Pending |
 | SUBWF-04 | Phase 18 | Pending |
 | SUBWF-05 | Phase 18 | Pending |
-| EVTACT-01 | Phase 19 | Pending |
-| EVTACT-02 | Phase 19 | Pending |
-| EVTACT-03 | Phase 19 | Pending |
+| EVTACT-01 | Phase 19 | Complete |
+| EVTACT-02 | Phase 19 | Complete |
+| EVTACT-03 | Phase 19 | Complete |
 | REND-01 | Phase 20 | Pending |
 | REND-02 | Phase 20 | Pending |
 | REND-03 | Phase 20 | Pending |
