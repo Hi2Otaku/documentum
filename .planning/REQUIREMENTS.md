@@ -34,9 +34,9 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Workflows
 
-- [ ] **WF-01**: User can start a workflow by selecting a template, attaching documents, setting initial variables, and launching
-- [ ] **WF-02**: User can view running workflow instances in a filterable, paginated list with state indicators
-- [ ] **WF-03**: Admin can halt, resume, or terminate a workflow instance from the UI
+- [x] **WF-01**: User can start a workflow by selecting a template, attaching documents, setting initial variables, and launching
+- [x] **WF-02**: User can view running workflow instances in a filterable, paginated list with state indicators
+- [x] **WF-03**: Admin can halt, resume, or terminate a workflow instance from the UI
 - [ ] **WF-04**: User can view a workflow's progress on a read-only React Flow graph showing the current position
 
 ## Future Requirements
@@ -83,9 +83,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DOC-03 | Phase 14 | Complete |
 | DOC-04 | Phase 14 | Complete |
 | DOC-05 | Phase 14 | Complete |
-| WF-01 | Phase 15 | Pending |
-| WF-02 | Phase 15 | Pending |
-| WF-03 | Phase 15 | Pending |
+| WF-01 | Phase 15 | Complete |
+| WF-02 | Phase 15 | Complete |
+| WF-03 | Phase 15 | Complete |
 | WF-04 | Phase 15 | Pending |
 
 **Coverage:**

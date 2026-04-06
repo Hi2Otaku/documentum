@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: milestone
-status: verifying
-stopped_at: Phase 15 UI-SPEC approved
-last_updated: "2026-04-06T08:48:25.361Z"
+status: executing
+stopped_at: Completed 15-01-PLAN.md
+last_updated: "2026-04-06T10:13:46.961Z"
 last_activity: 2026-04-06
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 8
-  completed_plans: 8
+  total_plans: 11
+  completed_plans: 9
   percent: 75
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-06)
 
 **Core value:** Every workflow use case in the Documentum specification can be modeled and executed end-to-end
-**Current focus:** Phase 14 — document-management
+**Current focus:** Phase 15 — workflow-operations
 
 ## Current Position
 
-Phase: 15
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 15 (workflow-operations) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
 Last activity: 2026-04-06
 
 Progress: [########--] 75%
@@ -60,6 +60,7 @@ Progress: [########--] 75%
 | Phase 14 P01 | 2m | 2 tasks | 7 files |
 | Phase 14 P02 | 3m | 2 tasks | 4 files |
 | Phase 14 P03 | 3m | 2 tasks | 6 files |
+| Phase 15 P01 | 2m | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,7 @@ Recent decisions affecting current work:
 - [Phase 13]: Dialogs use controlled open/onOpenChange pattern; DelegateDialog updates authStore directly; QueueDetailPanel has no Claim button per revised D-12
 - [Phase 14]: API helpers duplicated per module (documents.ts follows inbox.ts convention); LockIndicator shows truncated UUID since API returns UUID not username
 - [Phase 14]: Blob download with auth headers for version files; lifecycle transitions as client-side state machine map
+- [Phase 15]: Used /api/v1/workflows prefix (corrected from plan's /api/workflows to match actual backend router)
 
 ### Pending Todos
 
@@ -89,6 +91,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-06T08:48:25.357Z
-Stopped at: Phase 15 UI-SPEC approved
-Resume file: .planning/phases/15-workflow-operations/15-UI-SPEC.md
+Last session: 2026-04-06T10:13:46.957Z
+Stopped at: Completed 15-01-PLAN.md
+Resume file: None
