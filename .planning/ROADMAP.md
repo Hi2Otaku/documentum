@@ -99,7 +99,11 @@ Phases 12-15 delivered the complete web UI: navigation shell, inbox with work it
   2. Thumbnail images are auto-generated for uploaded documents and visible in the document list
   3. User can download the PDF rendition of any document version from the document detail view
   4. Rendition status (pending, ready, failed) is clearly displayed in the document detail view, with a retry option on failure
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 20-01-PLAN.md — Rendition model, service, Celery tasks, event handler
+- [ ] 20-02-PLAN.md — Rendition API endpoints and Docker worker
+- [ ] 20-03-PLAN.md — Frontend rendition UI (status badges, download, retry)
 **UI hint**: yes
 
 ### Phase 21: Virtual Documents
