@@ -1,484 +1,474 @@
 # Architecture Patterns
 
-**Domain:** Workflow Engine / BPM System (Documentum Clone)
-**Researched:** 2026-03-30
+**Domain:** v1.2 Feature Integration -- Timer Activities, Sub-Workflows, Events, Notifications, Renditions, Virtual Documents, Retention, Digital Signatures
+**Researched:** 2026-04-06
 
-## Recommended Architecture
+## Current Architecture Snapshot
 
-The system follows a **layered monolith with background workers** pattern -- not microservices. For a single-user/internal tool, microservices add orchestration complexity without benefit. The monolith shares a single database, with the Process Engine and Workflow Agent running as separate background processes (Celery workers) against that same database.
-
-### High-Level Architecture
+The existing system follows a clean layered architecture:
 
 ```
-+------------------------------------------------------------------+
-|                        WEB UI (Browser)                           |
-|  +----------------+  +-----------+  +----------+  +----------+   |
-|  | Workflow        |  | User      |  | Document |  | BAM      |   |
-|  | Designer        |  | Inbox     |  | Manager  |  | Dashboard|   |
-|  | (React Flow)    |  |           |  |          |  |          |   |
-|  +-------+--------+  +-----+-----+  +----+-----+  +----+-----+   |
-+----------|-----------------|-------------|-------------|----------+
-           |                 |             |             |
-           v                 v             v             v
-+------------------------------------------------------------------+
-|                     REST API LAYER (Django)                        |
-|  +-------------+  +-----------+  +----------+  +----------+      |
-|  | Process     |  | Inbox     |  | Document |  | BAM      |      |
-|  | Definition  |  | & Work    |  | & Version|  | Metrics  |      |
-|  | API         |  | Item API  |  | API      |  | API      |      |
-|  +------+------+  +-----+----+  +----+-----+  +----+-----+      |
-+---------|----------------|-----------|-------------|-------------+
-          |                |           |             |
-          v                v           v             v
-+------------------------------------------------------------------+
-|                     DOMAIN / SERVICE LAYER                        |
-|  +----------------+  +------------+  +-------------+             |
-|  | Process        |  | Routing    |  | Document    |             |
-|  | Definition     |  | Engine     |  | Service     |             |
-|  | Service        |  | (flows,    |  | (versioning,|             |
-|  | (templates,    |  |  joins,    |  |  packages)  |             |
-|  |  validation)   |  |  splits)   |  +-------------+             |
-|  +----------------+  +------------+                              |
-|  +----------------+  +------------+  +-------------+             |
-|  | Work Item      |  | Security   |  | Audit       |             |
-|  | Service        |  | Service    |  | Service     |             |
-|  | (inbox,        |  | (ACL,      |  | (trail,     |             |
-|  |  delegation,   |  |  perms)    |  |  events)    |             |
-|  |  work queues)  |  +------------+  +-------------+             |
-|  +----------------+                                              |
-+------------------------------------------------------------------+
-          |                |           |
-          v                v           v
-+------------------------------------------------------------------+
-|                    DATA / PERSISTENCE LAYER                       |
-|  +----------------------------+  +-----------------------------+ |
-|  | PostgreSQL                  |  | File Storage               | |
-|  | - Process definitions       |  | - Document files           | |
-|  | - Workflow instances        |  | - Version content          | |
-|  | - Activity instances        |  | (local filesystem or S3)   | |
-|  | - Work items                |  +-----------------------------+ |
-|  | - Packages & documents      |                                 |
-|  | - Audit log                 |                                 |
-|  | - Users, groups, ACLs       |                                 |
-|  +----------------------------+                                  |
-+------------------------------------------------------------------+
-          ^                ^
-          |                |
-+------------------------------------------------------------------+
-|              BACKGROUND WORKERS (Celery + Redis)                  |
-|  +--------------------+  +---------------------+                 |
-|  | Process Engine      |  | Workflow Agent       |                |
-|  | - Advances workflow  |  | - Polls for auto     |                |
-|  |   state machine      |  |   activities          |                |
-|  | - Evaluates triggers |  | - Executes methods   |                |
-|  | - Creates work items |  | - Handles timers     |                |
-|  | - Evaluates          |  | - Retries on failure |                |
-|  |   conditions         |  +---------------------+                |
-|  +--------------------+                                           |
-|  +--------------------+                                           |
-|  | Event/Notification  |                                          |
-|  | Worker              |                                          |
-|  | - Emails             |                                         |
-|  | - WebSocket pushes   |                                         |
-|  +--------------------+                                           |
-+------------------------------------------------------------------+
+React SPA (Vite + React 19)
+    |
+FastAPI (ASGI, async)
+    |-- Routers (auth, users, documents, templates, workflows, inbox, dashboard, query, ...)
+    |-- Services (engine_service, document_service, lifecycle_service, acl_service, ...)
+    |-- Models (workflow.py, document.py, user.py, acl.py, audit.py)
+    |
+    +-- PostgreSQL 16 (asyncpg) -- primary data store
+    +-- MinIO -- document file storage (single "documents" bucket)
+    +-- Redis 7 -- Celery broker + cache
+    +-- Celery Worker -- auto activity execution (polls every 10s)
+    +-- Celery Beat -- periodic scheduling (auto-activity poll + metrics aggregation)
 ```
 
-### Component Boundaries
+**Key Engine Pattern:** Token-based Petri-net execution in `engine_service.py` (~1100 lines). Activities are START/END/MANUAL/AUTO. The `_advance_from_activity` loop uses breadth-first iterative token placement with AND-join/OR-join semantics. Celery workers poll for ACTIVE AUTO activities and execute registered auto methods from the `auto_methods` registry.
 
-| Component | Responsibility | Communicates With | Communication Method |
-|-----------|---------------|-------------------|---------------------|
-| **Workflow Designer UI** | Visual drag-and-drop process template creation | Process Definition API | REST (save/load templates) |
-| **User Inbox UI** | Display work items, accept user actions | Inbox API, WebSocket | REST + WebSocket (real-time) |
-| **Document Manager UI** | Upload, browse, version documents | Document API | REST + multipart upload |
-| **BAM Dashboard UI** | Real-time process metrics and SLA monitoring | BAM API, WebSocket | REST + WebSocket (live updates) |
-| **Process Definition Service** | CRUD for dm_process, dm_activity, flows; template validation | Database | Direct ORM |
-| **Routing Engine** | Evaluate flow conditions, AND/OR joins, splits, performer resolution | Database, Process Engine | Internal function calls |
-| **Process Engine** | State machine runtime: advance workflows, create work items, evaluate triggers | Database, Routing Engine, Audit Service | Celery tasks + direct DB |
-| **Workflow Agent** | Background daemon for auto activities: execute methods, handle timers | Database, Process Engine | Celery beat + tasks |
-| **Work Item Service** | Inbox management, delegation, work queues, task claiming | Database, Security Service | Direct ORM |
-| **Document Service** | File storage, versioning, package management | Database, File Storage | Direct ORM + filesystem |
-| **Security Service** | ACL evaluation, permission changes at workflow steps | Database | Direct ORM |
-| **Audit Service** | Immutable event log of all state changes and user actions | Database (append-only) | Direct ORM |
+**Key Engine Extension Points:**
+- `_advance_from_activity` has a `match` on `ActivityType` (START/END, AUTO, MANUAL) -- new types slot in here
+- `auto_methods/__init__.py` provides a `@auto_method("name")` decorator registry -- new methods register the same way
+- `celery_app.py` beat_schedule dict -- new periodic tasks add entries here
+- `BaseModel` provides soft delete (`is_deleted`), timestamps, `created_by` on all models
 
-### Data Flow
+## New Features and Their Integration Points
 
-#### 1. Process Template Creation (Design Time)
+### 1. Timer Activities and Escalation
 
+**What it needs:** Activities that fire based on time (delays, deadlines, SLA triggers) rather than user action or auto-method completion.
+
+**Integration approach:** Extend the existing Celery Beat + task system. Do NOT add a new activity type -- instead, add timer configuration to `ActivityTemplate` that applies to MANUAL activities (deadline/escalation) and can create pure delay nodes (AUTO activity with timer).
+
+**New components:**
+- `src/app/models/timer.py` -- `TimerConfig` model (one-to-many from ActivityTemplate)
+  - Fields: `activity_template_id` (FK), `timer_type` (delay/deadline/recurring), `duration_seconds`, `deadline_expression` (evaluable against process variables), `escalation_action` (reassign/notify/auto_complete/bump_priority), `escalation_target` (user ID or variable name)
+- `src/app/tasks/timer_tasks.py` -- Celery tasks for timer evaluation
+  - `check_timer_deadlines` -- Beat task (runs every 30s), queries for ACTIVE activities with timer configs past deadline
+  - `execute_timer_escalation` -- Handles the escalation action
+- `src/app/services/timer_service.py` -- Timer scheduling and management logic
+
+**Modifications to existing:**
+- `ActivityTemplate` model: add `timer_config` JSON column (lightweight option) or FK relationship to `TimerConfig`
+- `engine_service._advance_from_activity`: when activating a MANUAL activity with timer config, set `WorkItem.due_date` from the timer config; for delay-type timers on AUTO activities, set a `timer_fires_at` timestamp
+- `WorkItem`: `due_date` column already exists -- use it for SLA tracking
+- `celery_app.py`: add `check-timer-deadlines` to beat schedule (every 30s)
+- `ActivityTemplate`: `expected_duration_hours` already exists -- use as default SLA when no explicit timer config
+
+**Data flow:**
 ```
-Designer UI
-  |-- [POST /api/processes] --> Process Definition API
-  |                               |-- Validate template graph (no orphan nodes, valid flows)
-  |                               |-- Store dm_process + dm_activity + flow records
-  |                               |-- Return process ID
-  |<- [200 OK + process_id] ------+
-```
-
-#### 2. Workflow Instance Launch (Runtime)
-
-```
-User/API triggers "Start Workflow"
-  |-- [POST /api/workflows] --> Workflow API
-  |                               |-- Create dm_workflow instance (state=DORMANT)
-  |                               |-- Attach packages (documents)
-  |                               |-- Set state to RUNNING
-  |                               |-- Dispatch to Process Engine (Celery task)
-  |                               |      |
-  |                               |      v
-  |                               |  Process Engine:
-  |                               |    1. Find START activity
-  |                               |    2. Evaluate outgoing flows
-  |                               |    3. For manual activity:
-  |                               |       - Resolve performer (user/group/alias)
-  |                               |       - Create dmi_workitem (state=ACQUIRED)
-  |                               |       - Work item appears in user inbox
-  |                               |    4. For auto activity:
-  |                               |       - Queue for Workflow Agent
-  |                               |    5. Log to audit trail
-  |<- [200 OK + workflow_id] -----+
+Activity activated with timer_config
+  -> WorkItem.due_date set from duration/deadline
+  -> Celery Beat polls check_timer_deadlines every 30s
+  -> Past-due items trigger execute_timer_escalation
+  -> Escalation: reassign / notify / bump priority / auto-complete
 ```
 
-#### 3. User Completes a Work Item
+### 2. Sub-Workflows
 
-```
-User clicks "Complete" in Inbox
-  |-- [POST /api/workitems/:id/complete] --> Work Item API
-  |                                            |-- Validate user has permission
-  |                                            |-- Record decision + any form data
-  |                                            |-- Mark work item COMPLETE
-  |                                            |-- Dispatch to Process Engine (Celery task)
-  |                                            |      |
-  |                                            |      v
-  |                                            |  Process Engine:
-  |                                            |    1. Check trigger conditions on downstream activities
-  |                                            |    2. AND-join: all predecessors done? If not, wait
-  |                                            |    3. OR-join: at least one done? Proceed
-  |                                            |    4. Evaluate conditional flows (route selection)
-  |                                            |    5. Create next work items or queue auto activities
-  |                                            |    6. If no more activities: set workflow FINISHED
-  |                                            |    7. Update ACLs if configured for this step
-  |                                            |    8. Transition document lifecycle if configured
-  |                                            |    9. Log to audit trail
-  |<- [200 OK] --------------------------------+
-```
+**What it needs:** A workflow activity that spawns a child workflow, optionally waits for completion, then continues the parent.
 
-#### 4. Workflow Agent Executes Auto Activity
+**Integration approach:** Add `ActivityType.SUB_WORKFLOW` enum value. The engine handles it by spawning a child workflow and leaving the parent activity ACTIVE until the child finishes.
 
+**New components:**
+- `src/app/models/sub_workflow.py` -- `SubWorkflowLink` model
+  - Fields: `parent_workflow_id` (FK), `parent_activity_instance_id` (FK), `child_workflow_id` (FK), `variable_mapping_in` (JSON: parent->child), `variable_mapping_out` (JSON: child->parent), `state` (active/completed/failed), `max_depth` (enforced limit)
+- `src/app/tasks/sub_workflow_tasks.py` -- Celery task to monitor child completion
+  - `poll_sub_workflows` -- Beat task (every 10s), checks if child workflows are FINISHED/FAILED
+  - On child FINISHED: copy output variables back to parent, advance parent
+  - On child FAILED: mark parent activity as ERROR
+
+**Modifications to existing:**
+- `enums.py`: add `ActivityType.SUB_WORKFLOW = "sub_workflow"`
+- `ActivityTemplate`: add `sub_process_template_id` (FK to ProcessTemplate) and `variable_mapping` (JSON)
+- `engine_service._advance_from_activity`: new case in the activity type match:
+  ```python
+  case ActivityType.SUB_WORKFLOW:
+      # Spawn child workflow, create SubWorkflowLink, leave ACTIVE
+  ```
+- `engine_service.start_workflow`: accept optional `parent_link_id` for traceability
+- `celery_app.py`: add `poll-sub-workflows` to beat schedule
+
+**Data flow:**
 ```
-Celery Beat (periodic schedule, e.g., every 5 seconds)
-  |-- Workflow Agent task:
-  |     1. Query for queued auto activities
-  |     2. For each:
-  |        a. Load the dm_method (Python callable)
-  |        b. Execute with timeout
-  |        c. On success: mark activity COMPLETE, trigger Process Engine advance
-  |        d. On failure: retry up to N times, then mark workflow FAILED
-  |        e. Log execution to audit trail
+Parent reaches SUB_WORKFLOW activity
+  -> engine calls start_workflow() for child template
+  -> SubWorkflowLink created (parent_ai <-> child_wf)
+  -> Parent activity stays ACTIVE
+  -> Celery Beat polls child state every 10s
+  -> Child FINISHED -> copy output vars -> advance parent
 ```
 
-#### 5. Real-Time Updates (WebSocket)
+### 3. Event-Driven Activities
+
+**What it needs:** Activities that wait for a specific event (document uploaded, lifecycle changed, external webhook) rather than user/auto completion.
+
+**Integration approach:** Add `ActivityType.EVENT` and build a lightweight event bus on Redis pub/sub. Events emitted by existing services; event activities subscribe and complete when matched.
+
+**New components:**
+- `src/app/services/event_bus.py` -- Event dispatcher
+  - `emit_event(event_type: str, payload: dict)` -- publishes to Redis channel
+  - Standard event types: `document.uploaded`, `document.checked_in`, `lifecycle.changed`, `workflow.completed`, `external.webhook`
+- `src/app/models/event.py`
+  - `EventSubscription` model: `activity_template_id` (FK), `event_type`, `filter_expression` (optional condition on payload)
+  - `EventLog` model: `event_type`, `payload` (JSON), `timestamp`, `matched_subscription_id`
+- `src/app/tasks/event_tasks.py` -- Background event processor
+  - Listens to Redis pub/sub, matches against active EVENT activity subscriptions
+  - On match: completes the activity instance, advances workflow
+- `src/app/routers/events.py` -- Webhook endpoint for external events
+
+**Modifications to existing:**
+- `enums.py`: add `ActivityType.EVENT = "event"`
+- `ActivityTemplate`: add `event_type` (string) and `event_filter` (JSON)
+- `engine_service._advance_from_activity`: for EVENT type, leave ACTIVE (event listener completes)
+- `document_service.py`: add `emit_event("document.uploaded", ...)` after upload
+- `lifecycle_service.py`: add `emit_event("lifecycle.changed", ...)` after transitions
+
+**Data flow:**
+```
+EVENT activity activated -> stays ACTIVE, subscription registered in DB
+  -> document_service uploads file -> event_bus.emit("document.uploaded", {...})
+  -> event_tasks listener matches subscription -> completes activity -> advances workflow
+```
+
+### 4. Notifications Framework
+
+**What it needs:** Email and in-app notifications triggered by workflow events (task assignment, delegation, approaching deadlines, workflow completions).
+
+**Integration approach:** Cross-cutting service that hooks into existing operations. The existing `send_email` auto method handles SMTP -- extract and generalize the email logic.
+
+**New components:**
+- `src/app/models/notification.py`
+  - `Notification` model: `user_id` (FK), `type` (enum: task_assigned, deadline_approaching, workflow_completed, escalation, delegation), `title`, `body`, `is_read`, `link_url`, `metadata` (JSON)
+  - `NotificationPreference` model: `user_id`, `notification_type`, `channel` (email/in_app), `enabled`
+- `src/app/services/notification_service.py`
+  - `notify(user_ids, notification_type, context)` -- creates in-app records + queues email
+  - Jinja2 templates for email body rendering
+- `src/app/tasks/notification_tasks.py` -- Celery task for async email sending
+- `src/app/routers/notifications.py` -- REST endpoints (list, mark-read, preferences, count-unread)
+- Frontend: notification bell in AppShell header, notification dropdown/panel
+
+**Modifications to existing:**
+- `engine_service._advance_from_activity`: call `notify()` when creating work items
+- `engine_service.complete_work_item`: notify on workflow completion (when FINISHED)
+- `timer_tasks.py`: notify on deadline approaching/breached
+- `config.py`: SMTP settings already present -- sufficient
+- `auto_methods/builtin.py`: `send_email` can optionally delegate to notification_service
+
+### 5. Document Renditions and Transformations
+
+**What it needs:** Auto-generate PDF or thumbnail renditions of uploaded documents. Store alongside originals in MinIO.
+
+**Integration approach:** Celery worker tasks triggered on document upload/check-in. Separate MinIO bucket for renditions.
+
+**New components:**
+- `src/app/models/rendition.py` -- `DocumentRendition` model
+  - Fields: `document_version_id` (FK), `rendition_type` (pdf/thumbnail/preview), `content_type`, `minio_object_key`, `status` (pending/processing/completed/failed), `file_size`, `error_message`
+- `src/app/services/rendition_service.py`
+  - `request_rendition(document_version_id, rendition_type)` -- creates record + dispatches Celery task
+  - `get_rendition(document_version_id, rendition_type)` -- returns rendition data or presigned URL
+- `src/app/tasks/rendition_tasks.py` -- Celery tasks for conversion
+  - `generate_pdf_rendition` -- LibreOffice headless for Office docs, passthrough for PDFs
+  - `generate_thumbnail` -- Pillow for images, pdf2image for PDFs (first page)
+- `src/app/routers/renditions.py` -- REST endpoints (list, download, request)
+
+**Modifications to existing:**
+- `document_service.py`: after upload/check-in, dispatch rendition tasks automatically
+- `minio_client.py`: add `RENDITIONS_BUCKET = "renditions"` and ensure-bucket
+- `docker-compose.yml`: Celery worker image needs LibreOffice headless (or add dedicated rendition worker)
+- `Dockerfile`: install `libreoffice-headless`, `python3-pil`, `poppler-utils`
+
+### 6. Virtual/Compound Documents
+
+**What it needs:** Parent-child document assemblies where a container document references others in order.
+
+**Integration approach:** Metadata-layer feature -- actual files stay in MinIO unchanged. New model for document tree relationships.
+
+**New components:**
+- `src/app/models/virtual_document.py`
+  - `VirtualDocumentNode` model: `parent_document_id` (FK to Document), `child_document_id` (FK), `child_version_id` (FK, nullable for late-bound), `sort_order`, `binding_type` (early/late)
+- `src/app/services/virtual_document_service.py`
+  - `add_child()`, `remove_child()`, `reorder_children()`
+  - `resolve_tree(document_id)` -- recursively resolves with cycle detection and depth limit
+  - `assemble_pdf(document_id)` -- merges children into single PDF via rendition pipeline
+- `src/app/routers/virtual_documents.py` -- REST endpoints
+
+**Modifications to existing:**
+- `Document` model: add `is_virtual` boolean flag
+- No changes needed to `WorkflowPackage` -- it already references `document_id`
+
+### 7. Retention and Records Management
+
+**What it needs:** Retention policies enforcing document preservation, legal holds preventing deletion, disposition schedules for cleanup.
+
+**New components:**
+- `src/app/models/retention.py`
+  - `RetentionPolicy` model: `name`, `retention_period_days`, `disposition_action` (delete/archive/review), `applies_to_lifecycle_state`
+  - `RetentionAssignment` model: `document_id` (FK), `policy_id` (FK), `retention_start_date`, `disposition_date`, `is_record` (declared immutable)
+  - `LegalHold` model: `name`, `reason`, `is_active`
+  - `LegalHoldAssignment` model: `hold_id` (FK), `document_id` (FK)
+- `src/app/services/retention_service.py`
+  - `assign_policy()`, `declare_record()`, `apply_legal_hold()`, `release_hold()`
+  - `process_dispositions()` -- handles expired retention (called by Celery Beat)
+- `src/app/tasks/retention_tasks.py` -- Daily Beat task for disposition processing
+- `src/app/routers/retention.py` -- REST endpoints
+
+**Modifications to existing:**
+- `document_service.py`: before delete/modify, check retention holds and record status
+- `lifecycle_service.py`: auto-assign retention policy when entering ARCHIVED state
+- `celery_app.py`: add `process-dispositions` to beat schedule (every 24 hours)
+
+### 8. Digital Signatures
+
+**What it needs:** Cryptographic signing of documents and workflow approvals for non-repudiation.
+
+**New components:**
+- `src/app/models/signature.py`
+  - `DigitalSignature` model: `document_version_id` (FK), `signer_user_id` (FK), `signature_data` (base64), `certificate_fingerprint`, `signed_at`, `content_hash` (SHA-256 at signing time), `is_valid`
+  - `SigningCertificate` model: `user_id` (FK), `certificate_pem`, `private_key_encrypted`, `valid_from`, `valid_until`, `is_active`
+- `src/app/services/signature_service.py`
+  - `sign_document(document_version_id, user_id)` -- download from MinIO, hash, create PKCS7/CMS signature
+  - `verify_signature(signature_id)` -- re-download, verify hash, validate certificate chain
+  - `sign_work_item(work_item_id, user_id)` -- sign a workflow approval action
+  - Uses `cryptography` library (already transitive dependency via python-jose)
+- `src/app/routers/signatures.py` -- REST endpoints (sign, verify, list)
+
+**Modifications to existing:**
+- `ActivityTemplate`: add `requires_signature` boolean
+- `engine_service.complete_work_item`: if `requires_signature`, verify signature exists before allowing completion
+- `pyproject.toml`: add `cryptography` as explicit dependency
+
+## Component Boundary Summary
 
 ```
-Process Engine completes a state transition
-  |-- Publish event to Redis channel
-  |     |
-  |     v
-  |  WebSocket consumers (Django Channels):
-  |    - Inbox consumer: push new/updated work items to connected users
-  |    - Dashboard consumer: push updated metrics to BAM dashboard viewers
+EXISTING (modify)                         NEW (create)
+=================                         ============
+
+models/
+  enums.py ............ +SUB_WORKFLOW, +EVENT     timer.py
+  workflow.py ......... +timer_config,            sub_workflow.py
+                         +sub_process_template_id, event.py
+                         +event_type,              notification.py
+                         +requires_signature       rendition.py
+  document.py ......... +is_virtual, +is_record   virtual_document.py
+                                                   retention.py
+                                                   signature.py
+
+services/
+  engine_service.py ... +sub-workflow spawn,       timer_service.py
+                         +event wait,              event_bus.py
+                         +notification hooks,      notification_service.py
+                         +signature check          rendition_service.py
+  document_service.py . +retention checks,         virtual_document_service.py
+                         +rendition triggers,      retention_service.py
+                         +event emission           signature_service.py
+  lifecycle_service.py  +event emission,
+                         +retention auto-assign
+
+tasks/
+  (auto_activity.py -- no changes)                 timer_tasks.py
+  (metrics_aggregation -- no changes)              sub_workflow_tasks.py
+                                                   event_tasks.py
+                                                   notification_tasks.py
+                                                   rendition_tasks.py
+                                                   retention_tasks.py
+
+routers/
+  (existing -- no changes)                         notifications.py
+                                                   renditions.py
+                                                   virtual_documents.py
+                                                   retention.py
+                                                   signatures.py
+                                                   events.py (webhook endpoint)
+
+core/
+  config.py ........... +notification settings
+  minio_client.py ..... +renditions bucket
+
+celery_app.py ......... +4 beat schedules
+docker-compose.yml .... +rendition worker (LibreOffice)
 ```
 
-## Core Data Model
+## Recommended Architecture: Event-First Integration Layer
 
-The data model mirrors Documentum's five core object types plus supporting entities.
+All 8 features benefit from a shared event bus. Build notifications + event bus first because:
 
-### Template Layer (Design Time)
+1. **Notifications** subscribe to events (task_assigned, deadline_breached, workflow_completed)
+2. **Timer escalations** emit events that notifications consume
+3. **Event activities** are the primary event consumer
+4. **Rendition completion** emits events that workflows can wait on
+5. **Retention disposition** can notify admins via events
 
-| Entity | Documentum Equivalent | Key Fields |
-|--------|----------------------|------------|
-| **Process** | dm_process | id, name, description, version, state (DRAFT/VALIDATED/ACTIVE), created_by |
-| **ActivityDefinition** | dm_activity | id, process_id (FK), name, type (START/MANUAL/AUTO/END), performer_type, performer_id, method_id, position_x, position_y |
-| **FlowDefinition** | (flow link) | id, process_id (FK), source_activity_id, target_activity_id, condition_expression, is_reject_flow |
-| **AliasSet** | dm_alias_set | id, name; entries: alias_name -> user/group mapping |
-
-### Instance Layer (Runtime)
-
-| Entity | Documentum Equivalent | Key Fields |
-|--------|----------------------|------------|
-| **Workflow** | dm_workflow | id, process_id (FK), state (DORMANT/RUNNING/HALTED/FAILED/FINISHED), started_by, started_at, finished_at |
-| **ActivityInstance** | (runtime activity) | id, workflow_id (FK), activity_def_id (FK), state (NOT_STARTED/RUNNING/PAUSED/COMPLETE/ERROR), started_at, completed_at |
-| **WorkItem** | dmi_workitem | id, activity_instance_id (FK), assigned_to (FK user), state (ACQUIRED/DELEGATED/COMPLETE), due_date, completed_at, decision |
-| **Package** | dmi_package | id, workflow_id (FK), document_id (FK), name, notes |
-| **ProcessVariable** | (runtime data) | id, workflow_id (FK), name, value_type, value_json |
-
-### Supporting Entities
-
-| Entity | Purpose | Key Fields |
-|--------|---------|------------|
-| **Document** | File with version history | id, name, current_version_id, content_type, lifecycle_state |
-| **DocumentVersion** | Immutable version snapshot | id, document_id (FK), version_number, file_path, checksum, created_by, created_at |
-| **AuditEvent** | Append-only event log | id, timestamp, event_type, workflow_id, activity_id, user_id, details_json |
-| **User** | System user | id, username, email, is_available, delegate_to (FK self) |
-| **Group** | User group | id, name; members: M2M to User |
-| **ACLEntry** | Permission record | id, target_type, target_id, user_or_group_id, permission_level |
-| **WorkQueue** | Shared task pool | id, name, group_id (FK); items: claimed work items |
-| **Method** | Auto-activity callable | id, name, module_path, function_name, timeout_seconds |
+```
+                         +-------------------+
+                         |   Redis Pub/Sub   |
+                         |   (Event Bus)     |
+                         +--------+----------+
+                                  |
+         +------------------------+------------------------+
+         |            |           |           |            |
+   engine_service  document_svc  lifecycle  timer_tasks  external
+   (emit: activity (emit: doc    (emit:     (emit:       webhooks
+    completed,      uploaded,    state      deadline     (emit:
+    work_item       checked_in)  changed)   breached)    custom)
+    created)
+         |
+         v
+   +-----+------+----+----------+-----------+
+   |            |            |              |
+  Event      Notification  Rendition     Sub-workflow
+  Activities  Service      Triggers      Completion
+  (complete   (email +     (auto-gen     Events
+   on match)   in-app)     on upload)
+```
 
 ## Patterns to Follow
 
-### Pattern 1: State Machine for Workflow Lifecycle
-
-**What:** Each workflow instance is a finite state machine with well-defined transitions. The Process Engine is the ONLY component that mutates workflow/activity state.
-
-**When:** Always -- this is the core pattern.
-
-**Why:** Centralizing state transitions prevents race conditions and ensures audit trail completeness. No other component (API, UI, agent) directly changes workflow state.
-
+### Pattern 1: Service-Layer Event Emission (Post-Commit)
+**What:** Every state-changing operation emits a domain event after the DB transaction succeeds.
+**When:** All service methods that mutate state.
+**Example:**
 ```python
-class WorkflowState(str, Enum):
-    DORMANT = "dormant"
-    RUNNING = "running"
-    HALTED = "halted"
-    FAILED = "failed"
-    FINISHED = "finished"
+# In engine_service.py, after creating work items and flushing:
+from app.services.event_bus import emit_event
 
-VALID_TRANSITIONS = {
-    WorkflowState.DORMANT: [WorkflowState.RUNNING],
-    WorkflowState.RUNNING: [WorkflowState.HALTED, WorkflowState.FAILED, WorkflowState.FINISHED],
-    WorkflowState.HALTED: [WorkflowState.RUNNING, WorkflowState.FAILED],
-    WorkflowState.FAILED: [WorkflowState.RUNNING],  # retry
-    WorkflowState.FINISHED: [],  # terminal
-}
-
-def transition_workflow(workflow, new_state):
-    if new_state not in VALID_TRANSITIONS[workflow.state]:
-        raise InvalidTransition(f"Cannot go from {workflow.state} to {new_state}")
-    old_state = workflow.state
-    workflow.state = new_state
-    workflow.save()
-    AuditEvent.objects.create(
-        event_type="workflow_state_change",
-        workflow_id=workflow.id,
-        details_json={"from": old_state, "to": new_state},
-    )
+await emit_event("work_item.created", {
+    "work_item_id": str(work_item.id),
+    "performer_id": str(perf_id),
+    "workflow_id": str(workflow.id),
+    "activity_name": target_at.name,
+})
 ```
 
-### Pattern 2: Transactional Outbox for Work Item Creation
-
-**What:** When the Process Engine advances a workflow, work item creation and state changes happen in a single database transaction. Events for WebSocket notification are written to an outbox table in the same transaction, then delivered asynchronously.
-
-**When:** Every time the engine creates or completes work items.
-
-**Why:** Prevents the scenario where work items are created but inbox notifications are lost (or vice versa). This is the key reliability pattern from Temporal's architecture adapted to our simpler context.
-
+### Pattern 2: Celery Beat Polling for Time-Based Operations
+**What:** Use Beat polling rather than individual delayed tasks (`apply_async(eta=...)`).
+**When:** Timers, deadlines, retention dispositions, sub-workflow monitoring.
+**Why:** Individual ETA tasks are lost on worker restart. Polling is idempotent and survives restarts. The existing auto-activity poll already uses this pattern successfully.
+**Example:**
 ```python
-from django.db import transaction
-
-def advance_workflow(workflow_id, completed_activity_id):
-    with transaction.atomic():
-        # 1. Mark current activity complete
-        # 2. Evaluate next flows and trigger conditions
-        # 3. Create new work items or queue auto activities
-        # 4. Write outbox events for notifications
-        OutboxEvent.objects.create(
-            event_type="workitem_created",
-            payload={"workitem_id": new_item.id, "user_id": assignee.id},
-        )
-    # After commit, a signal or Celery task picks up outbox events
+# celery_app.py beat_schedule addition:
+"check-timer-deadlines": {
+    "task": "app.tasks.timer_tasks.check_timer_deadlines",
+    "schedule": 30.0,
+},
 ```
 
-### Pattern 3: Performer Resolution Chain
-
-**What:** Activity definitions specify performer_type (SPECIFIC_USER, GROUP, ALIAS, SUPERVISOR, RUNTIME_SELECT). At runtime, the engine resolves the actual user(s) through a chain of resolution.
-
-**When:** Creating work items for manual activities.
-
-**Why:** Documentum supports 6+ performer assignment modes. A resolution chain keeps this logic centralized and extensible.
-
+### Pattern 3: Model Extension via JSON Columns + Relationships
+**What:** Add new capabilities to ActivityTemplate via JSON columns and separate relationship tables rather than subclassing.
+**When:** Timer config, sub-workflow config, event config, signature requirements.
+**Why:** Keeps the core workflow model stable. New features are additive. Migrations are non-destructive.
+**Example:**
 ```python
-def resolve_performers(activity_def, workflow, context):
-    match activity_def.performer_type:
-        case "SPECIFIC_USER":
-            return [activity_def.performer_user]
-        case "GROUP":
-            return list(activity_def.performer_group.members.filter(is_available=True))
-        case "ALIAS":
-            alias_entry = workflow.alias_set.resolve(activity_def.alias_name)
-            return resolve_performers(alias_entry, workflow, context)  # recursive
-        case "SUPERVISOR":
-            return [context.previous_performer.supervisor]
-        case "RUNTIME_SELECT":
-            return []  # will be resolved by user at runtime
-        case "WORK_QUEUE":
-            return []  # goes to shared pool, any member can claim
-```
+# JSON column approach (simpler, good for config that does not need querying):
+timer_config: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
-### Pattern 4: Condition Expression Evaluation
-
-**What:** Flow conditions and gateway expressions are stored as simple expression strings evaluated against process variables using a restricted evaluator (not raw `eval()`).
-
-**When:** Conditional routing, exclusive/inclusive gateways.
-
-```python
-import ast
-import operator
-
-SAFE_OPS = {
-    ast.Eq: operator.eq, ast.NotEq: operator.ne,
-    ast.Lt: operator.lt, ast.Gt: operator.gt,
-    ast.LtE: operator.le, ast.GtE: operator.ge,
-    ast.And: lambda a, b: a and b,
-    ast.Or: lambda a, b: a or b,
-}
-
-def evaluate_condition(expression: str, variables: dict) -> bool:
-    """Safely evaluate a condition like 'amount > 10000 and department == "legal"'"""
-    # Use AST-based safe evaluator -- never raw eval()
+# Relationship approach (better when you need to query across timers):
+class TimerConfig(BaseModel):
+    activity_template_id: Mapped[uuid.UUID] = mapped_column(FK)
     ...
 ```
 
-### Pattern 5: Graph Validation at Design Time
-
-**What:** When a process template is saved/validated, run graph analysis: reachability (all activities reachable from START), termination (all paths reach END), no orphan nodes, conditional flows cover all cases.
-
-**When:** Before marking a process template as VALIDATED/ACTIVE.
-
-**Why:** Catching structural errors at design time prevents runtime failures. This is where the visual designer adds significant value -- it can highlight unreachable nodes visually.
+### Pattern 4: Consistent Task Pattern (mirror auto_activity.py)
+**What:** New Celery tasks follow the same sync-wrapper-over-async pattern as `auto_activity.py`.
+**When:** All new tasks (timer, sub-workflow, event, rendition, retention, notification).
+**Why:** Consistency. The pattern of `def task(): asyncio.run(_async())` with separate session factory is proven.
+```python
+@celery_app.task(name="app.tasks.timer_tasks.check_timer_deadlines")
+def check_timer_deadlines():
+    asyncio.run(_check_deadlines_async())
+```
 
 ## Anti-Patterns to Avoid
 
-### Anti-Pattern 1: Direct State Mutation from API Layer
+### Anti-Pattern 1: Individual Delayed Celery Tasks for Timers
+**What:** Scheduling `task.apply_async(eta=deadline)` for each work item.
+**Why bad:** Lost on worker restart. Hard to cancel/modify. No visibility into pending timers.
+**Instead:** Beat polls a deadlines query. Idempotent, restartable, queryable.
 
-**What:** API endpoints directly changing workflow or activity states in the database.
+### Anti-Pattern 2: Synchronous Event Processing in Request Path
+**What:** Processing notifications, renditions, or event matching inline during HTTP request handling.
+**Why bad:** Slows API responses. Couples features tightly. Partial failure risk.
+**Instead:** Emit to Redis pub/sub, background tasks consume asynchronously.
 
-**Why bad:** Bypasses the Process Engine's transition logic, skips audit logging, can create inconsistent states (e.g., activity marked complete but next activities not created).
+### Anti-Pattern 3: God Object Expansion
+**What:** Adding sub_workflow_link, timer_state, signature_status columns directly onto `WorkflowInstance`.
+**Why bad:** WorkflowInstance grows unboundedly. Every migration affects all rows. Conceptual bloat.
+**Instead:** Separate linking tables (SubWorkflowLink, TimerConfig, DigitalSignature) with FK back to the relevant entity.
 
-**Instead:** API endpoints should dispatch actions to the Process Engine via Celery tasks. The Process Engine owns all state transitions.
+### Anti-Pattern 4: Unbounded Sub-Workflow Recursion
+**What:** Allowing sub-workflows to spawn sub-workflows without depth tracking.
+**Why bad:** Infinite loops, stack-like resource consumption, impossible debugging.
+**Instead:** Track `depth` in SubWorkflowLink, enforce max (5 levels). Reject spawning beyond limit.
 
-### Anti-Pattern 2: Polling for Inbox Updates
-
-**What:** Frontend polling the inbox API every N seconds to check for new work items.
-
-**Why bad:** Wasteful, introduces latency, doesn't scale with many users.
-
-**Instead:** Use WebSocket (Django Channels) with Redis pub/sub. Process Engine publishes events; connected clients receive instant updates.
-
-### Anti-Pattern 3: Storing Workflow Graph in Application Code
-
-**What:** Hardcoding process definitions (activities, flows, conditions) in Python code rather than the database.
-
-**Why bad:** Defeats the purpose of a workflow engine. Users cannot create or modify processes without developer involvement.
-
-**Instead:** All process definitions live in the database, created through the visual designer. The engine interprets them at runtime.
-
-### Anti-Pattern 4: Single-Threaded Workflow Agent
-
-**What:** Running auto activities sequentially in one thread/process.
-
-**Why bad:** One slow or stuck auto activity blocks all others. A failing method with a long timeout can halt the entire system.
-
-**Instead:** Each auto activity executes as a separate Celery task with its own timeout. The Workflow Agent is a Celery beat scheduler that dispatches tasks, not a single-threaded loop.
-
-### Anti-Pattern 5: Mutable Audit Records
-
-**What:** UPDATE or DELETE operations on the audit table.
-
-**Why bad:** Destroys the compliance value of the audit trail.
-
-**Instead:** Audit table is INSERT-only. Use a database constraint or separate write-only connection if extra protection is desired.
+### Anti-Pattern 5: Rendition Processing in API Worker
+**What:** Running LibreOffice conversion in the FastAPI process.
+**Why bad:** CPU-bound, blocks async event loop, can crash the API server.
+**Instead:** Always dispatch to Celery worker. Consider a dedicated rendition worker pool.
 
 ## Scalability Considerations
 
-| Concern | At 1-10 users (target) | At 100 users | At 1000 users |
-|---------|------------------------|--------------|---------------|
-| **Web server** | Single Django process (runserver or gunicorn with 2 workers) | Gunicorn with 4-8 workers behind nginx | Multiple gunicorn instances, load balancer |
-| **Background workers** | 1 Celery worker, 1 beat scheduler | 2-4 Celery workers with concurrency | Dedicated worker pool per task type |
-| **Database** | Single PostgreSQL instance | Same, add connection pooling (pgbouncer) | Read replicas for dashboards/inbox |
-| **WebSocket** | Django Channels with in-memory or Redis | Redis channel layer | Redis cluster channel layer |
-| **File storage** | Local filesystem | Local filesystem with backups | S3-compatible object storage |
-| **Inbox queries** | Simple queries, no optimization needed | Indexes on (assigned_to, state) | Materialized view for inbox counts |
+| Concern | At 100 workflows | At 10K workflows | At 1M workflows |
+|---------|-------------------|-------------------|-------------------|
+| Timer polling | Single Beat query, <100ms | Index on `(state, due_date)`, batch processing | Partition work_items by date, dedicated timer workers |
+| Sub-workflow tracking | FK query in poll task | Indexed query, batch advancement | Separate status table with partitioned polling |
+| Event bus throughput | Redis pub/sub trivially | Still fine (~100K msg/s) | Migrate to Redis Streams for persistence + consumer groups |
+| Notification volume | Direct DB insert + email | Batch email, async writes | Read replica for queries, message queue for email |
+| Rendition processing | Single Celery worker | Dedicated rendition worker pool (CPU-bound) | Separate rendition microservice |
+| Digital signatures | Inline crypto, <50ms per sign | Background batch verification | HSM integration, cert cache |
 
-For this project's scope (internal/personal use), the "1-10 users" column is the target. The architecture supports growth without redesign, but do not over-engineer for scale that will never materialize.
-
-## Suggested Build Order (Dependencies)
-
-The architecture dictates a specific build order because components have hard dependencies on each other.
+## Suggested Build Order (Dependency-Driven)
 
 ```
-Phase 1: Foundation
-  Data models (Process, Activity, Flow, Workflow, WorkItem, Document)
-  Basic Django project structure + REST API skeleton
-  User/Group/Auth models
-  --> Everything else depends on this
+Phase 1: Notifications + Event Bus Foundation
+  Why first: Event bus is consumed by every subsequent feature.
+  Notifications provide immediate UX value and are needed for timer escalation.
+  Lowest engine complexity -- validates the integration pattern.
+  Touches: new models, new service, new router, new tasks, minor engine hooks
 
-Phase 2: Process Definition + Document Management
-  Process template CRUD API (no visual designer yet -- API/admin only)
-  Document upload + versioning service
-  Package attachment to processes
-  --> Needed before you can run any workflow
+Phase 2: Timer Activities & Escalation
+  Depends on: Phase 1 (notifications for escalation alerts)
+  Why second: Most requested missing feature. Validates Celery Beat pattern.
+  Touches: ActivityTemplate modification, new beat task, engine_service hooks
 
-Phase 3: Process Engine Core
-  State machine (workflow lifecycle)
-  Activity advancement logic
-  Manual work item creation
-  Basic performer resolution (specific user, group)
-  Trigger condition evaluation (AND/OR joins)
-  --> This is the heart; must work before adding UI
+Phase 3: Sub-Workflows
+  Depends on: Stable engine (phases 1-2 validated engine modification patterns)
+  Why third: Most complex engine change. Parent-child lifecycle management.
+  Touches: new enum value, engine_service major addition, new beat task
 
-Phase 4: User-Facing Features
-  User inbox API + UI
-  Work item completion flow
-  Delegation + work queues
-  Conditional routing with process variables
-  --> Requires working Process Engine
+Phase 4: Event-Driven Activities
+  Depends on: Event bus (Phase 1)
+  Why fourth: Second new activity type. Validates event bus under workflow load.
+  Touches: new enum value, engine_service addition, event listener tasks
 
-Phase 5: Visual Workflow Designer
-  React Flow-based drag-and-drop designer
-  Graph validation
-  Save/load process templates
-  --> Requires Process Definition API from Phase 2
+Phase 5: Document Renditions
+  Independent of workflow engine changes.
+  Why fifth: New Docker dependency (LibreOffice). Clear service boundary.
+  Touches: new models/service/tasks, docker-compose, Dockerfile
 
-Phase 6: Workflow Agent + Auto Activities
-  Method registration and execution
-  Celery beat scheduling
-  Timeout and retry logic
-  --> Requires Process Engine from Phase 3
+Phase 6: Virtual Documents
+  Depends on: Renditions (Phase 5) for assembled PDF output.
+  Why sixth: Metadata-layer only, no engine changes. Lower risk.
+  Touches: new models, document model modification
 
-Phase 7: Advanced Features
-  Reject flows
-  Alias sets
-  Lifecycle integration (document state transitions)
-  ACL changes at workflow steps
-  --> Requires all core components
+Phase 7: Retention & Records Management
+  Independent of workflow engine.
+  Why seventh: Policy enforcement via document_service hooks. Careful testing needed.
+  Touches: document_service modification, lifecycle hooks, daily beat task
 
-Phase 8: BAM Dashboards + Audit
-  Audit trail queries and UI
-  Real-time metrics (WebSocket)
-  SLA monitoring
-  Bottleneck detection
-  --> Requires running workflows generating data
+Phase 8: Digital Signatures
+  Depends on: Stable document model (Phases 5-7).
+  Why last: Cryptographic complexity. Optional workflow integration.
+  Touches: new models, engine_service (requires_signature check), crypto deps
 ```
-
-**Build order rationale:** Each phase produces a testable, working subset. Phase 3 (Process Engine) is the riskiest and most complex -- it should be tackled early before building UI on top of it. The visual designer (Phase 5) is high-effort but not a dependency for other components, so it can be developed in parallel with Phases 4-6.
-
-## Technology Mapping to Architecture
-
-| Component | Technology | Rationale |
-|-----------|-----------|-----------|
-| REST API | Django + Django REST Framework | Mature ORM for complex relational model, admin panel for debugging |
-| Background workers | Celery + Redis | Standard Python task queue, supports beat scheduling for Workflow Agent |
-| WebSocket | Django Channels + Redis | Native Django integration for real-time inbox/dashboard |
-| Database | PostgreSQL | JSONB for process variables, strong transaction support, mature |
-| Visual Designer | React + React Flow | Purpose-built for node/edge graph UIs, large ecosystem |
-| File Storage | Local filesystem (Django FileField) | Simplest for internal use; abstraction allows future S3 migration |
 
 ## Sources
 
-- [Workflow Engine Design Principles - Temporal](https://temporal.io/blog/workflow-engine-principles) -- Core architectural principles for state management and task queues
-- [Designing a Workflow Engine Database](https://exceptionnotfound.net/designing-a-workflow-engine-database-part-1-introduction-and-purpose/) -- Database schema patterns for workflow engines
-- [Database Design for Workflow Management Systems - GeeksforGeeks](https://www.geeksforgeeks.org/dbms/database-design-for-workflow-management-systems/) -- Entity design patterns
-- [SpiffWorkflow - Python BPMN Engine](https://spiffworkflow.readthedocs.io/en/latest/bpmn/index.html) -- Reference Python workflow engine architecture
-- [Documentum Workflow Architecture - CrazyApple](https://www.crazyapple.com/content-management-foundations/workflow/) -- Documentum-specific workflow architecture
-- [Process Engine details - dm_misc](https://msroth.wordpress.com/tag/process-engine/) -- Process Engine and Workflow Agent interaction patterns
-- [Event-Driven Workflow Pattern](https://dev.to/cadienvan/using-the-workflow-pattern-for-efficient-event-driven-workflows-20ce) -- Event-driven architecture for workflow systems
-- [Workflow Engine Database Schema](https://budibase.com/blog/data/workflow-management-database-design/) -- Schema design for work items and task management
+- Codebase analysis: `src/app/services/engine_service.py` -- token-based Petri-net, activity type dispatch, ~1100 lines -- HIGH confidence
+- Codebase analysis: `src/app/tasks/auto_activity.py` -- Celery worker pattern with asyncio.run wrapper -- HIGH confidence
+- Codebase analysis: `src/app/celery_app.py` -- Beat schedule with 2 existing tasks -- HIGH confidence
+- Codebase analysis: `src/app/models/workflow.py` -- ActivityTemplate has expected_duration_hours, WorkItem has due_date -- HIGH confidence
+- Codebase analysis: `src/app/auto_methods/` -- decorator registry pattern for extensibility -- HIGH confidence
+- Codebase analysis: `src/app/models/document.py` -- Document + DocumentVersion with MinIO keys -- HIGH confidence
+- Codebase analysis: `src/app/core/minio_client.py` -- single bucket, asyncio.to_thread wrapping -- HIGH confidence
+- Redis pub/sub for event bus: well-established pattern, redis-py async support -- HIGH confidence
+- Celery Beat polling vs individual ETA tasks: Celery best practices documentation -- HIGH confidence
+- LibreOffice headless for document conversion: standard server-side approach -- HIGH confidence
+- Python `cryptography` library for PKCS7/CMS signatures: standard, mature -- HIGH confidence
