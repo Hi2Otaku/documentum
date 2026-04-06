@@ -9,21 +9,21 @@ Requirements for milestone v1.2: Advanced Engine & Document Platform.
 
 ### Notifications & Event Bus
 
-- [ ] **NOTIF-01**: User receives in-app notification when a work item is assigned to them
-- [ ] **NOTIF-02**: User receives in-app notification when a task is delegated to them
-- [ ] **NOTIF-03**: User receives in-app notification when a work item deadline is approaching
-- [ ] **NOTIF-04**: User receives email notification for task assignment and deadline events
-- [ ] **NOTIF-05**: User can view notification list with unread count badge in the UI
-- [ ] **NOTIF-06**: User can mark notifications as read individually or in bulk
-- [ ] **EVENT-01**: System emits domain events on document upload, lifecycle change, and workflow state transitions
-- [ ] **EVENT-02**: Events are persisted in a durable event table for reliability
+- [x] **NOTIF-01**: User receives in-app notification when a work item is assigned to them
+- [x] **NOTIF-02**: User receives in-app notification when a task is delegated to them
+- [ ] **NOTIF-03**: User receives in-app notification when a work item deadline is approaching *(deferred to Phase 17 -- requires WorkItem.due_date)*
+- [x] **NOTIF-04**: User receives email notification for task assignment and deadline events
+- [x] **NOTIF-05**: User can view notification list with unread count badge in the UI
+- [x] **NOTIF-06**: User can mark notifications as read individually or in bulk
+- [x] **EVENT-01**: System emits domain events on document upload, lifecycle change, and workflow state transitions
+- [x] **EVENT-02**: Events are persisted in a durable event table for reliability
 
 ### Timer Activities & Escalation
 
-- [ ] **TIMER-01**: Admin can configure deadline duration on activity templates in the workflow designer
-- [ ] **TIMER-02**: Work items automatically receive due dates based on activity template deadline configuration
+- [x] **TIMER-01**: Admin can configure deadline duration on activity templates in the workflow designer
+- [x] **TIMER-02**: Work items automatically receive due dates based on activity template deadline configuration
 - [ ] **TIMER-03**: Celery Beat periodically checks for overdue work items and triggers escalation
-- [ ] **TIMER-04**: Overdue work items are automatically escalated (priority bump, reassignment, or notification)
+- [x] **TIMER-04**: Overdue work items are automatically escalated (priority bump, reassignment, or notification)
 
 ### Sub-Workflows
 
@@ -129,18 +129,18 @@ Explicitly excluded from v1.2.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| NOTIF-01 | Phase 16 | Pending |
-| NOTIF-02 | Phase 16 | Pending |
-| NOTIF-03 | Phase 16 | Pending |
-| NOTIF-04 | Phase 16 | Pending |
-| NOTIF-05 | Phase 16 | Pending |
-| NOTIF-06 | Phase 16 | Pending |
-| EVENT-01 | Phase 16 | Pending |
-| EVENT-02 | Phase 16 | Pending |
-| TIMER-01 | Phase 17 | Pending |
-| TIMER-02 | Phase 17 | Pending |
+| NOTIF-01 | Phase 16 | Complete |
+| NOTIF-02 | Phase 16 | Complete |
+| NOTIF-03 | Phase 17 | Pending |
+| NOTIF-04 | Phase 16 | Complete |
+| NOTIF-05 | Phase 16 | Complete |
+| NOTIF-06 | Phase 16 | Complete |
+| EVENT-01 | Phase 16 | Complete |
+| EVENT-02 | Phase 16 | Complete |
+| TIMER-01 | Phase 17 | Complete |
+| TIMER-02 | Phase 17 | Complete |
 | TIMER-03 | Phase 17 | Pending |
-| TIMER-04 | Phase 17 | Pending |
+| TIMER-04 | Phase 17 | Complete |
 | SUBWF-01 | Phase 18 | Pending |
 | SUBWF-02 | Phase 18 | Pending |
 | SUBWF-03 | Phase 18 | Pending |
