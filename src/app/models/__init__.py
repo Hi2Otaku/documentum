@@ -6,6 +6,7 @@ from app.models.document import Document, DocumentVersion
 from app.models.acl import DocumentACL, LifecycleACLRule
 from app.models.execution_log import AutoActivityLog
 from app.models.metrics import MetricsSummary
+from app.models.retention import DispositionAction, DocumentRetention, LegalHold, RetentionPolicy
 from app.models.workflow import (
     ActivityInstance,
     ActivityTemplate,
@@ -52,4 +53,8 @@ __all__ = [
     "LifecycleACLRule",
     "AutoActivityLog",
     "MetricsSummary",
+    "DispositionAction",
+    "RetentionPolicy",
+    "DocumentRetention",
+    "LegalHold",
 ]
