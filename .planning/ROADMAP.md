@@ -51,7 +51,11 @@ Phases 12-15 delivered the complete web UI: navigation shell, inbox with work it
   2. User can open a notification list, see all notifications, and mark them as read individually or in bulk
   3. User receives email notifications for task assignments and approaching deadlines
   4. System emits and persists domain events for document uploads, lifecycle changes, and workflow state transitions -- visible in the events table
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 16-01-PLAN.md -- Backend foundation: models, schemas, event bus service, notification service, migration
+- [ ] 16-02-PLAN.md -- Backend API: REST/SSE endpoints, Celery email/deadline tasks, event emission wiring
+- [ ] 16-03-PLAN.md -- Frontend: notification bell, popover, SSE hook, Sonner toast integration
 **UI hint**: yes
 
 ### Phase 17: Timer Activities & Escalation
@@ -145,7 +149,7 @@ Phases execute in numeric order: 16 -> 17 -> 18 -> 19 -> 20 -> 21 -> 22 -> 23
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 16. Notifications & Event Bus | 0/? | Not started | - |
+| 16. Notifications & Event Bus | 0/3 | Planning complete | - |
 | 17. Timer Activities & Escalation | 0/? | Not started | - |
 | 18. Sub-Workflows | 0/? | Not started | - |
 | 19. Event-Driven Activities | 0/? | Not started | - |
