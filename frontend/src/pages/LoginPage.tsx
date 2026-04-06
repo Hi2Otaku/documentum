@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router";
+import { Navigate, useNavigate } from "react-router";
 import { loginApi } from "../api/auth";
 import { useAuthStore } from "../stores/authStore";
 import { Button } from "../components/ui/button";
@@ -18,8 +18,7 @@ export function LoginPage() {
 
   // If already authenticated, redirect
   if (isAuthenticated) {
-    navigate("/inbox", { replace: true });
-    return null;
+    return <Navigate to="/inbox" replace />;
   }
 
   const handleSubmit = async (e: FormEvent) => {
