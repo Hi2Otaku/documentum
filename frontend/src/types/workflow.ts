@@ -1,5 +1,5 @@
 /** Backend enum mirrors */
-export type ActivityType = 'start' | 'end' | 'manual' | 'auto';
+export type ActivityType = 'start' | 'end' | 'manual' | 'auto' | 'sub_workflow';
 export type FlowType = 'normal' | 'reject';
 export type TriggerType = 'and_join' | 'or_join';
 export type ProcessState = 'draft' | 'validated' | 'active' | 'deprecated';

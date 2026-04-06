@@ -20,18 +20,18 @@ Requirements for milestone v1.2: Advanced Engine & Document Platform.
 
 ### Timer Activities & Escalation
 
-- [x] **TIMER-01**: Admin can configure deadline duration on activity templates in the workflow designer
+- [ ] **TIMER-01**: Admin can configure deadline duration on activity templates in the workflow designer
 - [ ] **TIMER-02**: Work items automatically receive due dates based on activity template deadline configuration
 - [ ] **TIMER-03**: Celery Beat periodically checks for overdue work items and triggers escalation
 - [ ] **TIMER-04**: Overdue work items are automatically escalated (priority bump, reassignment, or notification)
 
 ### Sub-Workflows
 
-- [ ] **SUBWF-01**: Admin can add a SUB_WORKFLOW activity type in the workflow designer that references another template
-- [x] **SUBWF-02**: When a SUB_WORKFLOW activity executes, a child workflow instance is spawned from the referenced template
-- [x] **SUBWF-03**: Parent workflow pauses at the SUB_WORKFLOW activity until the child workflow completes
-- [x] **SUBWF-04**: Variables can be mapped from parent to child workflow on spawn
-- [x] **SUBWF-05**: System enforces depth limits to prevent recursive sub-workflow chains
+- [x] **SUBWF-01**: Admin can add a SUB_WORKFLOW activity type in the workflow designer that references another template
+- [ ] **SUBWF-02**: When a SUB_WORKFLOW activity executes, a child workflow instance is spawned from the referenced template
+- [ ] **SUBWF-03**: Parent workflow pauses at the SUB_WORKFLOW activity until the child workflow completes
+- [ ] **SUBWF-04**: Variables can be mapped from parent to child workflow on spawn
+- [ ] **SUBWF-05**: System enforces depth limits to prevent recursive sub-workflow chains
 
 ### Event-Driven Activities
 
@@ -137,15 +137,15 @@ Explicitly excluded from v1.2.
 | NOTIF-06 | Phase 16 | Pending |
 | EVENT-01 | Phase 16 | Pending |
 | EVENT-02 | Phase 16 | Pending |
-| TIMER-01 | Phase 17 | Complete |
+| TIMER-01 | Phase 17 | Pending |
 | TIMER-02 | Phase 17 | Pending |
 | TIMER-03 | Phase 17 | Pending |
 | TIMER-04 | Phase 17 | Pending |
-| SUBWF-01 | Phase 18 | Pending |
-| SUBWF-02 | Phase 18 | Complete (18-02) |
-| SUBWF-03 | Phase 18 | Complete (18-02) |
-| SUBWF-04 | Phase 18 | Complete (18-02) |
-| SUBWF-05 | Phase 18 | Complete (18-02) |
+| SUBWF-01 | Phase 18 | Complete |
+| SUBWF-02 | Phase 18 | Pending |
+| SUBWF-03 | Phase 18 | Pending |
+| SUBWF-04 | Phase 18 | Pending |
+| SUBWF-05 | Phase 18 | Pending |
 | EVTACT-01 | Phase 19 | Pending |
 | EVTACT-02 | Phase 19 | Pending |
 | EVTACT-03 | Phase 19 | Pending |

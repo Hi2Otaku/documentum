@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Advanced Engine & Document Platform
-status: executing
-stopped_at: null
-last_updated: "2026-04-06"
-last_activity: 2026-04-06
+status: planning
+stopped_at: Completed 18-03-PLAN.md
+last_updated: "2026-04-06T17:09:19.818Z"
+last_activity: 2026-04-06 — Roadmap created for milestone v1.2
 progress:
   total_phases: 8
   completed_phases: 0
   total_plans: 0
-  completed_plans: 2
-  percent: 8
+  completed_plans: 1
+  percent: 0
 ---
 
 # Project State
@@ -21,29 +21,30 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-06)
 
 **Core value:** Any workflow use case described in the Documentum specification can be modeled and executed end-to-end through the system.
-**Current focus:** Phase 18 - Sub-Workflows
+**Current focus:** Phase 16 - Notifications & Event Bus
 
 ## Current Position
 
-Phase: 18 of 23 (Sub-Workflows)
-Plan: 2 of 3 in current phase
-Status: Executing phase 18
-Last activity: 2026-04-06 -- Completed 18-02 (Sub-Workflow Engine Logic)
+Phase: 16 of 23 (Notifications & Event Bus)
+Plan: 0 of ? in current phase
+Status: Ready to plan
+Last activity: 2026-04-06 — Roadmap created for milestone v1.2
 
-Progress: [#.........] 8% (v1.2: 2 plans complete)
+Progress: [..........] 0% (v1.2: 0/8 phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2 (v1.2)
-- Average duration: 17m
-- Total execution time: 35m
+
+- Total plans completed: 0 (v1.2)
+- Average duration: -
+- Total execution time: 0 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 18 | 2 | 35m | 17m |
+| - | - | - | - |
 
 **Recent Trend (from v1.1):**
 
@@ -51,6 +52,7 @@ Progress: [#.........] 8% (v1.2: 2 plans complete)
 | Phase 15 P01 | 2m | 2 tasks | 7 files |
 | Phase 15 P02 | 3min | 2 tasks | 6 files |
 | Phase 15 P03 | 3min | 2 tasks | 9 files |
+| Phase 18 P03 | 2m | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -59,14 +61,11 @@ Progress: [#.........] 8% (v1.2: 2 plans complete)
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- [Phase 18-02]: Event handler delegates state transition to _advance_from_activity (no pre-completion)
-- [Phase 18-02]: Depth validation at two layers: template install time AND runtime
-- [Phase 18-01]: Used string-based foreign_keys on ProcessTemplate.activity_templates to resolve ambiguity from dual FK paths
-- [Phase 18-01]: Added parent_workflow_id as self-referential FK on workflow_instances for parent-child hierarchy
 - [v1.2 Roadmap]: Event bus + notifications first -- 6 of 8 features emit or consume domain events
 - [v1.2 Roadmap]: Database-backed Beat polling for all timers -- never use Celery ETA tasks
 - [v1.2 Roadmap]: Dedicated Celery rendition worker with LibreOffice -- isolated from API process
 - [v1.2 Roadmap]: Sub-workflow depth limit enforced at template installation and runtime
+- [Phase 18]: Purple double-border style for sub-workflow nodes; template selector via simple fetch
 
 ### Pending Todos
 
@@ -81,6 +80,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-06
-Stopped at: Completed 18-02-PLAN.md (Sub-Workflow Engine Logic)
+Last session: 2026-04-06T17:09:19.814Z
+Stopped at: Completed 18-03-PLAN.md
 Resume file: None

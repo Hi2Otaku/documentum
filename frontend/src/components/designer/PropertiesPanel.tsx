@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useDesignerStore } from '../../stores/designerStore';
 import type { ActivityNodeData, FlowEdgeData } from '../../types/designer';
 import type { ProcessVariable } from '../../types/workflow';
@@ -33,7 +33,9 @@ function NodeProperties({
                   ? 'bg-red-100 text-red-800'
                   : data.activityType === 'manual'
                     ? 'bg-blue-100 text-blue-800'
-                    : 'bg-orange-100 text-orange-800'
+                    : data.activityType === 'sub_workflow'
+                      ? 'bg-purple-100 text-purple-800'
+                      : 'bg-orange-100 text-orange-800'
             }`}
           >
             {data.activityType}
@@ -292,6 +294,167 @@ function NodeProperties({
           </div>
         </div>
       )}
+
+      {/* Sub-workflow configuration */}
+      {data.activityType === 'sub_workflow' && (
+        <SubWorkflowConfig
+          nodeId={nodeId}
+          subTemplateId={data.subTemplateId ?? null}
+          variableMapping={data.variableMapping ?? null}
+        />
+      )}
+    </div>
+  );
+}
+
+// ---- Sub-Workflow Config ----
+interface TemplateSummary {
+  id: string;
+  name: string;
+}
+
+function SubWorkflowConfig({
+  nodeId,
+  subTemplateId,
+  variableMapping,
+}: {
+  nodeId: string;
+  subTemplateId: string | null;
+  variableMapping: Record<string, string> | null;
+}) {
+  const updateNodeData = useDesignerStore((s) => s.updateNodeData);
+  const [templates, setTemplates] = useState<TemplateSummary[]>([]);
+  const [mappingRows, setMappingRows] = useState<{ parentVar: string; childVar: string }[]>([]);
+
+  // Fetch available templates
+  useEffect(() => {
+    fetch('/api/templates?state=active')
+      .then((res) => (res.ok ? res.json() : { data: [] }))
+      .then((json) => {
+        const list = Array.isArray(json.data) ? json.data : Array.isArray(json) ? json : [];
+        setTemplates(
+          list.map((t: { id: string; name: string }) => ({ id: t.id, name: t.name })),
+        );
+      })
+      .catch(() => setTemplates([]));
+  }, []);
+
+  // Sync mapping rows from data prop
+  useEffect(() => {
+    if (variableMapping) {
+      setMappingRows(
+        Object.entries(variableMapping).map(([parentVar, childVar]) => ({
+          parentVar,
+          childVar,
+        })),
+      );
+    } else {
+      setMappingRows([]);
+    }
+  }, [variableMapping]);
+
+  const handleTemplateChange = (value: string) => {
+    updateNodeData(nodeId, { subTemplateId: value || null });
+  };
+
+  const syncMapping = (rows: { parentVar: string; childVar: string }[]) => {
+    const obj: Record<string, string> = {};
+    for (const row of rows) {
+      if (row.parentVar.trim()) {
+        obj[row.parentVar.trim()] = row.childVar.trim();
+      }
+    }
+    updateNodeData(nodeId, {
+      variableMapping: Object.keys(obj).length > 0 ? obj : null,
+    });
+  };
+
+  const addRow = () => {
+    const next = [...mappingRows, { parentVar: '', childVar: '' }];
+    setMappingRows(next);
+  };
+
+  const removeRow = (index: number) => {
+    const next = mappingRows.filter((_, i) => i !== index);
+    setMappingRows(next);
+    syncMapping(next);
+  };
+
+  const updateRow = (index: number, field: 'parentVar' | 'childVar', value: string) => {
+    const next = [...mappingRows];
+    next[index] = { ...next[index], [field]: value };
+    setMappingRows(next);
+    syncMapping(next);
+  };
+
+  return (
+    <div className="space-y-3">
+      <h4 className="text-sm font-semibold text-muted-foreground">
+        Sub-Workflow
+      </h4>
+
+      {/* Template selector */}
+      <div>
+        <label className="text-sm font-medium" htmlFor="sub-template">
+          Sub-Workflow Template
+        </label>
+        <select
+          id="sub-template"
+          className="mt-1 w-full rounded border px-3 py-2 text-sm"
+          value={subTemplateId ?? ''}
+          onChange={(e) => handleTemplateChange(e.target.value)}
+        >
+          <option value="" disabled>
+            Select a template...
+          </option>
+          {templates.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Variable mapping editor */}
+      <div>
+        <label className="text-sm font-medium">
+          Variable Mapping (Parent -&gt; Child)
+        </label>
+        <div className="mt-1 space-y-2">
+          {mappingRows.map((row, idx) => (
+            <div key={idx} className="flex items-center gap-1">
+              <input
+                type="text"
+                className="flex-1 rounded border px-2 py-1 text-sm"
+                placeholder="Parent var"
+                value={row.parentVar}
+                onChange={(e) => updateRow(idx, 'parentVar', e.target.value)}
+              />
+              <span className="text-xs text-muted-foreground shrink-0">-&gt;</span>
+              <input
+                type="text"
+                className="flex-1 rounded border px-2 py-1 text-sm"
+                placeholder="Child var"
+                value={row.childVar}
+                onChange={(e) => updateRow(idx, 'childVar', e.target.value)}
+              />
+              <button
+                onClick={() => removeRow(idx)}
+                className="px-2 text-red-500 hover:text-red-700 text-sm"
+                aria-label="Remove mapping"
+              >
+                x
+              </button>
+            </div>
+          ))}
+          <button
+            onClick={addRow}
+            className="text-sm text-primary hover:underline"
+          >
+            + Add Mapping
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
