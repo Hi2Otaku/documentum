@@ -27,7 +27,7 @@ Requirements for milestone v1.2: Advanced Engine & Document Platform.
 
 ### Sub-Workflows
 
-- [ ] **SUBWF-01**: Admin can add a SUB_WORKFLOW activity type in the workflow designer that references another template
+- [x] **SUBWF-01**: Admin can add a SUB_WORKFLOW activity type in the workflow designer that references another template
 - [ ] **SUBWF-02**: When a SUB_WORKFLOW activity executes, a child workflow instance is spawned from the referenced template
 - [ ] **SUBWF-03**: Parent workflow pauses at the SUB_WORKFLOW activity until the child workflow completes
 - [ ] **SUBWF-04**: Variables can be mapped from parent to child workflow on spawn
@@ -141,7 +141,7 @@ Explicitly excluded from v1.2.
 | TIMER-02 | Phase 17 | Pending |
 | TIMER-03 | Phase 17 | Pending |
 | TIMER-04 | Phase 17 | Pending |
-| SUBWF-01 | Phase 18 | Pending |
+| SUBWF-01 | Phase 18 | Complete |
 | SUBWF-02 | Phase 18 | Pending |
 | SUBWF-03 | Phase 18 | Pending |
 | SUBWF-04 | Phase 18 | Pending |
