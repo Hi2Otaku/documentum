@@ -33,6 +33,7 @@ from app.models.workflow import (
     WorkItem,
 )
 from app.services.audit_service import create_audit_record
+from app.services.event_bus import event_bus
 from app.services.expression_evaluator import evaluate_expression
 
 logger = logging.getLogger(__name__)
@@ -237,6 +238,18 @@ async def _apply_delegation(
                     "workflow_instance_id": str(workflow_instance_id),
                 },
             )
+            await event_bus.emit(
+                db,
+                event_type="work_item.delegated",
+                entity_type="work_item",
+                entity_id=None,
+                actor_id=uuid.UUID(user_id_for_audit) if user_id_for_audit else None,
+                payload={
+                    "original_performer": str(uid),
+                    "delegate_id": str(user.delegate_id),
+                    "workflow_instance_id": str(workflow_instance_id),
+                },
+            )
         else:
             resolved.append(uid)
     return resolved
@@ -383,6 +396,19 @@ async def start_workflow(
         },
     )
 
+    # 11. Emit domain event
+    await event_bus.emit(
+        db,
+        event_type="workflow.started",
+        entity_type="workflow_instance",
+        entity_id=instance.id,
+        actor_id=uuid.UUID(user_id),
+        payload={
+            "template_id": str(template.id),
+            "template_name": template.name,
+        },
+    )
+
     return instance
 
 
@@ -452,6 +478,7 @@ async def _advance_from_activity(
     }
 
     queue: list[ActivityInstance] = [completed_activity]
+    _created_work_items: list[WorkItem] = []  # Track for event emission
 
     while queue:
         current = queue.pop(0)
@@ -656,6 +683,45 @@ async def _advance_from_activity(
                 workflow.completed_at = datetime.now(timezone.utc)
 
     await db.flush()
+
+    # Emit work_item.assigned events for all work items created during advancement.
+    # Query for AVAILABLE work items on activity instances that were just activated.
+    from sqlalchemy import and_
+    new_wi_result = await db.execute(
+        select(WorkItem).join(ActivityInstance).where(
+            and_(
+                ActivityInstance.workflow_instance_id == workflow.id,
+                WorkItem.state == WorkItemState.AVAILABLE,
+                WorkItem.performer_id.isnot(None),
+                WorkItem.created_at >= workflow.updated_at,
+            )
+        )
+    )
+    for wi in new_wi_result.scalars().all():
+        try:
+            # Look up activity name for a better notification message
+            at_result = await db.execute(
+                select(ActivityTemplate).where(
+                    ActivityTemplate.id == ActivityInstance.__table__.c.activity_template_id
+                ).where(ActivityInstance.id == wi.activity_instance_id)
+            )
+            at_row = at_result.scalar_one_or_none()
+            activity_name = at_row.name if at_row else "Unknown activity"
+        except Exception:
+            activity_name = "Unknown activity"
+
+        await event_bus.emit(
+            db,
+            event_type="work_item.assigned",
+            entity_type="work_item",
+            entity_id=wi.id,
+            actor_id=uuid.UUID(user_id) if user_id else None,
+            payload={
+                "performer_id": str(wi.performer_id),
+                "workflow_id": str(workflow.id),
+                "activity_name": activity_name,
+            },
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -875,6 +941,31 @@ async def complete_work_item(
             "activity_template_id": str(activity_instance.activity_template_id),
         },
     )
+
+    # 8. Emit domain event for work item completed
+    await event_bus.emit(
+        db,
+        event_type="work_item.completed",
+        entity_type="work_item",
+        entity_id=work_item.id,
+        actor_id=uuid.UUID(user_id),
+        payload={
+            "workflow_id": str(workflow_id),
+            "activity_template_id": str(activity_instance.activity_template_id),
+        },
+    )
+
+    # Check if workflow just finished
+    await db.refresh(workflow)
+    if workflow.state == WorkflowState.FINISHED:
+        await event_bus.emit(
+            db,
+            event_type="workflow.completed",
+            entity_type="workflow_instance",
+            entity_id=workflow.id,
+            actor_id=uuid.UUID(user_id),
+            payload={"template_id": str(workflow.process_template_id)},
+        )
 
     return work_item
 
