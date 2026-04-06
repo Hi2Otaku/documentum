@@ -78,3 +78,7 @@ class DocumentVersion(BaseModel):
     comment: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     document: Mapped["Document"] = relationship(back_populates="versions")
+    signatures: Mapped[list["DocumentSignature"]] = relationship(  # noqa: F821
+        back_populates="version",
+        order_by="DocumentSignature.signed_at",
+    )

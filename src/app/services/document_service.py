@@ -155,6 +155,9 @@ async def update_document_metadata(
     """Update document metadata fields. Only non-None fields are changed."""
     document = await get_document(db, document_id)
 
+    # Immutability guard: block metadata update if latest version is signed
+    await _check_version_not_signed(db, document_id)
+
     before_state = {
         "title": document.title,
         "author": document.author,
@@ -219,6 +222,27 @@ async def checkout_document(
     return document
 
 
+async def _check_version_not_signed(db: AsyncSession, document_id: uuid.UUID) -> None:
+    """Raise 409 if the latest version of a document has signatures (immutability guard)."""
+    from app.services.signature_service import is_version_signed
+
+    result = await db.execute(
+        select(DocumentVersion)
+        .where(DocumentVersion.document_id == document_id)
+        .order_by(
+            DocumentVersion.major_version.desc(),
+            DocumentVersion.minor_version.desc(),
+        )
+        .limit(1)
+    )
+    latest = result.scalar_one_or_none()
+    if latest is not None and await is_version_signed(db, latest.id):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Cannot modify document: the current version has been digitally signed",
+        )
+
+
 async def checkin_document(
     db: AsyncSession,
     document_id: uuid.UUID,
@@ -232,6 +256,9 @@ async def checkin_document(
     Releases the lock in all cases.
     """
     document = await get_document(db, document_id)
+
+    # Immutability guard: block check-in if latest version is signed
+    await _check_version_not_signed(db, document_id)
 
     # Verify caller holds the lock
     if document.locked_by is None or str(document.locked_by) != user_id:
