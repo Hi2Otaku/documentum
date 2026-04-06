@@ -61,21 +61,22 @@ function buildUrl(
 
 export interface VirtualDocumentChildResponse {
   id: string;
-  virtual_document_id: string;
-  child_document_id: string;
-  order_index: number;
-  child_title: string | null;
-  child_filename: string | null;
+  document_id: string;
+  sort_order: number;
+  document_title: string | null;
+  document_filename: string | null;
   created_at: string;
 }
 
 export interface VirtualDocumentResponse {
   id: string;
-  document_id: string;
+  title: string;
   description: string | null;
-  document_title: string | null;
+  owner_id: string;
   created_at: string;
   updated_at: string;
+  created_by: string | null;
+  is_deleted: boolean;
   children: VirtualDocumentChildResponse[];
 }
 
@@ -121,7 +122,7 @@ export async function addChild(
   return apiMutate<VirtualDocumentChildResponse>(
     `/api/v1/virtual-documents/${virtualDocId}/children`,
     "POST",
-    { child_document_id: childDocumentId },
+    { document_id: childDocumentId },
   );
 }
 
@@ -142,18 +143,18 @@ export async function reorderChildren(
   return apiMutate<VirtualDocumentChildResponse[]>(
     `/api/v1/virtual-documents/${virtualDocId}/children/reorder`,
     "PUT",
-    { child_ids: childIds },
+    { document_ids: childIds },
   );
 }
 
 export function mergePdfUrl(virtualDocId: string): string {
-  return `/api/v1/virtual-documents/${virtualDocId}/merge-pdf`;
+  return `/api/v1/virtual-documents/${virtualDocId}/merge`;
 }
 
 export async function downloadMergedPdf(virtualDocId: string): Promise<void> {
   const url = mergePdfUrl(virtualDocId);
   const res = await fetch(url, {
-    method: "POST",
+    method: "GET",
     headers: authHeaders(),
   });
   if (res.status === 401) handle401();

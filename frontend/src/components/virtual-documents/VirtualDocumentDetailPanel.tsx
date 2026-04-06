@@ -102,7 +102,7 @@ export function VirtualDocumentDetailPanel({
     );
   }
 
-  const existingChildDocIds = vdoc.children.map((c) => c.child_document_id);
+  const existingChildDocIds = vdoc.children.map((c) => c.document_id);
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">

@@ -22,18 +22,18 @@ export function VirtualDocumentChildrenList({
     );
   }
 
-  const sorted = [...children].sort((a, b) => a.order_index - b.order_index);
+  const sorted = [...children].sort((a, b) => a.sort_order - b.sort_order);
 
   function moveUp(index: number) {
     if (index <= 0) return;
-    const ids = sorted.map((c) => c.id);
+    const ids = sorted.map((c) => c.document_id);
     [ids[index - 1], ids[index]] = [ids[index], ids[index - 1]];
     onReorder(ids);
   }
 
   function moveDown(index: number) {
     if (index >= sorted.length - 1) return;
-    const ids = sorted.map((c) => c.id);
+    const ids = sorted.map((c) => c.document_id);
     [ids[index], ids[index + 1]] = [ids[index + 1], ids[index]];
     onReorder(ids);
   }
@@ -50,11 +50,11 @@ export function VirtualDocumentChildrenList({
           </span>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">
-              {child.child_title ?? "Untitled"}
+              {child.document_title ?? "Untitled"}
             </p>
-            {child.child_filename && (
+            {child.document_filename && (
               <p className="text-xs text-muted-foreground truncate">
-                {child.child_filename}
+                {child.document_filename}
               </p>
             )}
           </div>
@@ -107,7 +107,7 @@ export function VirtualDocumentChildrenList({
               variant="ghost"
               size="icon"
               className="h-7 w-7 text-destructive hover:text-destructive"
-              onClick={() => onRemove(child.id)}
+              onClick={() => onRemove(child.document_id)}
               title="Remove"
             >
               <svg
