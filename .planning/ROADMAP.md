@@ -123,7 +123,10 @@ Phases 12-15 delivered the complete web UI: navigation shell, inbox with work it
   2. Admin can assign a retention policy to one or more documents, and the assignment is visible in the document detail view
   3. System blocks any attempt to delete a document that is under active retention, displaying a clear error message
   4. Admin can place a legal hold on a document, which overrides retention expiration and prevents deletion until the hold is released
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 22-01-PLAN.md -- Retention policy models, CRUD service, and API endpoints (RET-01, RET-02)
+- [ ] 22-02-PLAN.md -- Deletion blocking and legal hold management (RET-03, RET-04)
 **UI hint**: yes
 
 ### Phase 23: Digital Signatures
@@ -151,5 +154,5 @@ Phases execute in numeric order: 16 -> 17 -> 18 -> 19 -> 20 -> 21 -> 22 -> 23
 | 19. Event-Driven Activities | 0/? | Not started | - |
 | 20. Document Renditions | 0/? | Not started | - |
 | 21. Virtual Documents | 2/2 | Complete    | 2026-04-06 |
-| 22. Retention & Records Management | 0/? | Not started | - |
+| 22. Retention & Records Management | 0/2 | Not started | - |
 | 23. Digital Signatures | 0/? | Not started | - |
