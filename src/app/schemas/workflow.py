@@ -67,6 +67,8 @@ class WorkflowInstanceResponse(BaseModel):
     started_at: datetime | None = None
     completed_at: datetime | None = None
     supervisor_id: uuid.UUID | None = None
+    parent_workflow_id: uuid.UUID | None = None
+    nesting_depth: int = 0
     created_at: datetime
     updated_at: datetime
     model_config = ConfigDict(from_attributes=True)
@@ -104,6 +106,8 @@ class WorkflowAdminListResponse(BaseModel):
     started_at: datetime | None = None
     completed_at: datetime | None = None
     supervisor_id: uuid.UUID | None = None
+    parent_workflow_id: uuid.UUID | None = None
+    nesting_depth: int = 0
     template_name: str | None = None
     started_by_username: str | None = None
     active_activity_name: str | None = None
@@ -120,6 +124,8 @@ class WorkflowDetailResponse(BaseModel):
     started_at: datetime | None = None
     completed_at: datetime | None = None
     supervisor_id: uuid.UUID | None = None
+    parent_workflow_id: uuid.UUID | None = None
+    nesting_depth: int = 0
     activity_instances: list[ActivityInstanceResponse] = []
     work_items: list[WorkItemResponse] = []
     process_variables: list[ProcessVariableResponse] = []

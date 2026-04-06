@@ -31,8 +31,8 @@ Phases 12-15 delivered the complete web UI: navigation shell, inbox with work it
 - Integer phases (16-23): Planned milestone work
 - Decimal phases (16.1, 16.2): Urgent insertions if needed
 
-- [x] **Phase 16: Notifications & Event Bus** - Domain event bus with persistent storage, in-app and email notifications, notification UI with unread badge (completed 2026-04-06)
-- [x] **Phase 17: Timer Activities & Escalation** - Deadline configuration on activities, due date enforcement, Beat-driven overdue detection, escalation actions (completed 2026-04-06)
+- [ ] **Phase 16: Notifications & Event Bus** - Domain event bus with persistent storage, in-app and email notifications, notification UI with unread badge
+- [ ] **Phase 17: Timer Activities & Escalation** - Deadline configuration on activities, due date enforcement, Beat-driven overdue detection, escalation actions
 - [ ] **Phase 18: Sub-Workflows** - SUB_WORKFLOW activity type, child instance spawning, parent-child lifecycle, variable mapping, depth limits
 - [ ] **Phase 19: Event-Driven Activities** - EVENT activity type, event subscription matching, auto-completion on domain events
 - [ ] **Phase 20: Document Renditions** - Auto-generated PDF and thumbnail renditions via LibreOffice headless worker, rendition status in document UI
@@ -57,17 +57,13 @@ Phases 12-15 delivered the complete web UI: navigation shell, inbox with work it
 ### Phase 17: Timer Activities & Escalation
 **Goal**: Work items automatically enforce deadlines and escalate when overdue, so tasks do not silently stall
 **Depends on**: Phase 16 (notifications deliver escalation alerts)
-**Requirements**: NOTIF-03, TIMER-01, TIMER-02, TIMER-03, TIMER-04
+**Requirements**: TIMER-01, TIMER-02, TIMER-03, TIMER-04
 **Success Criteria** (what must be TRUE):
   1. Admin can set a deadline duration on an activity template in the workflow designer, and it persists across template saves
   2. When a workflow reaches a timed activity, the resulting work item automatically receives a due date calculated from the template configuration
   3. A Celery Beat task periodically detects overdue work items and triggers the configured escalation action (priority bump, reassignment, or notification)
   4. Escalated work items show updated priority or reassigned performer, and the affected user receives a notification
-**Plans**: 3 plans
-Plans:
-- [x] 17-01-PLAN.md — Models, migration, schemas, and test scaffold for timer/escalation data layer
-- [ ] 17-02-PLAN.md — Engine service due_date wiring, deadline checker, and escalation logic
-- [ ] 17-03-PLAN.md — Designer UI fields for deadline/escalation configuration
+**Plans**: TBD
 **UI hint**: yes
 
 ### Phase 18: Sub-Workflows
@@ -80,11 +76,7 @@ Plans:
   3. When the child workflow completes, the parent workflow automatically resumes from the SUB_WORKFLOW activity
   4. Variables mapped from parent to child are available in the child workflow at startup
   5. System rejects template installation if sub-workflow nesting would exceed the depth limit, preventing infinite recursion
-**Plans**: 3 plans
-Plans:
-- [ ] 18-01-PLAN.md — Data layer: enum, models, migration, schemas, config, test scaffold
-- [ ] 18-02-PLAN.md — Engine logic: SUB_WORKFLOW dispatch, event-driven parent resumption, depth validation
-- [ ] 18-03-PLAN.md — Designer UI: SubWorkflowNode, palette, properties panel config
+**Plans**: TBD
 **UI hint**: yes
 
 ### Phase 19: Event-Driven Activities
@@ -153,9 +145,9 @@ Phases execute in numeric order: 16 -> 17 -> 18 -> 19 -> 20 -> 21 -> 22 -> 23
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 16. Notifications & Event Bus | 4/4 | Complete    | 2026-04-06 |
-| 17. Timer Activities & Escalation | 1/3 | Complete    | 2026-04-06 |
-| 18. Sub-Workflows | 0/3 | Not started | - |
+| 16. Notifications & Event Bus | 0/? | Not started | - |
+| 17. Timer Activities & Escalation | 0/? | Not started | - |
+| 18. Sub-Workflows | 1/3 | In progress | - |
 | 19. Event-Driven Activities | 0/? | Not started | - |
 | 20. Document Renditions | 0/? | Not started | - |
 | 21. Virtual Documents | 0/? | Not started | - |

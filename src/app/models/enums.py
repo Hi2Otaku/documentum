@@ -13,6 +13,7 @@ class ActivityType(str, enum.Enum):
     END = "end"
     MANUAL = "manual"
     AUTO = "auto"
+    SUB_WORKFLOW = "sub_workflow"
 
 
 class FlowType(str, enum.Enum):

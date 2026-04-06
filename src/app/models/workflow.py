@@ -74,7 +74,9 @@ class ProcessTemplate(BaseModel):
         Uuid(), ForeignKey("alias_sets.id"), nullable=True
     )
 
-    activity_templates: Mapped[list["ActivityTemplate"]] = relationship(back_populates="process_template")
+    activity_templates: Mapped[list["ActivityTemplate"]] = relationship(
+        back_populates="process_template", foreign_keys="[ActivityTemplate.process_template_id]"
+    )
     flow_templates: Mapped[list["FlowTemplate"]] = relationship(back_populates="process_template")
     process_variables: Mapped[list["ProcessVariable"]] = relationship(back_populates="process_template")
 
@@ -104,10 +106,15 @@ class ActivityTemplate(BaseModel):
     performer_list: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     lifecycle_action: Mapped[str | None] = mapped_column(String(255), nullable=True)
     expected_duration_hours: Mapped[float | None] = mapped_column(Float, nullable=True)
-    escalation_action: Mapped[str | None] = mapped_column(String(50), nullable=True)
-    warning_threshold_hours: Mapped[float | None] = mapped_column(Float, nullable=True)
+    sub_template_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid(), ForeignKey("process_templates.id"), nullable=True
+    )
+    variable_mapping: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
-    process_template: Mapped["ProcessTemplate"] = relationship(back_populates="activity_templates")
+    process_template: Mapped["ProcessTemplate"] = relationship(
+        back_populates="activity_templates", foreign_keys=[process_template_id]
+    )
+    sub_template: Mapped["ProcessTemplate"] = relationship(foreign_keys=[sub_template_id])
 
 
 class FlowTemplate(BaseModel):
@@ -148,8 +155,19 @@ class WorkflowInstance(BaseModel):
         Uuid(), ForeignKey("users.id"), nullable=True
     )
     alias_snapshot: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    parent_workflow_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid(), ForeignKey("workflow_instances.id"), nullable=True
+    )
+    parent_activity_instance_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid(), ForeignKey("activity_instances.id"), nullable=True
+    )
+    nesting_depth: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)
 
     process_template: Mapped["ProcessTemplate"] = relationship(foreign_keys=[process_template_id])
+    parent_workflow: Mapped["WorkflowInstance | None"] = relationship(
+        foreign_keys=[parent_workflow_id], remote_side="WorkflowInstance.id"
+    )
+    parent_activity_instance: Mapped["ActivityInstance | None"] = relationship(foreign_keys=[parent_activity_instance_id])
     activity_instances: Mapped[list["ActivityInstance"]] = relationship(back_populates="workflow_instance", foreign_keys="[ActivityInstance.workflow_instance_id]")
     work_items: Mapped[list["WorkItem"]] = relationship(
         primaryjoin="WorkflowInstance.id == ActivityInstance.workflow_instance_id",
@@ -199,8 +217,6 @@ class WorkItem(BaseModel):
     instructions: Mapped[str | None] = mapped_column(Text, nullable=True)
     due_date: Mapped[None] = mapped_column(DateTime(timezone=True), nullable=True)
     priority: Mapped[int] = mapped_column(Integer, default=5, nullable=False)
-    is_escalated: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    deadline_warning_sent: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     completed_at: Mapped[None] = mapped_column(DateTime(timezone=True), nullable=True)
     queue_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid(), ForeignKey("work_queues.id"), nullable=True

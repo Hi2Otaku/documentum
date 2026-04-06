@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     smtp_username: str = ""
     smtp_password: str = ""
     smtp_from_email: str = "workflow@localhost"
+    max_sub_workflow_depth: int = 5
 
     model_config = {
         "env_file": ".env",
