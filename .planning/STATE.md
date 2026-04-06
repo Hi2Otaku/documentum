@@ -4,13 +4,13 @@ milestone: v1.2
 milestone_name: Advanced Engine & Document Platform
 status: planning
 stopped_at: Completed 17-03-PLAN.md
-last_updated: "2026-04-06T16:35:10.654Z"
-last_activity: 2026-04-06 — Roadmap created for milestone v1.2
+last_updated: "2026-04-06T16:47:38.665Z"
+last_activity: 2026-04-06
 progress:
   total_phases: 8
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 1
+  completed_phases: 2
+  total_plans: 7
+  completed_plans: 7
   percent: 0
 ---
 
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 
 ## Current Position
 
-Phase: 16 of 23 (Notifications & Event Bus)
-Plan: 0 of ? in current phase
+Phase: 18 of 23 (sub workflows)
+Plan: Not started
 Status: Ready to plan
-Last activity: 2026-04-06 — Roadmap created for milestone v1.2
+Last activity: 2026-04-06
 
 Progress: [..........] 0% (v1.2: 0/8 phases)
 
