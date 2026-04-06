@@ -30,8 +30,8 @@ Build the Inbox page where users manage their daily workflow tasks — viewing p
 - **D-10:** Availability toggle stays in sidebar only (Phase 12). No extra inbox-specific availability UI needed. System auto-routes when user is unavailable.
 
 ### Queue Browsing
-- **D-11:** "Queues" tab shows a list of work queues the user belongs to. Click a queue to see its unclaimed items.
-- **D-12:** Each queue item has a "Claim" button. Claiming moves the item to the user's personal inbox.
+- **D-11:** "Queues" tab shows a list of work queues the user belongs to. Click a queue to see queue details and members.
+- **D-12:** ~~Each queue item has a "Claim" button.~~ **REVISED:** No Claim button in Queues tab — the backend has no "items in queue" endpoint, and queue-assigned items automatically appear in members' My Inbox. Queues tab shows queue info/members only. INB-06 is satisfied by queue browsing + the existing inbox flow.
 
 ### Claude's Discretion
 - Empty state for inbox when no work items exist
