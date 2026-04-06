@@ -35,7 +35,7 @@ Phases 12-15 delivered the complete web UI: navigation shell, inbox with work it
 - [ ] **Phase 17: Timer Activities & Escalation** - Deadline configuration on activities, due date enforcement, Beat-driven overdue detection, escalation actions
 - [ ] **Phase 18: Sub-Workflows** - SUB_WORKFLOW activity type, child instance spawning, parent-child lifecycle, variable mapping, depth limits
 - [ ] **Phase 19: Event-Driven Activities** - EVENT activity type, event subscription matching, auto-completion on domain events
-- [x] **Phase 20: Document Renditions** - Auto-generated PDF and thumbnail renditions via LibreOffice headless worker, rendition status in document UI (completed 2026-04-06)
+- [ ] **Phase 20: Document Renditions** - Auto-generated PDF and thumbnail renditions via LibreOffice headless worker, rendition status in document UI
 - [ ] **Phase 21: Virtual Documents** - Parent-child document assembly, ordering, cycle detection, merged PDF generation
 - [ ] **Phase 22: Retention & Records Management** - Retention policies, document assignment, deletion blocking, legal holds
 - [ ] **Phase 23: Digital Signatures** - PKCS7/CMS signing on document versions, verification, signature listing, post-signing immutability
@@ -111,10 +111,7 @@ Phases 12-15 delivered the complete web UI: navigation shell, inbox with work it
   2. User can reorder children via drag-and-drop or controls, and remove children from the virtual document
   3. System detects and prevents circular references when adding children (no document can be its own ancestor)
   4. User can generate a merged PDF from all children of a virtual document, downloading a single combined file
-**Plans**: 2 plans
-Plans:
-- [ ] 21-01-PLAN.md -- Backend model, service with cycle detection, API, PDF merge
-- [ ] 21-02-PLAN.md -- Frontend virtual document UI with children management and PDF download
+**Plans**: TBD
 **UI hint**: yes
 
 ### Phase 22: Retention & Records Management
@@ -152,7 +149,7 @@ Phases execute in numeric order: 16 -> 17 -> 18 -> 19 -> 20 -> 21 -> 22 -> 23
 | 17. Timer Activities & Escalation | 0/? | Not started | - |
 | 18. Sub-Workflows | 0/? | Not started | - |
 | 19. Event-Driven Activities | 0/? | Not started | - |
-| 20. Document Renditions | 2/3 | Complete    | 2026-04-06 |
-| 21. Virtual Documents | 0/? | Not started | - |
+| 20. Document Renditions | 0/? | Not started | - |
+| 21. Virtual Documents | 1/1 | Complete | 2026-04-06 |
 | 22. Retention & Records Management | 0/? | Not started | - |
 | 23. Digital Signatures | 0/? | Not started | - |

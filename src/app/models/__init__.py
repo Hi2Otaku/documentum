@@ -1,12 +1,12 @@
 from app.models.base import Base, BaseModel
-from app.models.enums import ActivityState, ActivityType, FlowType, LifecycleState, PerformerType, PermissionLevel, ProcessState, RenditionStatus, RenditionType, TriggerType, WorkflowState, WorkItemState
+from app.models.enums import ActivityState, ActivityType, FlowType, LifecycleState, PerformerType, PermissionLevel, ProcessState, TriggerType, WorkflowState, WorkItemState
 from app.models.user import Group, Role, User, user_groups, user_roles
 from app.models.audit import AuditLog
 from app.models.document import Document, DocumentVersion
 from app.models.acl import DocumentACL, LifecycleACLRule
 from app.models.execution_log import AutoActivityLog
 from app.models.metrics import MetricsSummary
-from app.models.rendition import Rendition
+from app.models.virtual_document import VirtualDocument, VirtualDocumentChild
 from app.models.workflow import (
     ActivityInstance,
     ActivityTemplate,
@@ -53,7 +53,6 @@ __all__ = [
     "LifecycleACLRule",
     "AutoActivityLog",
     "MetricsSummary",
-    "Rendition",
-    "RenditionType",
-    "RenditionStatus",
+    "VirtualDocument",
+    "VirtualDocumentChild",
 ]
