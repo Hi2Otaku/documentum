@@ -104,6 +104,8 @@ class ActivityTemplate(BaseModel):
     performer_list: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     lifecycle_action: Mapped[str | None] = mapped_column(String(255), nullable=True)
     expected_duration_hours: Mapped[float | None] = mapped_column(Float, nullable=True)
+    escalation_action: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    warning_threshold_hours: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     process_template: Mapped["ProcessTemplate"] = relationship(back_populates="activity_templates")
 
@@ -197,6 +199,8 @@ class WorkItem(BaseModel):
     instructions: Mapped[str | None] = mapped_column(Text, nullable=True)
     due_date: Mapped[None] = mapped_column(DateTime(timezone=True), nullable=True)
     priority: Mapped[int] = mapped_column(Integer, default=5, nullable=False)
+    is_escalated: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    deadline_warning_sent: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     completed_at: Mapped[None] = mapped_column(DateTime(timezone=True), nullable=True)
     queue_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid(), ForeignKey("work_queues.id"), nullable=True
