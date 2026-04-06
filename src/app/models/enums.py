@@ -78,3 +78,15 @@ class PermissionLevel(str, enum.Enum):
     WRITE = "write"
     DELETE = "delete"
     ADMIN = "admin"
+
+
+class RenditionType(str, enum.Enum):
+    PDF = "pdf"
+    THUMBNAIL = "thumbnail"
+
+
+class RenditionStatus(str, enum.Enum):
+    PENDING = "pending"
+    PROCESSING = "processing"
+    READY = "ready"
+    FAILED = "failed"
