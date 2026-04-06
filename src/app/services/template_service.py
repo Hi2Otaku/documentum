@@ -250,6 +250,9 @@ async def add_activity(
         position_y=data.position_y,
         routing_type=data.routing_type,
         performer_list=data.performer_list,
+        expected_duration_hours=data.expected_duration_hours,
+        escalation_action=data.escalation_action,
+        warning_threshold_hours=data.warning_threshold_hours,
         created_by=user_id,
     )
     db.add(activity)
