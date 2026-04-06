@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Advanced Engine & Document Platform
-status: planning
-stopped_at: Completed 16-01-PLAN.md
-last_updated: "2026-04-06T15:39:42.887Z"
-last_activity: 2026-04-06 — Roadmap created for milestone v1.2
+status: executing
+stopped_at: Roadmap v1.2 created with 8 phases (16-23)
+last_updated: "2026-04-06T15:27:57.990Z"
+last_activity: 2026-04-06 -- Phase 16 execution started
 progress:
   total_phases: 8
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
+  completed_phases: 0
+  total_plans: 3
+  completed_plans: 0
   percent: 0
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-06)
 
 **Core value:** Any workflow use case described in the Documentum specification can be modeled and executed end-to-end through the system.
-**Current focus:** Phase 16 - Notifications & Event Bus
+**Current focus:** Phase 16 — notifications-event-bus
 
 ## Current Position
 
-Phase: 16 of 23 (Notifications & Event Bus)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-04-06 — Roadmap created for milestone v1.2
+Phase: 16 (notifications-event-bus) — EXECUTING
+Plan: 1 of 3
+Status: Executing Phase 16
+Last activity: 2026-04-06 -- Phase 16 execution started
 
 Progress: [..........] 0% (v1.2: 0/8 phases)
 
@@ -52,7 +52,6 @@ Progress: [..........] 0% (v1.2: 0/8 phases)
 | Phase 15 P01 | 2m | 2 tasks | 7 files |
 | Phase 15 P02 | 3min | 2 tasks | 6 files |
 | Phase 15 P03 | 3min | 2 tasks | 9 files |
-| Phase 16 P01 | 8m | 5 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -65,7 +64,6 @@ Recent decisions affecting current work:
 - [v1.2 Roadmap]: Database-backed Beat polling for all timers -- never use Celery ETA tasks
 - [v1.2 Roadmap]: Dedicated Celery rendition worker with LibreOffice -- isolated from API process
 - [v1.2 Roadmap]: Sub-workflow depth limit enforced at template installation and runtime
-- [Phase 16]: In-process EventBus singleton with decorator-based handler registration; events persist to domain_events table
 
 ### Pending Todos
 
@@ -80,6 +78,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-06T15:39:42.883Z
-Stopped at: Completed 16-01-PLAN.md
+Last session: 2026-04-06
+Stopped at: Roadmap v1.2 created with 8 phases (16-23)
 Resume file: None
