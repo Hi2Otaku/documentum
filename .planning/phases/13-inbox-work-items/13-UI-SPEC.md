@@ -1,7 +1,7 @@
 ---
 phase: 13
 slug: inbox-work-items
-status: draft
+status: approved
 shadcn_initialized: true
 preset: none (manual install, no components.json)
 created: 2026-04-06
