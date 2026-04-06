@@ -20,10 +20,10 @@ Requirements for milestone v1.2: Advanced Engine & Document Platform.
 
 ### Timer Activities & Escalation
 
-- [ ] **TIMER-01**: Admin can configure deadline duration on activity templates in the workflow designer
-- [ ] **TIMER-02**: Work items automatically receive due dates based on activity template deadline configuration
+- [x] **TIMER-01**: Admin can configure deadline duration on activity templates in the workflow designer
+- [x] **TIMER-02**: Work items automatically receive due dates based on activity template deadline configuration
 - [ ] **TIMER-03**: Celery Beat periodically checks for overdue work items and triggers escalation
-- [ ] **TIMER-04**: Overdue work items are automatically escalated (priority bump, reassignment, or notification)
+- [x] **TIMER-04**: Overdue work items are automatically escalated (priority bump, reassignment, or notification)
 
 ### Sub-Workflows
 
@@ -137,10 +137,10 @@ Explicitly excluded from v1.2.
 | NOTIF-06 | Phase 16 | Complete |
 | EVENT-01 | Phase 16 | Complete |
 | EVENT-02 | Phase 16 | Complete |
-| TIMER-01 | Phase 17 | Pending |
-| TIMER-02 | Phase 17 | Pending |
+| TIMER-01 | Phase 17 | Complete |
+| TIMER-02 | Phase 17 | Complete |
 | TIMER-03 | Phase 17 | Pending |
-| TIMER-04 | Phase 17 | Pending |
+| TIMER-04 | Phase 17 | Complete |
 | SUBWF-01 | Phase 18 | Pending |
 | SUBWF-02 | Phase 18 | Pending |
 | SUBWF-03 | Phase 18 | Pending |
