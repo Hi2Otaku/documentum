@@ -7,6 +7,11 @@ from app.models.acl import DocumentACL, LifecycleACLRule
 from app.models.execution_log import AutoActivityLog
 from app.models.metrics import MetricsSummary
 from app.models.signature import DocumentSignature
+from app.models.notification import Notification
+from app.models.event import DomainEvent
+from app.models.rendition import Rendition
+from app.models.virtual_document import VirtualDocument, VirtualDocumentChild
+from app.models.retention import RetentionPolicy, DocumentRetention, LegalHold
 from app.models.workflow import (
     ActivityInstance,
     ActivityTemplate,
@@ -54,4 +59,12 @@ __all__ = [
     "AutoActivityLog",
     "MetricsSummary",
     "DocumentSignature",
+    "Notification",
+    "DomainEvent",
+    "Rendition",
+    "VirtualDocument",
+    "VirtualDocumentChild",
+    "RetentionPolicy",
+    "DocumentRetention",
+    "LegalHold",
 ]

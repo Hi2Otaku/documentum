@@ -112,6 +112,8 @@ class ActivityTemplate(BaseModel):
     variable_mapping: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     event_type_filter: Mapped[str | None] = mapped_column(String(255), nullable=True)
     event_filter_config: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    warning_threshold_hours: Mapped[float | None] = mapped_column(Float, nullable=True)
+    escalation_action: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
     process_template: Mapped["ProcessTemplate"] = relationship(
         back_populates="activity_templates", foreign_keys=[process_template_id]
@@ -223,6 +225,8 @@ class WorkItem(BaseModel):
     queue_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid(), ForeignKey("work_queues.id"), nullable=True
     )
+    is_escalated: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, server_default="false")
+    deadline_warning_sent: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, server_default="false")
 
     activity_instance: Mapped["ActivityInstance"] = relationship(back_populates="work_items", foreign_keys=[activity_instance_id])
     workflow_instance: Mapped["WorkflowInstance"] = relationship(

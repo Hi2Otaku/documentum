@@ -11,7 +11,7 @@ celery_app = Celery(
     "documentum",
     broker=settings.redis_url,
     backend=settings.redis_url,
-    include=["app.tasks.auto_activity", "app.tasks.metrics_aggregation", "app.tasks.rendition"],
+    include=["app.tasks.auto_activity", "app.tasks.metrics_aggregation", "app.tasks.notification", "app.tasks.rendition"],
 )
 
 celery_app.conf.update(
@@ -33,6 +33,10 @@ celery_app.conf.update(
         "aggregate-dashboard-metrics": {
             "task": "app.tasks.metrics_aggregation.aggregate_dashboard_metrics",
             "schedule": 300.0,
+        },
+        "check-approaching-deadlines": {
+            "task": "app.tasks.notification.check_approaching_deadlines",
+            "schedule": 60.0,
         },
     },
 )
