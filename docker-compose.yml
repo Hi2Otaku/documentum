@@ -79,6 +79,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    volumes:
+      - ./src:/app/src
     command: celery -A app.celery_app worker --loglevel=info
 
   celery-beat:
@@ -92,6 +94,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    volumes:
+      - ./src:/app/src
     command: celery -A app.celery_app beat --loglevel=info
 
   celery-rendition-worker:
@@ -111,6 +115,8 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+    volumes:
+      - ./src:/app/src
     command: celery -A app.celery_app worker --loglevel=info -Q renditions --concurrency=1
 
 volumes:
