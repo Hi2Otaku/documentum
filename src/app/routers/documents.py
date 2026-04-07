@@ -60,7 +60,9 @@ async def list_documents(
 ):
     """List documents with pagination and optional filters."""
     documents, total_count = await document_service.list_documents(
-        db, page, page_size, title, author
+        db, page, page_size, title, author,
+        user_id=str(current_user.id),
+        is_superuser=current_user.is_superuser,
     )
     return EnvelopeResponse(
         data=[DocumentResponse.model_validate(d) for d in documents],

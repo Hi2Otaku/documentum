@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime, timezone
 
 from fastapi import HTTPException, UploadFile, status
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.minio_client import delete_object, download_object, upload_object
@@ -139,16 +139,66 @@ async def list_documents(
     page_size: int,
     title: str | None = None,
     author: str | None = None,
+    user_id: str | None = None,
+    is_superuser: bool = False,
 ) -> tuple[list[Document], int]:
-    """List documents with pagination and optional filters."""
-    base_query = select(Document).where(
-        Document.is_deleted == False  # noqa: E712
-    )
+    """List documents with pagination, filters, and ACL enforcement.
+
+    Superusers see all documents. Regular users see only documents where:
+    - They have a direct ACL entry, OR
+    - No ACL entries exist (open access), OR
+    - They have an active work item on a workflow with the document attached
+    """
+    from app.models.acl import DocumentACL
+    from app.models.workflow import WorkItem, WorkflowPackage, ActivityInstance
+    from app.models.enums import WorkItemState
+
+    base_conditions = [Document.is_deleted == False]  # noqa: E712
 
     if title:
-        base_query = base_query.where(Document.title.ilike(f"%{title}%"))
+        base_conditions.append(Document.title.ilike(f"%{title}%"))
     if author:
-        base_query = base_query.where(Document.author.ilike(f"%{author}%"))
+        base_conditions.append(Document.author.ilike(f"%{author}%"))
+
+    if is_superuser or not user_id:
+        # Superusers see everything
+        base_query = select(Document).where(*base_conditions)
+    else:
+        uid = uuid.UUID(user_id)
+
+        # Documents with direct ACL for this user
+        acl_doc_ids = select(DocumentACL.document_id).where(
+            DocumentACL.principal_id == uid,
+            DocumentACL.principal_type == "user",
+            DocumentACL.is_deleted == False,  # noqa: E712
+        ).correlate(None)
+
+        # Documents with NO ACL entries at all (open access)
+        docs_with_acl = select(DocumentACL.document_id).where(
+            DocumentACL.is_deleted == False  # noqa: E712
+        ).distinct().correlate(None)
+
+        # Documents attached to workflows where user has active work item
+        wf_doc_ids = (
+            select(WorkflowPackage.document_id)
+            .join(ActivityInstance, ActivityInstance.workflow_instance_id == WorkflowPackage.workflow_instance_id)
+            .join(WorkItem, WorkItem.activity_instance_id == ActivityInstance.id)
+            .where(
+                WorkItem.performer_id == uid,
+                WorkItem.state.in_([WorkItemState.AVAILABLE, WorkItemState.ACQUIRED]),
+                WorkflowPackage.document_id.isnot(None),
+            )
+            .correlate(None)
+        )
+
+        base_query = select(Document).where(
+            *base_conditions,
+            or_(
+                Document.id.in_(acl_doc_ids),
+                Document.id.notin_(docs_with_acl),
+                Document.id.in_(wf_doc_ids),
+            ),
+        )
 
     # Total count
     count_query = select(func.count()).select_from(base_query.subquery())
