@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import mimetypes
 import uuid
 from datetime import datetime, timezone
@@ -9,7 +10,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.minio_client import delete_object, download_object, upload_object
 from app.models.document import Document, DocumentVersion
+from app.models.enums import RenditionType
 from app.services.audit_service import create_audit_record
+from app.services.event_bus import event_bus
+
+logger = logging.getLogger(__name__)
 
 
 async def upload_document(
@@ -86,6 +91,24 @@ async def upload_document(
         # Create ADMIN ACL for document creator (Phase 7)
         from app.services import acl_service
         await acl_service.create_owner_acl(db, document.id, uuid.UUID(user_id))
+
+        # Emit document.uploaded event for event-driven activities
+        await event_bus.emit(
+            db,
+            event_type="document.uploaded",
+            entity_type="document",
+            entity_id=doc_id,
+            actor_id=uuid.UUID(user_id),
+            payload={"title": title, "filename": filename, "version": "0.1"},
+        )
+
+        # Trigger rendition generation (PDF + thumbnail)
+        from app.services.rendition_service import create_rendition_request
+        try:
+            await create_rendition_request(db, doc_id, version_id, RenditionType.PDF, user_id)
+            await create_rendition_request(db, doc_id, version_id, RenditionType.THUMBNAIL, user_id)
+        except Exception as e:
+            logger.warning("Rendition request failed (non-fatal): %s", e)
     except Exception:
         await delete_object(object_name)
         raise
@@ -199,6 +222,9 @@ async def checkout_document(
 ) -> Document:
     """Check out (lock) a document for editing."""
     document = await get_document(db, document_id)
+
+    # Immutability guard: block checkout if latest version is signed
+    await _check_version_not_signed(db, document_id)
 
     if document.locked_by is not None:
         raise HTTPException(
@@ -340,6 +366,14 @@ async def checkin_document(
                 "comment": comment,
             },
         )
+
+        # Trigger rendition generation for new version (PDF + thumbnail)
+        from app.services.rendition_service import create_rendition_request
+        try:
+            await create_rendition_request(db, document_id, new_version.id, RenditionType.PDF, user_id)
+            await create_rendition_request(db, document_id, new_version.id, RenditionType.THUMBNAIL, user_id)
+        except Exception as e:
+            logger.warning("Rendition request failed on checkin (non-fatal): %s", e)
     except Exception:
         await delete_object(object_name)
         raise
