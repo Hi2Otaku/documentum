@@ -195,10 +195,11 @@ async def check_permission(
             if has_sufficient_permission(granted, required_level):
                 return True
 
-    # Workflow participant fallback: if user has a work item on a workflow
-    # that has this document attached as a package, grant READ access
+    # Workflow participant fallback: only if user has an ACTIVE work item
+    # (available or acquired) on a workflow with this document attached
     if required_level == PermissionLevel.READ:
         from app.models.workflow import WorkItem, WorkflowPackage, ActivityInstance
+        from app.models.enums import WorkItemState
         participant_result = await db.execute(
             select(func.count()).select_from(WorkItem).join(
                 ActivityInstance, WorkItem.activity_instance_id == ActivityInstance.id
@@ -208,6 +209,7 @@ async def check_permission(
             ).where(
                 WorkflowPackage.document_id == document_id,
                 WorkItem.performer_id == user_id,
+                WorkItem.state.in_([WorkItemState.AVAILABLE, WorkItemState.ACQUIRED]),
             )
         )
         if participant_result.scalar() > 0:
