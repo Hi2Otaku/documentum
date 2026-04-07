@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
 } from "../ui/dropdown-menu";
 import { cn } from "../../lib/utils";
-import { NotificationBell } from "../notifications/NotificationBell";
+
 
 interface SidebarUserMenuProps {
   isCollapsed: boolean;
@@ -39,7 +39,6 @@ export function SidebarUserMenu({ isCollapsed }: SidebarUserMenuProps) {
         isCollapsed && "justify-center"
       )}
     >
-      {!isCollapsed && <NotificationBell />}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
