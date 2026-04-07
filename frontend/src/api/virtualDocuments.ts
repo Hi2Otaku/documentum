@@ -57,6 +57,14 @@ function buildUrl(
   return url.pathname + url.search;
 }
 
+// --- Envelope wrapper (backend wraps all responses in this) ---
+
+interface EnvelopeResponse<T> {
+  data: T;
+  meta: Record<string, unknown> | null;
+  errors: unknown[];
+}
+
 // --- Response types ---
 
 export interface VirtualDocumentChildResponse {
@@ -80,8 +88,19 @@ export interface VirtualDocumentResponse {
   children: VirtualDocumentChildResponse[];
 }
 
+/** Lightweight list item — matches backend VirtualDocumentListResponse (no children array). */
+export interface VirtualDocumentListItem {
+  id: string;
+  title: string;
+  description: string | null;
+  owner_id: string;
+  child_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface PaginatedVirtualDocumentsResponse {
-  data: VirtualDocumentResponse[];
+  data: VirtualDocumentListItem[];
   meta: { page: number; page_size: number; total_count: number; total_pages: number };
 }
 
@@ -91,11 +110,12 @@ export async function createVirtualDocument(
   title: string,
   description?: string,
 ): Promise<VirtualDocumentResponse> {
-  return apiMutate<VirtualDocumentResponse>(
+  const envelope = await apiMutate<EnvelopeResponse<VirtualDocumentResponse>>(
     "/api/v1/virtual-documents/",
     "POST",
     { title, description },
   );
+  return envelope.data;
 }
 
 export async function fetchVirtualDocuments(params: {
@@ -106,31 +126,36 @@ export async function fetchVirtualDocuments(params: {
     "/api/v1/virtual-documents/",
     params as Record<string, string | number | undefined | null>,
   );
+  // The envelope shape ({ data, meta }) already matches PaginatedVirtualDocumentsResponse
   return apiFetch<PaginatedVirtualDocumentsResponse>(url);
 }
 
 export async function fetchVirtualDocument(
   id: string,
 ): Promise<VirtualDocumentResponse> {
-  return apiFetch<VirtualDocumentResponse>(`/api/v1/virtual-documents/${id}`);
+  const envelope = await apiFetch<EnvelopeResponse<VirtualDocumentResponse>>(
+    `/api/v1/virtual-documents/${id}`,
+  );
+  return envelope.data;
 }
 
 export async function addChild(
   virtualDocId: string,
   childDocumentId: string,
 ): Promise<VirtualDocumentChildResponse> {
-  return apiMutate<VirtualDocumentChildResponse>(
+  const envelope = await apiMutate<EnvelopeResponse<VirtualDocumentChildResponse>>(
     `/api/v1/virtual-documents/${virtualDocId}/children`,
     "POST",
     { document_id: childDocumentId },
   );
+  return envelope.data;
 }
 
 export async function removeChild(
   virtualDocId: string,
   childId: string,
-): Promise<{ message: string }> {
-  return apiMutate<{ message: string }>(
+): Promise<void> {
+  await apiMutate<EnvelopeResponse<null>>(
     `/api/v1/virtual-documents/${virtualDocId}/children/${childId}`,
     "DELETE",
   );
@@ -140,11 +165,12 @@ export async function reorderChildren(
   virtualDocId: string,
   childIds: string[],
 ): Promise<VirtualDocumentChildResponse[]> {
-  return apiMutate<VirtualDocumentChildResponse[]>(
+  const envelope = await apiMutate<EnvelopeResponse<VirtualDocumentChildResponse[]>>(
     `/api/v1/virtual-documents/${virtualDocId}/children/reorder`,
     "PUT",
     { document_ids: childIds },
   );
+  return envelope.data;
 }
 
 export function mergePdfUrl(virtualDocId: string): string {
