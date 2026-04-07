@@ -19,19 +19,12 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Create enum types
-    renditiontype = sa.Enum('pdf', 'thumbnail', name='renditiontype')
-    renditiontype.create(op.get_bind(), checkfirst=True)
-
-    renditionstatus = sa.Enum('pending', 'processing', 'ready', 'failed', name='renditionstatus')
-    renditionstatus.create(op.get_bind(), checkfirst=True)
-
     op.create_table(
         'renditions',
         sa.Column('id', sa.Uuid(), nullable=False),
         sa.Column('document_version_id', sa.Uuid(), nullable=False),
-        sa.Column('rendition_type', renditiontype, nullable=False),
-        sa.Column('status', renditionstatus, nullable=False, server_default='pending'),
+        sa.Column('rendition_type', sa.Enum('pdf', 'thumbnail', name='renditiontype', create_type=False), nullable=False),
+        sa.Column('status', sa.Enum('pending', 'processing', 'ready', 'failed', name='renditionstatus', create_type=False), nullable=False, server_default='pending'),
         sa.Column('minio_object_key', sa.String(500), nullable=True),
         sa.Column('content_type', sa.String(255), nullable=True),
         sa.Column('content_size', sa.Integer(), nullable=True),

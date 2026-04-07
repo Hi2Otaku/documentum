@@ -14,10 +14,10 @@ class Rendition(BaseModel):
         Uuid(), ForeignKey("document_versions.id"), nullable=False, index=True
     )
     rendition_type: Mapped[str] = mapped_column(
-        Enum(RenditionType, name="renditiontype"), nullable=False
+        Enum(RenditionType, name="renditiontype", create_type=False), nullable=False
     )
     status: Mapped[str] = mapped_column(
-        Enum(RenditionStatus, name="renditionstatus"),
+        Enum(RenditionStatus, name="renditionstatus", create_type=False),
         default=RenditionStatus.PENDING,
         nullable=False,
     )
