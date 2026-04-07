@@ -156,7 +156,11 @@ Phases 12-15 delivered the complete web UI: navigation shell, inbox with work it
   7. checkout_document() calls _check_version_not_signed guard
   8. All new models exported from models/__init__.py
   9. Alembic migration chain is linear (single head) and alembic upgrade head succeeds
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 24-01-PLAN.md — Infrastructure wiring: mount routers, import event handlers, register Celery tasks, add model columns, export models
+- [ ] 24-02-PLAN.md — Service fixes: emit document.uploaded event, trigger renditions on upload/checkin, add checkout signature guard
+- [ ] 24-03-PLAN.md — Migration chain: linearize down_revision chain, create phase21 virtual documents migration
 
 ### Phase 25: Virtual Documents Frontend Fix
 **Goal**: Align the virtual documents frontend API client and components with backend schema so all CRUD operations, reordering, and PDF merge work at runtime
