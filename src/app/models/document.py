@@ -83,3 +83,6 @@ class DocumentVersion(BaseModel):
         back_populates="version",
         order_by="DocumentSignature.signed_at",
     )
+    renditions: Mapped[list["Rendition"]] = relationship(  # noqa: F821
+        back_populates="document_version",
+    )
