@@ -65,7 +65,7 @@ export function DocumentDetailPanel({
     <div className="flex flex-col h-full overflow-y-auto">
       {/* Section 1 - Header */}
       <div className="p-6">
-        <h2 className="text-base font-semibold">{document.title}</h2>
+        <h2 className="text-base font-semibold break-words">{document.title}</h2>
         <div className="flex items-center gap-2 mt-2">
           <LifecycleStateBadge state={document.lifecycle_state} />
           <LockIndicator
@@ -84,15 +84,15 @@ export function DocumentDetailPanel({
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-3">
-            <div className="grid grid-cols-2 gap-y-2 gap-x-4">
+            <div className="grid grid-cols-[auto_1fr] gap-y-2 gap-x-4">
               <span className="text-xs text-muted-foreground">Filename</span>
-              <span className="text-sm">{document.filename}</span>
+              <span className="text-sm truncate" title={document.filename}>{document.filename}</span>
 
               <span className="text-xs text-muted-foreground">Type</span>
-              <span className="text-sm">{document.content_type}</span>
+              <span className="text-sm truncate" title={document.content_type}>{document.content_type}</span>
 
               <span className="text-xs text-muted-foreground">Author</span>
-              <span className="text-sm">{document.author ?? "Unknown"}</span>
+              <span className="text-sm truncate">{document.author ?? "Unknown"}</span>
 
               <span className="text-xs text-muted-foreground">Created</span>
               <span className="text-sm">
@@ -104,7 +104,7 @@ export function DocumentDetailPanel({
                 {new Date(document.updated_at).toLocaleDateString()}
               </span>
 
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-muted-foreground whitespace-nowrap">
                 Current Version
               </span>
               <span className="text-sm">{document.current_version}</span>
