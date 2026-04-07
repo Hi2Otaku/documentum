@@ -175,7 +175,9 @@ Plans:
   5. downloadMergedPdf calls GET .../merge (not POST .../merge-pdf)
   6. Virtual document children display correct titles, filenames, and sort order
   7. Phase 21 Alembic migration exists and creates virtual_documents + virtual_document_children tables
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 25-01-PLAN.md — Fix API client envelope unwrapping, list response type, and component field names
 
 ### Phase 26: Digital Signatures Alignment
 **Goal**: Fix migration/model/test mismatches so digital signature sign, verify, and list operations work end-to-end and all tests pass
@@ -209,5 +211,5 @@ Execution order: 24 -> 25 -> 26
 | 22. Retention & Records Management | 2/2 | Code complete | 2026-04-06 |
 | 23. Digital Signatures | 2/2 | Code complete | 2026-04-06 |
 | 24. Infrastructure Wiring | 3/3 | Complete    | 2026-04-07 |
-| 25. Virtual Docs Frontend Fix | 0/? | Not started | - |
+| 25. Virtual Docs Frontend Fix | 0/1 | Planning complete | - |
 | 26. Signatures Alignment | 0/? | Not started | - |
