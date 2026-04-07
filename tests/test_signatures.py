@@ -197,8 +197,8 @@ async def test_verify_valid_signature(async_client: AsyncClient, admin_token: st
     sig_id = sign_resp.json()["data"]["id"]
 
     # Verify
-    resp = await async_client.post(
-        f"/api/v1/documents/signatures/{sig_id}/verify",
+    resp = await async_client.get(
+        f"/api/v1/documents/{doc_id}/versions/{version_id}/signatures/{sig_id}/verify",
         headers={"Authorization": f"Bearer {admin_token}"},
     )
     assert resp.status_code == 200
@@ -212,10 +212,15 @@ async def test_verify_valid_signature(async_client: AsyncClient, admin_token: st
 @pytest.mark.asyncio
 async def test_verify_nonexistent_signature(async_client: AsyncClient, admin_token: str):
     """Verifying a non-existent signature returns 404."""
+    # Need a real document and version to construct the full nested path
+    upload_resp = await _upload_file(async_client, admin_token)
+    doc_id = upload_resp["data"]["id"]
+    version_id = await _get_version_id(async_client, admin_token, doc_id)
+
     fake_sig_id = str(uuid.uuid4())
 
-    resp = await async_client.post(
-        f"/api/v1/documents/signatures/{fake_sig_id}/verify",
+    resp = await async_client.get(
+        f"/api/v1/documents/{doc_id}/versions/{version_id}/signatures/{fake_sig_id}/verify",
         headers={"Authorization": f"Bearer {admin_token}"},
     )
     assert resp.status_code == 404
