@@ -143,14 +143,32 @@ async def get_inbox_items(
                 "template_name": pt.name,
                 "state": wf.state,
             },
-            "documents": [
-                {"document_id": p.document_id, "package_name": p.package_name}
-                for p in wf.workflow_packages
-            ],
+            "documents": await _resolve_package_docs(db, wf.workflow_packages),
             "comment_count": len(wi.comments),
         })
 
     return items, total_count
+
+
+async def _resolve_package_docs(db: AsyncSession, packages) -> list[dict]:
+    """Resolve document titles for workflow packages (bypasses ACL for inbox view)."""
+    from app.models.document import Document
+
+    docs = []
+    for p in packages:
+        if not p.document_id:
+            continue
+        result = await db.execute(
+            select(Document.title, Document.filename).where(Document.id == p.document_id)
+        )
+        row = result.one_or_none()
+        docs.append({
+            "document_id": str(p.document_id),
+            "package_name": p.package_name,
+            "title": row.title if row else None,
+            "filename": row.filename if row else None,
+        })
+    return docs
 
 
 # ---------------------------------------------------------------------------
@@ -223,10 +241,7 @@ async def get_inbox_item_detail(
             "template_name": pt.name,
             "state": wf.state,
         },
-        "documents": [
-            {"document_id": p.document_id, "package_name": p.package_name}
-            for p in wf.workflow_packages
-        ],
+        "documents": await _resolve_package_docs(db, wf.workflow_packages),
         "comment_count": len(wi.comments),
         "comments": [
             {

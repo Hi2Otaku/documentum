@@ -74,6 +74,8 @@ export interface WorkflowSummary {
 export interface DocumentSummary {
   document_id: string | null;
   package_name: string | null;
+  title: string | null;
+  filename: string | null;
 }
 
 export interface CommentResponse {
