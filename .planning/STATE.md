@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Advanced Engine & Document Platform
 status: executing
-stopped_at: Completed 24-03-PLAN.md (Linearize Migration Chain)
-last_updated: "2026-04-07T02:36:17.931Z"
+stopped_at: Completed 24-01-PLAN.md (Infrastructure Wiring)
+last_updated: "2026-04-07T02:37:11.858Z"
 last_activity: 2026-04-07
 progress:
   total_phases: 11
-  completed_phases: 8
+  completed_phases: 9
   total_plans: 24
-  completed_plans: 23
+  completed_plans: 24
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 ## Current Position
 
 Phase: 24 (infrastructure-wiring-event-bus) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-07
 
@@ -53,6 +53,7 @@ Progress: [..........] 0% (v1.2: 0/8 phases)
 | Phase 15 P02 | 3min | 2 tasks | 6 files |
 | Phase 15 P03 | 3min | 2 tasks | 9 files |
 | Phase 24 P03 | 1m | 2 tasks | 5 files |
+| Phase 24-01 P01 | 2min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,7 @@ Recent decisions affecting current work:
 - [v1.2 Roadmap]: Dedicated Celery rendition worker with LibreOffice -- isolated from API process
 - [v1.2 Roadmap]: Sub-workflow depth limit enforced at template installation and runtime
 - [Phase 24]: Linear migration chain enforced across all phases (11 through 23)
+- [Phase 24]: Mount all 5 routers with api_v1_prefix; event handlers imported in lifespan; deadline check every 60s
 
 ### Pending Todos
 
@@ -80,6 +82,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-07T02:36:17.926Z
-Stopped at: Completed 24-03-PLAN.md (Linearize Migration Chain)
+Last session: 2026-04-07T02:37:11.852Z
+Stopped at: Completed 24-01-PLAN.md (Infrastructure Wiring)
 Resume file: None

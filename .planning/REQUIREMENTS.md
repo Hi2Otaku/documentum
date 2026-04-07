@@ -9,35 +9,35 @@ Requirements for milestone v1.2: Advanced Engine & Document Platform.
 
 ### Notifications & Event Bus
 
-- [ ] **NOTIF-01**: User receives in-app notification when a work item is assigned to them
-- [ ] **NOTIF-02**: User receives in-app notification when a task is delegated to them
-- [ ] **NOTIF-03**: User receives in-app notification when a work item deadline is approaching
-- [ ] **NOTIF-04**: User receives email notification for task assignment and deadline events
-- [ ] **NOTIF-05**: User can view notification list with unread count badge in the UI
-- [ ] **NOTIF-06**: User can mark notifications as read individually or in bulk
-- [ ] **EVENT-01**: System emits domain events on document upload, lifecycle change, and workflow state transitions
+- [x] **NOTIF-01**: User receives in-app notification when a work item is assigned to them
+- [x] **NOTIF-02**: User receives in-app notification when a task is delegated to them
+- [x] **NOTIF-03**: User receives in-app notification when a work item deadline is approaching
+- [x] **NOTIF-04**: User receives email notification for task assignment and deadline events
+- [x] **NOTIF-05**: User can view notification list with unread count badge in the UI
+- [x] **NOTIF-06**: User can mark notifications as read individually or in bulk
+- [x] **EVENT-01**: System emits domain events on document upload, lifecycle change, and workflow state transitions
 - [ ] **EVENT-02**: Events are persisted in a durable event table for reliability
 
 ### Timer Activities & Escalation
 
-- [ ] **TIMER-01**: Admin can configure deadline duration on activity templates in the workflow designer
+- [x] **TIMER-01**: Admin can configure deadline duration on activity templates in the workflow designer
 - [ ] **TIMER-02**: Work items automatically receive due dates based on activity template deadline configuration
-- [ ] **TIMER-03**: Celery Beat periodically checks for overdue work items and triggers escalation
-- [ ] **TIMER-04**: Overdue work items are automatically escalated (priority bump, reassignment, or notification)
+- [x] **TIMER-03**: Celery Beat periodically checks for overdue work items and triggers escalation
+- [x] **TIMER-04**: Overdue work items are automatically escalated (priority bump, reassignment, or notification)
 
 ### Sub-Workflows
 
 - [ ] **SUBWF-01**: Admin can add a SUB_WORKFLOW activity type in the workflow designer that references another template
 - [ ] **SUBWF-02**: When a SUB_WORKFLOW activity executes, a child workflow instance is spawned from the referenced template
-- [ ] **SUBWF-03**: Parent workflow pauses at the SUB_WORKFLOW activity until the child workflow completes
+- [x] **SUBWF-03**: Parent workflow pauses at the SUB_WORKFLOW activity until the child workflow completes
 - [ ] **SUBWF-04**: Variables can be mapped from parent to child workflow on spawn
 - [ ] **SUBWF-05**: System enforces depth limits to prevent recursive sub-workflow chains
 
 ### Event-Driven Activities
 
 - [ ] **EVTACT-01**: Admin can add an EVENT activity type in the workflow designer with event filter configuration
-- [ ] **EVTACT-02**: EVENT activities complete automatically when a matching domain event fires
-- [ ] **EVTACT-03**: Supported event types include document.uploaded, lifecycle.changed, and workflow.completed
+- [x] **EVTACT-02**: EVENT activities complete automatically when a matching domain event fires
+- [x] **EVTACT-03**: Supported event types include document.uploaded, lifecycle.changed, and workflow.completed
 
 ### Document Renditions
 

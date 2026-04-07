@@ -39,7 +39,7 @@ Phases 12-15 delivered the complete web UI: navigation shell, inbox with work it
 - [ ] **Phase 21: Virtual Documents** - Parent-child document assembly, ordering, cycle detection, merged PDF generation
 - [ ] **Phase 22: Retention & Records Management** - Retention policies, document assignment, deletion blocking, legal holds
 - [x] **Phase 23: Digital Signatures** - PKCS7/CMS signing on document versions, verification, signature listing, post-signing immutability (completed 2026-04-06)
-- [ ] **Phase 24: Infrastructure Wiring & Event Bus Integration** - Mount missing routers, register event handlers, wire Celery tasks, add missing model columns, emit missing events, trigger renditions, linearize migrations (gap closure)
+- [x] **Phase 24: Infrastructure Wiring & Event Bus Integration** - Mount missing routers, register event handlers, wire Celery tasks, add missing model columns, emit missing events, trigger renditions, linearize migrations (gap closure) (completed 2026-04-07)
 - [ ] **Phase 25: Virtual Documents Frontend Fix** - Align frontend API types/payloads with backend schemas, create missing migration (gap closure)
 - [ ] **Phase 26: Digital Signatures Alignment** - Fix migration table/column names, add missing enums, align tests with router paths (gap closure)
 
@@ -158,7 +158,7 @@ Phases 12-15 delivered the complete web UI: navigation shell, inbox with work it
   9. Alembic migration chain is linear (single head) and alembic upgrade head succeeds
 **Plans**: 3 plans
 Plans:
-- [ ] 24-01-PLAN.md — Infrastructure wiring: mount routers, import event handlers, register Celery tasks, add model columns, export models
+- [x] 24-01-PLAN.md — Infrastructure wiring: mount routers, import event handlers, register Celery tasks, add model columns, export models
 - [x] 24-02-PLAN.md — Service fixes: emit document.uploaded event, trigger renditions on upload/checkin, add checkout signature guard
 - [x] 24-03-PLAN.md — Migration chain: linearize down_revision chain, create phase21 virtual documents migration
 
@@ -208,6 +208,6 @@ Execution order: 24 -> 25 -> 26
 | 21. Virtual Documents | 2/2 | Code complete | 2026-04-06 |
 | 22. Retention & Records Management | 2/2 | Code complete | 2026-04-06 |
 | 23. Digital Signatures | 2/2 | Code complete | 2026-04-06 |
-| 24. Infrastructure Wiring | 2/3 | In Progress|  |
+| 24. Infrastructure Wiring | 3/3 | Complete   | 2026-04-07 |
 | 25. Virtual Docs Frontend Fix | 0/? | Not started | - |
 | 26. Signatures Alignment | 0/? | Not started | - |
