@@ -34,6 +34,8 @@ class DocumentSummary(BaseModel):
 
     document_id: uuid.UUID | None = None
     package_name: str | None = None
+    title: str | None = None
+    filename: str | None = None
 
 
 class CommentResponse(BaseModel):

@@ -230,12 +230,23 @@ export function InboxDetailPanel({ workItemId }: InboxDetailPanelProps) {
 }
 
 function AttachedDocumentRow({ doc }: { doc: DocumentSummary }) {
+  const handleClick = () => {
+    if (doc.document_id) {
+      window.open(`/documents?selected=${doc.document_id}`, "_blank");
+    }
+  };
+
   return (
-    <Card>
+    <Card
+      className="cursor-pointer hover:bg-accent transition-colors"
+      onClick={handleClick}
+    >
       <CardContent className="p-3 flex items-center gap-2 min-w-0">
-        <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+        <FileText className="h-4 w-4 text-blue-500 shrink-0" />
         <div className="min-w-0">
-          <p className="text-sm font-medium truncate">{doc.title ?? "Untitled"}</p>
+          <p className="text-sm font-medium truncate text-blue-600 hover:underline">
+            {doc.title ?? "Untitled"}
+          </p>
           <p className="text-xs text-muted-foreground">{doc.filename ?? ""}</p>
         </div>
       </CardContent>
