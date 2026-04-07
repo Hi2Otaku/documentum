@@ -38,7 +38,10 @@ Phases 12-15 delivered the complete web UI: navigation shell, inbox with work it
 - [ ] **Phase 20: Document Renditions** - Auto-generated PDF and thumbnail renditions via LibreOffice headless worker, rendition status in document UI
 - [ ] **Phase 21: Virtual Documents** - Parent-child document assembly, ordering, cycle detection, merged PDF generation
 - [ ] **Phase 22: Retention & Records Management** - Retention policies, document assignment, deletion blocking, legal holds
-- [x] **Phase 23: Digital Signatures** - PKCS7/CMS signing on document versions, verification, signature listing, post-signing immutability (completed 2026-04-06)
+- [x] **Phase 23: Digital Signatures** - PKCS7/CMS signing on document versions, verification, signature listing, post-signing immutability (completed 2026-04-06)
+- [ ] **Phase 24: Infrastructure Wiring & Event Bus Integration** - Mount missing routers, register event handlers, wire Celery tasks, add missing model columns, emit missing events, trigger renditions, linearize migrations (gap closure)
+- [ ] **Phase 25: Virtual Documents Frontend Fix** - Align frontend API types/payloads with backend schemas, create missing migration (gap closure)
+- [ ] **Phase 26: Digital Signatures Alignment** - Fix migration table/column names, add missing enums, align tests with router paths (gap closure)
 
 ## Phase Details
 
@@ -138,18 +141,69 @@ Phases 12-15 delivered the complete web UI: navigation shell, inbox with work it
 **Plans**: TBD
 **UI hint**: yes
 
+### Phase 24: Infrastructure Wiring & Event Bus Integration
+**Goal**: Wire all v1.2 phase code into the application infrastructure so every feature is reachable at runtime -- mount missing routers, register event handlers, connect Celery tasks, add missing ORM columns, emit missing events, trigger renditions on upload, and linearize the Alembic migration chain
+**Depends on**: Phases 16-23 (fixes integration gaps across all prior phases)
+**Requirements**: NOTIF-01, NOTIF-02, NOTIF-03, NOTIF-04, NOTIF-05, NOTIF-06, EVENT-01, TIMER-01, TIMER-03, TIMER-04, SUBWF-03, EVTACT-02, EVTACT-03, REND-01, REND-02, REND-03, REND-04, RET-01, RET-02, RET-04, SIG-04
+**Gap Closure**: Closes integration gaps from v1.2 milestone audit
+**Success Criteria** (what must be TRUE):
+  1. All 10 routers (including notifications, events, renditions, virtual_documents, retention) are mounted in main.py and return non-404 responses
+  2. Event handlers module is imported at startup and all @event_bus.on handlers fire when their events are emitted
+  3. app.tasks.notification is in Celery include list and check_approaching_deadlines runs on Beat schedule
+  4. WorkItem model declares is_escalated and deadline_warning_sent; ActivityTemplate declares warning_threshold_hours and escalation_action
+  5. document_service.upload_document() emits document.uploaded event and triggers rendition creation
+  6. workflow_mgmt_service.abort_workflow() emits workflow.failed event
+  7. checkout_document() calls _check_version_not_signed guard
+  8. All new models exported from models/__init__.py
+  9. Alembic migration chain is linear (single head) and alembic upgrade head succeeds
+**Plans**: TBD
+
+### Phase 25: Virtual Documents Frontend Fix
+**Goal**: Align the virtual documents frontend API client and components with backend schema so all CRUD operations, reordering, and PDF merge work at runtime
+**Depends on**: Phase 24 (virtual_documents router must be mounted first)
+**Requirements**: VDOC-01, VDOC-02, VDOC-04
+**Gap Closure**: Closes frontend-backend contract mismatches from v1.2 milestone audit
+**Success Criteria** (what must be TRUE):
+  1. VirtualDocumentResponse and VirtualDocumentChildResponse types match backend schema field names exactly
+  2. addChild sends { document_id } matching AddChildRequest schema
+  3. reorderChildren sends { document_ids } matching ReorderChildrenRequest schema
+  4. removeChild passes child document UUID (not join-table PK) in URL path
+  5. downloadMergedPdf calls GET .../merge (not POST .../merge-pdf)
+  6. Virtual document children display correct titles, filenames, and sort order
+  7. Phase 21 Alembic migration exists and creates virtual_documents + virtual_document_children tables
+**Plans**: TBD
+
+### Phase 26: Digital Signatures Alignment
+**Goal**: Fix migration/model/test mismatches so digital signature sign, verify, and list operations work end-to-end and all tests pass
+**Depends on**: Phase 24 (missing enums added, migration chain linearized)
+**Requirements**: SIG-01, SIG-02, SIG-03
+**Gap Closure**: Closes phase 23 verification gaps from v1.2 milestone audit
+**Success Criteria** (what must be TRUE):
+  1. Migration table name matches model __tablename__ (document_signatures)
+  2. Migration column names match model columns (version_id, algorithm -- no is_valid)
+  3. DocumentVersion model declares is_signed column
+  4. RenditionStatus and RenditionType enums exist in enums.py
+  5. All test endpoint paths and HTTP methods match router definitions
+  6. All test field name assertions match schema response fields
+  7. All 12 signature tests pass (pytest collection succeeds, assertions pass)
+**Plans**: TBD
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 16 -> 17 -> 18 -> 19 -> 20 -> 21 -> 22 -> 23
+Phases 16-23 complete (code written). Phases 24-26 close integration gaps.
+Execution order: 24 -> 25 -> 26
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 16. Notifications & Event Bus | 0/? | Not started | - |
-| 17. Timer Activities & Escalation | 0/? | Not started | - |
-| 18. Sub-Workflows | 0/? | Not started | - |
-| 19. Event-Driven Activities | 0/? | Not started | - |
-| 20. Document Renditions | 0/? | Not started | - |
-| 21. Virtual Documents | 0/? | Not started | - |
-| 22. Retention & Records Management | 0/? | Not started | - |
-| 23. Digital Signatures | 1/1 | Complete    | 2026-04-06 |
+| 16. Notifications & Event Bus | 4/4 | Code complete | 2026-04-06 |
+| 17. Timer Activities & Escalation | 3/3 | Code complete | 2026-04-06 |
+| 18. Sub-Workflows | 3/3 | Code complete | 2026-04-06 |
+| 19. Event-Driven Activities | 2/2 | Code complete | 2026-04-06 |
+| 20. Document Renditions | 3/3 | Code complete | 2026-04-06 |
+| 21. Virtual Documents | 2/2 | Code complete | 2026-04-06 |
+| 22. Retention & Records Management | 2/2 | Code complete | 2026-04-06 |
+| 23. Digital Signatures | 2/2 | Code complete | 2026-04-06 |
+| 24. Infrastructure Wiring | 0/? | Not started | - |
+| 25. Virtual Docs Frontend Fix | 0/? | Not started | - |
+| 26. Signatures Alignment | 0/? | Not started | - |

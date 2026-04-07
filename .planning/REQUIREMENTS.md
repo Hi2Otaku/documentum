@@ -62,10 +62,10 @@ Requirements for milestone v1.2: Advanced Engine & Document Platform.
 
 ### Digital Signatures
 
-- [x] **SIG-01**: User can digitally sign a specific document version (PKCS7/CMS signature)
-- [x] **SIG-02**: User can verify the signature on a signed document version
-- [x] **SIG-03**: User can view all signatures on a document with signer, timestamp, and validity
-- [x] **SIG-04**: System enforces immutability on signed document versions (no re-upload or modification)
+- [ ] **SIG-01**: User can digitally sign a specific document version (PKCS7/CMS signature)
+- [ ] **SIG-02**: User can verify the signature on a signed document version
+- [ ] **SIG-03**: User can view all signatures on a document with signer, timestamp, and validity
+- [ ] **SIG-04**: System enforces immutability on signed document versions (no re-upload or modification)
 
 ## Future Requirements
 
@@ -127,50 +127,51 @@ Explicitly excluded from v1.2.
 
 ## Traceability
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| NOTIF-01 | Phase 16 | Pending |
-| NOTIF-02 | Phase 16 | Pending |
-| NOTIF-03 | Phase 16 | Pending |
-| NOTIF-04 | Phase 16 | Pending |
-| NOTIF-05 | Phase 16 | Pending |
-| NOTIF-06 | Phase 16 | Pending |
-| EVENT-01 | Phase 16 | Pending |
-| EVENT-02 | Phase 16 | Pending |
-| TIMER-01 | Phase 17 | Pending |
-| TIMER-02 | Phase 17 | Pending |
-| TIMER-03 | Phase 17 | Pending |
-| TIMER-04 | Phase 17 | Pending |
-| SUBWF-01 | Phase 18 | Pending |
-| SUBWF-02 | Phase 18 | Pending |
-| SUBWF-03 | Phase 18 | Pending |
-| SUBWF-04 | Phase 18 | Pending |
-| SUBWF-05 | Phase 18 | Pending |
-| EVTACT-01 | Phase 19 | Pending |
-| EVTACT-02 | Phase 19 | Pending |
-| EVTACT-03 | Phase 19 | Pending |
-| REND-01 | Phase 20 | Pending |
-| REND-02 | Phase 20 | Pending |
-| REND-03 | Phase 20 | Pending |
-| REND-04 | Phase 20 | Pending |
-| VDOC-01 | Phase 21 | Pending |
-| VDOC-02 | Phase 21 | Pending |
-| VDOC-03 | Phase 21 | Pending |
-| VDOC-04 | Phase 21 | Pending |
-| RET-01 | Phase 22 | Pending |
-| RET-02 | Phase 22 | Pending |
-| RET-03 | Phase 22 | Pending |
-| RET-04 | Phase 22 | Pending |
-| SIG-01 | Phase 23 | Complete |
-| SIG-02 | Phase 23 | Complete |
-| SIG-03 | Phase 23 | Complete |
-| SIG-04 | Phase 23 | Complete |
+| Requirement | Phase | Gap Closure | Status |
+|-------------|-------|-------------|--------|
+| NOTIF-01 | Phase 16 | Phase 24 | Pending |
+| NOTIF-02 | Phase 16 | Phase 24 | Pending |
+| NOTIF-03 | Phase 17 | Phase 24 | Pending |
+| NOTIF-04 | Phase 16 | Phase 24 | Pending |
+| NOTIF-05 | Phase 16 | Phase 24 | Pending |
+| NOTIF-06 | Phase 16 | Phase 24 | Pending |
+| EVENT-01 | Phase 16 | Phase 24 | Pending |
+| EVENT-02 | Phase 16 | -- | Satisfied |
+| TIMER-01 | Phase 17 | Phase 24 | Pending |
+| TIMER-02 | Phase 17 | -- | Satisfied |
+| TIMER-03 | Phase 17 | Phase 24 | Pending |
+| TIMER-04 | Phase 17 | Phase 24 | Pending |
+| SUBWF-01 | Phase 18 | -- | Satisfied |
+| SUBWF-02 | Phase 18 | -- | Satisfied |
+| SUBWF-03 | Phase 18 | Phase 24 | Pending |
+| SUBWF-04 | Phase 18 | -- | Satisfied |
+| SUBWF-05 | Phase 18 | -- | Satisfied |
+| EVTACT-01 | Phase 19 | -- | Satisfied |
+| EVTACT-02 | Phase 19 | Phase 24 | Pending |
+| EVTACT-03 | Phase 19 | Phase 24 | Pending |
+| REND-01 | Phase 20 | Phase 24 | Pending |
+| REND-02 | Phase 20 | Phase 24 | Pending |
+| REND-03 | Phase 20 | Phase 24 | Pending |
+| REND-04 | Phase 20 | Phase 24 | Pending |
+| VDOC-01 | Phase 21 | Phase 25 | Pending |
+| VDOC-02 | Phase 21 | Phase 25 | Pending |
+| VDOC-03 | Phase 21 | -- | Satisfied |
+| VDOC-04 | Phase 21 | Phase 25 | Pending |
+| RET-01 | Phase 22 | Phase 24 | Pending |
+| RET-02 | Phase 22 | Phase 24 | Pending |
+| RET-03 | Phase 22 | Phase 24 | Pending |
+| RET-04 | Phase 22 | Phase 24 | Pending |
+| SIG-01 | Phase 23 | Phase 26 | Pending |
+| SIG-02 | Phase 23 | Phase 26 | Pending |
+| SIG-03 | Phase 23 | Phase 26 | Pending |
+| SIG-04 | Phase 23 | Phase 24 | Pending |
 
 **Coverage:**
 - v1.2 requirements: 36 total
-- Mapped to phases: 36/36
+- Satisfied: 8/36
+- Pending (gap closure): 28/36
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-06*
-*Last updated: 2026-04-06 after roadmap creation*
+*Last updated: 2026-04-07 after milestone audit gap closure planning*
