@@ -41,7 +41,7 @@ Phases 12-15 delivered the complete web UI: navigation shell, inbox with work it
 - [x] **Phase 23: Digital Signatures** - PKCS7/CMS signing on document versions, verification, signature listing, post-signing immutability (completed 2026-04-06)
 - [x] **Phase 24: Infrastructure Wiring & Event Bus Integration** - Mount missing routers, register event handlers, wire Celery tasks, add missing model columns, emit missing events, trigger renditions, linearize migrations (gap closure) (completed 2026-04-07)
 - [x] **Phase 25: Virtual Documents Frontend Fix** - Align frontend API types/payloads with backend schemas, create missing migration (gap closure) (completed 2026-04-07)
-- [ ] **Phase 26: Digital Signatures Alignment** - Fix migration table/column names, add missing enums, align tests with router paths (gap closure)
+- [x] **Phase 26: Digital Signatures Alignment** - Fix migration table/column names, add missing enums, align tests with router paths (gap closure) (completed 2026-04-07)
 
 ## Phase Details
 
@@ -194,7 +194,7 @@ Plans:
   7. All 12 signature tests pass (pytest collection succeeds, assertions pass)
 **Plans**: 1 plan
 Plans:
-- [ ] 26-01-PLAN.md — Fix test endpoint paths, HTTP methods, and field assertions to match router/schema
+- [x] 26-01-PLAN.md — Fix test endpoint paths, HTTP methods, and field assertions to match router/schema
 
 ## Progress
 
@@ -214,4 +214,4 @@ Execution order: 24 -> 25 -> 26
 | 23. Digital Signatures | 2/2 | Code complete | 2026-04-06 |
 | 24. Infrastructure Wiring | 3/3 | Complete    | 2026-04-07 |
 | 25. Virtual Docs Frontend Fix | 1/1 | Complete    | 2026-04-07 |
-| 26. Signatures Alignment | 0/1 | Not started | - |
+| 26. Signatures Alignment | 1/1 | Complete   | 2026-04-07 |
