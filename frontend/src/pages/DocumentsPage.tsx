@@ -8,7 +8,7 @@ import { CreateVirtualDocumentDialog } from "../components/virtual-documents/Cre
 import { fetchDocuments } from "../api/documents";
 import {
   fetchVirtualDocuments,
-  type VirtualDocumentResponse,
+  type VirtualDocumentListItem,
 } from "../api/virtualDocuments";
 import { useAuthStore } from "../stores/authStore";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
@@ -196,7 +196,7 @@ export function DocumentsPage() {
 // --- Internal component for virtual document table ---
 
 interface VirtualDocumentTableProps {
-  virtualDocuments: VirtualDocumentResponse[];
+  virtualDocuments: VirtualDocumentListItem[];
   isLoading: boolean;
   selectedId: string | null;
   onSelect: (id: string) => void;
@@ -260,7 +260,7 @@ function VirtualDocumentTable({
                 <TableCell>
                   <div className="flex flex-col">
                     <span className="text-sm font-semibold">
-                      {vdoc.document_title ?? "Untitled"}
+                      {vdoc.title ?? "Untitled"}
                     </span>
                     {vdoc.description && (
                       <span className="text-xs text-muted-foreground truncate max-w-[250px]">
@@ -270,7 +270,7 @@ function VirtualDocumentTable({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <span className="text-sm">{vdoc.children.length}</span>
+                  <span className="text-sm">{vdoc.child_count}</span>
                 </TableCell>
                 <TableCell>
                   <span className="text-xs text-muted-foreground">

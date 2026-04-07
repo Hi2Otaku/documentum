@@ -109,7 +109,7 @@ export function VirtualDocumentDetailPanel({
       {/* Header */}
       <div className="p-6">
         <h2 className="text-base font-semibold">
-          {vdoc.document_title ?? "Untitled Virtual Document"}
+          {vdoc.title ?? "Untitled Virtual Document"}
         </h2>
         {vdoc.description && (
           <p className="text-sm text-muted-foreground mt-1">
