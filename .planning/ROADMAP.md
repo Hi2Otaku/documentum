@@ -214,4 +214,4 @@ Execution order: 24 -> 25 -> 26
 | 23. Digital Signatures | 2/2 | Code complete | 2026-04-06 |
 | 24. Infrastructure Wiring | 3/3 | Complete    | 2026-04-07 |
 | 25. Virtual Docs Frontend Fix | 1/1 | Complete    | 2026-04-07 |
-| 26. Signatures Alignment | 1/1 | Complete   | 2026-04-07 |
+| 26. Signatures Alignment | 1/1 | Complete    | 2026-04-07 |
