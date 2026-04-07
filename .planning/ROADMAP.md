@@ -211,5 +211,5 @@ Execution order: 24 -> 25 -> 26
 | 22. Retention & Records Management | 2/2 | Code complete | 2026-04-06 |
 | 23. Digital Signatures | 2/2 | Code complete | 2026-04-06 |
 | 24. Infrastructure Wiring | 3/3 | Complete    | 2026-04-07 |
-| 25. Virtual Docs Frontend Fix | 1/1 | Complete   | 2026-04-07 |
+| 25. Virtual Docs Frontend Fix | 1/1 | Complete    | 2026-04-07 |
 | 26. Signatures Alignment | 0/? | Not started | - |
