@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Advanced Engine & Document Platform
-status: completed
-stopped_at: Completed 23-02-PLAN.md (Digital Signatures Tests)
-last_updated: "2026-04-06T20:47:33.391Z"
-last_activity: 2026-04-06
+status: executing
+stopped_at: Completed 24-03-PLAN.md (Linearize Migration Chain)
+last_updated: "2026-04-07T02:36:17.931Z"
+last_activity: 2026-04-07
 progress:
-  total_phases: 8
+  total_phases: 11
   completed_phases: 8
-  total_plans: 21
-  completed_plans: 21
+  total_plans: 24
+  completed_plans: 23
   percent: 0
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-06)
 
 **Core value:** Any workflow use case described in the Documentum specification can be modeled and executed end-to-end through the system.
-**Current focus:** Phase 16 - Notifications & Event Bus
+**Current focus:** Phase 24 — infrastructure-wiring-event-bus
 
 ## Current Position
 
-Phase: 23 of 23 (Digital Signatures)
-Plan: Not started
-Status: Plan 23-02 complete
-Last activity: 2026-04-06
+Phase: 24 (infrastructure-wiring-event-bus) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
+Last activity: 2026-04-07
 
 Progress: [..........] 0% (v1.2: 0/8 phases)
 
@@ -52,6 +52,7 @@ Progress: [..........] 0% (v1.2: 0/8 phases)
 | Phase 15 P01 | 2m | 2 tasks | 7 files |
 | Phase 15 P02 | 3min | 2 tasks | 6 files |
 | Phase 15 P03 | 3min | 2 tasks | 9 files |
+| Phase 24 P03 | 1m | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -64,6 +65,7 @@ Recent decisions affecting current work:
 - [v1.2 Roadmap]: Database-backed Beat polling for all timers -- never use Celery ETA tasks
 - [v1.2 Roadmap]: Dedicated Celery rendition worker with LibreOffice -- isolated from API process
 - [v1.2 Roadmap]: Sub-workflow depth limit enforced at template installation and runtime
+- [Phase 24]: Linear migration chain enforced across all phases (11 through 23)
 
 ### Pending Todos
 
@@ -78,6 +80,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-06
-Stopped at: Completed 23-02-PLAN.md (Digital Signatures Tests)
+Last session: 2026-04-07T02:36:17.926Z
+Stopped at: Completed 24-03-PLAN.md (Linearize Migration Chain)
 Resume file: None

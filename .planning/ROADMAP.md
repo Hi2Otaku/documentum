@@ -159,8 +159,8 @@ Phases 12-15 delivered the complete web UI: navigation shell, inbox with work it
 **Plans**: 3 plans
 Plans:
 - [ ] 24-01-PLAN.md — Infrastructure wiring: mount routers, import event handlers, register Celery tasks, add model columns, export models
-- [ ] 24-02-PLAN.md — Service fixes: emit document.uploaded event, trigger renditions on upload/checkin, add checkout signature guard
-- [ ] 24-03-PLAN.md — Migration chain: linearize down_revision chain, create phase21 virtual documents migration
+- [x] 24-02-PLAN.md — Service fixes: emit document.uploaded event, trigger renditions on upload/checkin, add checkout signature guard
+- [x] 24-03-PLAN.md — Migration chain: linearize down_revision chain, create phase21 virtual documents migration
 
 ### Phase 25: Virtual Documents Frontend Fix
 **Goal**: Align the virtual documents frontend API client and components with backend schema so all CRUD operations, reordering, and PDF merge work at runtime
@@ -208,6 +208,6 @@ Execution order: 24 -> 25 -> 26
 | 21. Virtual Documents | 2/2 | Code complete | 2026-04-06 |
 | 22. Retention & Records Management | 2/2 | Code complete | 2026-04-06 |
 | 23. Digital Signatures | 2/2 | Code complete | 2026-04-06 |
-| 24. Infrastructure Wiring | 0/? | Not started | - |
+| 24. Infrastructure Wiring | 2/3 | In Progress|  |
 | 25. Virtual Docs Frontend Fix | 0/? | Not started | - |
 | 26. Signatures Alignment | 0/? | Not started | - |

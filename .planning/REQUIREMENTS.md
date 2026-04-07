@@ -41,10 +41,10 @@ Requirements for milestone v1.2: Advanced Engine & Document Platform.
 
 ### Document Renditions
 
-- [ ] **REND-01**: System auto-generates PDF rendition when a document is uploaded (via LibreOffice headless worker)
-- [ ] **REND-02**: System auto-generates thumbnail image for uploaded documents
-- [ ] **REND-03**: User can download the PDF rendition of any document version
-- [ ] **REND-04**: Rendition status is visible in the document detail view (pending, ready, failed)
+- [x] **REND-01**: System auto-generates PDF rendition when a document is uploaded (via LibreOffice headless worker)
+- [x] **REND-02**: System auto-generates thumbnail image for uploaded documents
+- [x] **REND-03**: User can download the PDF rendition of any document version
+- [x] **REND-04**: Rendition status is visible in the document detail view (pending, ready, failed)
 
 ### Virtual Documents
 
@@ -55,10 +55,10 @@ Requirements for milestone v1.2: Advanced Engine & Document Platform.
 
 ### Retention & Records Management
 
-- [ ] **RET-01**: Admin can create retention policies with retention period and disposition action
-- [ ] **RET-02**: Admin can assign retention policies to documents
+- [x] **RET-01**: Admin can create retention policies with retention period and disposition action
+- [x] **RET-02**: Admin can assign retention policies to documents
 - [ ] **RET-03**: System blocks deletion of documents under active retention
-- [ ] **RET-04**: Admin can place legal holds on documents that override retention expiration
+- [x] **RET-04**: Admin can place legal holds on documents that override retention expiration
 
 ### Digital Signatures
 
