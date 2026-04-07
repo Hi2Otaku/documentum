@@ -97,7 +97,7 @@ async def _sign_version(
         "private_key_pem": key_pem,
     }
     return await client.post(
-        f"/api/v1/documents/{doc_id}/versions/{version_id}/sign",
+        f"/api/v1/documents/{doc_id}/versions/{version_id}/signatures",
         json=body,
         headers={"Authorization": f"Bearer {token}"},
     )
@@ -123,8 +123,8 @@ async def test_sign_document_version(async_client: AsyncClient, admin_token: str
     assert resp.status_code == 201, resp.text
     data = resp.json()["data"]
 
-    assert data["document_version_id"] == version_id
-    assert data["digest_algorithm"] == "sha256"
+    assert data["version_id"] == version_id
+    assert data["algorithm"]
     assert data["is_valid"] is True
     assert data["signed_at"] is not None
     assert data["id"] is not None
@@ -139,7 +139,7 @@ async def test_sign_with_invalid_key_or_cert(async_client: AsyncClient, admin_to
 
     # Invalid certificate
     resp = await async_client.post(
-        f"/api/v1/documents/{doc_id}/versions/{version_id}/sign",
+        f"/api/v1/documents/{doc_id}/versions/{version_id}/signatures",
         json={"certificate_pem": "not-a-cert", "private_key_pem": "not-a-key"},
         headers={"Authorization": f"Bearer {admin_token}"},
     )
@@ -171,7 +171,7 @@ async def test_sign_without_auth(async_client: AsyncClient, admin_token: str):
     version_id = await _get_version_id(async_client, admin_token, doc_id)
 
     resp = await async_client.post(
-        f"/api/v1/documents/{doc_id}/versions/{version_id}/sign",
+        f"/api/v1/documents/{doc_id}/versions/{version_id}/signatures",
         json={"certificate_pem": cert_pem, "private_key_pem": key_pem},
     )
     assert resp.status_code == 401
