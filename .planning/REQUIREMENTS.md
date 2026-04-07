@@ -48,10 +48,10 @@ Requirements for milestone v1.2: Advanced Engine & Document Platform.
 
 ### Virtual Documents
 
-- [ ] **VDOC-01**: User can create a virtual document and add child documents in a specified order
-- [ ] **VDOC-02**: User can reorder or remove children from a virtual document
+- [x] **VDOC-01**: User can create a virtual document and add child documents in a specified order
+- [x] **VDOC-02**: User can reorder or remove children from a virtual document
 - [ ] **VDOC-03**: System detects and prevents circular references in virtual document trees
-- [ ] **VDOC-04**: User can generate a merged PDF from a virtual document's children
+- [x] **VDOC-04**: User can generate a merged PDF from a virtual document's children
 
 ### Retention & Records Management
 

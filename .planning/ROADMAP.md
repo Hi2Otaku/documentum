@@ -40,7 +40,7 @@ Phases 12-15 delivered the complete web UI: navigation shell, inbox with work it
 - [ ] **Phase 22: Retention & Records Management** - Retention policies, document assignment, deletion blocking, legal holds
 - [x] **Phase 23: Digital Signatures** - PKCS7/CMS signing on document versions, verification, signature listing, post-signing immutability (completed 2026-04-06)
 - [x] **Phase 24: Infrastructure Wiring & Event Bus Integration** - Mount missing routers, register event handlers, wire Celery tasks, add missing model columns, emit missing events, trigger renditions, linearize migrations (gap closure) (completed 2026-04-07)
-- [ ] **Phase 25: Virtual Documents Frontend Fix** - Align frontend API types/payloads with backend schemas, create missing migration (gap closure)
+- [x] **Phase 25: Virtual Documents Frontend Fix** - Align frontend API types/payloads with backend schemas, create missing migration (gap closure) (completed 2026-04-07)
 - [ ] **Phase 26: Digital Signatures Alignment** - Fix migration table/column names, add missing enums, align tests with router paths (gap closure)
 
 ## Phase Details
@@ -177,7 +177,7 @@ Plans:
   7. Phase 21 Alembic migration exists and creates virtual_documents + virtual_document_children tables
 **Plans**: 1 plan
 Plans:
-- [ ] 25-01-PLAN.md — Fix API client envelope unwrapping, list response type, and component field names
+- [x] 25-01-PLAN.md ï¿½ Fix API client envelope unwrapping, list response type, and component field names
 
 ### Phase 26: Digital Signatures Alignment
 **Goal**: Fix migration/model/test mismatches so digital signature sign, verify, and list operations work end-to-end and all tests pass
@@ -211,5 +211,5 @@ Execution order: 24 -> 25 -> 26
 | 22. Retention & Records Management | 2/2 | Code complete | 2026-04-06 |
 | 23. Digital Signatures | 2/2 | Code complete | 2026-04-06 |
 | 24. Infrastructure Wiring | 3/3 | Complete    | 2026-04-07 |
-| 25. Virtual Docs Frontend Fix | 0/1 | Planning complete | - |
+| 25. Virtual Docs Frontend Fix | 1/1 | Complete   | 2026-04-07 |
 | 26. Signatures Alignment | 0/? | Not started | - |
