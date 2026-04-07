@@ -13,7 +13,9 @@ import { CompleteDialog } from "./CompleteDialog";
 import { RejectDialog } from "./RejectDialog";
 import { DelegateDialog } from "./DelegateDialog";
 import { fetchInboxItem, fetchComments, acquireWorkItem } from "../../api/inbox";
+import { fetchDocument } from "../../api/documents";
 import { useAuthStore } from "../../stores/authStore";
+import { FileText } from "lucide-react";
 
 interface InboxDetailPanelProps {
   workItemId: string | null;
@@ -132,6 +134,18 @@ export function InboxDetailPanel({ workItemId }: InboxDetailPanelProps) {
         </Card>
       </div>
 
+      {/* Attached Documents */}
+      {item.documents && item.documents.length > 0 && (
+        <div className="px-6 pb-4">
+          <h3 className="text-sm font-semibold mb-2">Attached Documents</h3>
+          <div className="space-y-2">
+            {item.documents.map((doc) => (
+              <AttachedDocumentRow key={doc.document_id} documentId={doc.document_id!} />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Instructions */}
       {instructions && (
         <div className="px-6 pb-4">
@@ -213,5 +227,26 @@ export function InboxDetailPanel({ workItemId }: InboxDetailPanelProps) {
         </div>
       </div>
     </div>
+  );
+}
+
+function AttachedDocumentRow({ documentId }: { documentId: string }) {
+  const { data: doc } = useQuery({
+    queryKey: ["document", documentId],
+    queryFn: () => fetchDocument(documentId),
+  });
+
+  return (
+    <Card>
+      <CardContent className="p-3 flex items-center gap-2 min-w-0">
+        <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+        <div className="min-w-0">
+          <p className="text-sm font-medium truncate">{doc?.title ?? "Loading..."}</p>
+          <p className="text-xs text-muted-foreground">
+            {doc ? `v${doc.current_version} · ${doc.filename}` : ""}
+          </p>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
