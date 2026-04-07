@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select
 
 from app.core.config import settings
-from app.routers import aliases, audit, auth, dashboard, documents, groups, health, inbox, lifecycle, query, queues, roles, signatures, templates, users, workflows
+from app.routers import aliases, audit, auth, dashboard, documents, events, groups, health, inbox, lifecycle, notifications, query, queues, renditions, retention, roles, signatures, templates, users, virtual_documents, workflows
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +53,10 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning("Could not ensure MinIO documents bucket (MinIO may not be ready): %s", e)
 
+    # Register event handlers (decorators run at import time)
+    import app.services.event_handlers  # noqa: F401
+    logger.info("Event handlers registered")
+
     yield
     # Shutdown: dispose of the engine connection pool
     await engine.dispose()
@@ -89,6 +93,11 @@ def create_app() -> FastAPI:
     application.include_router(queues.router, prefix=settings.api_v1_prefix)
     application.include_router(query.router, prefix=settings.api_v1_prefix)
     application.include_router(signatures.router, prefix=settings.api_v1_prefix)
+    application.include_router(notifications.router, prefix=settings.api_v1_prefix)
+    application.include_router(events.router, prefix=settings.api_v1_prefix)
+    application.include_router(renditions.router, prefix=settings.api_v1_prefix)
+    application.include_router(virtual_documents.router, prefix=settings.api_v1_prefix)
+    application.include_router(retention.router, prefix=settings.api_v1_prefix)
 
     return application
 
