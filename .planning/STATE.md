@@ -4,7 +4,7 @@ milestone: v1.3
 milestone_name: Document-Centric ECM
 status: executing
 stopped_at: Completed 28-03-PLAN.md (frontend folder hierarchy UI — checkpoint approved)
-last_updated: "2026-04-13T07:58:30.982Z"
+last_updated: "2026-04-13T08:07:41.578Z"
 last_activity: 2026-04-13
 progress:
   total_phases: 7
@@ -25,8 +25,8 @@ See: .planning/PROJECT.md (updated 2026-04-13)
 
 ## Current Position
 
-Phase: 28 (cabinet-folder-hierarchy) — EXECUTING
-Plan: 2 of 3
+Phase: 29
+Plan: Not started
 Status: Ready to execute
 Last activity: 2026-04-13
 
