@@ -78,6 +78,7 @@ export interface DocumentResponse {
   lifecycle_state: string | null;
   document_type_id: string | null;
   document_type_name: string | null;
+  folder_ids?: string[];
 }
 
 export interface DocumentVersionResponse {

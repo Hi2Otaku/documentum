@@ -1,14 +1,25 @@
-import React from "react";
-import { useQuery } from "@tanstack/react-query";
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { FolderOpen, X, Plus } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Separator } from "../ui/separator";
 import { Skeleton } from "../ui/skeleton";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import { LifecycleStateBadge } from "./LifecycleStateBadge";
 import { LockIndicator } from "./LockIndicator";
 import { DocumentActions } from "./DocumentActions";
 import { VersionHistoryList } from "./VersionHistoryList";
 import { useSelectedType } from "./TypeSelector";
 import { fetchDocument } from "../../api/documents";
+import {
+  fileDocument,
+  unfileDocument,
+  folderKeys,
+  fetchFolderTree,
+  type FolderTreeNode,
+} from "../../api/folders";
+import { FolderPickerDialog } from "../folders/FolderPickerDialog";
 
 interface DocumentDetailPanelProps {
   documentId: string | null;
@@ -27,6 +38,43 @@ export function DocumentDetailPanel({
 
   // Resolve the type schema from the cached documentTypes list (no extra fetch)
   const selectedType = useSelectedType(document?.document_type_id ?? null);
+
+  // Folder filing state
+  const [folderPickerOpen, setFolderPickerOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  // Fetch folder tree to resolve IDs to names
+  const { data: folderTree } = useQuery({
+    queryKey: folderKeys.tree(),
+    queryFn: fetchFolderTree,
+    enabled: !!(document?.folder_ids?.length),
+  });
+
+  function findFolderName(tree: FolderTreeNode[], id: string): string | null {
+    for (const node of tree) {
+      if (node.id === id) return node.name;
+      const found = findFolderName(node.children, id);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  const fileMutation = useMutation({
+    mutationFn: (folderId: string) => fileDocument(folderId, document!.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["documents", documentId] });
+      queryClient.invalidateQueries({ queryKey: folderKeys.tree() });
+      setFolderPickerOpen(false);
+    },
+  });
+
+  const unfileMutation = useMutation({
+    mutationFn: (folderId: string) => unfileDocument(folderId, document!.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["documents", documentId] });
+      queryClient.invalidateQueries({ queryKey: folderKeys.tree() });
+    },
+  });
 
   // No selection state
   if (!documentId) {
@@ -177,6 +225,56 @@ export function DocumentDetailPanel({
         <h3 className="text-base font-semibold mb-3">Version History</h3>
         <VersionHistoryList documentId={documentId} />
       </div>
+
+      {/* Section 7 - Folders */}
+      <Separator />
+      <div className="px-6 py-4">
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="text-sm font-medium flex items-center gap-1">
+            <FolderOpen className="h-4 w-4" /> Folders
+          </h4>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setFolderPickerOpen(true)}
+          >
+            <Plus className="h-3 w-3 mr-1" /> Add
+          </Button>
+        </div>
+        {document?.folder_ids?.length ? (
+          <div className="flex flex-wrap gap-1">
+            {document.folder_ids.map((fid) => (
+              <Badge
+                key={fid}
+                variant="secondary"
+                className="flex items-center gap-1"
+              >
+                {folderTree
+                  ? (findFolderName(folderTree, fid) ?? fid)
+                  : fid}
+                <button
+                  className="ml-1 hover:text-destructive"
+                  onClick={() => unfileMutation.mutate(fid)}
+                  title="Remove from folder"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            Not filed in any folder
+          </p>
+        )}
+      </div>
+
+      <FolderPickerDialog
+        open={folderPickerOpen}
+        onOpenChange={setFolderPickerOpen}
+        title="File document into folder"
+        onSelect={(folderId) => fileMutation.mutate(folderId)}
+      />
     </div>
   );
 }
