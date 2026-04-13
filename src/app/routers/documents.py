@@ -7,14 +7,22 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.dependencies import get_current_active_admin, get_current_user, require_permission
+from app.models.document import Document
 from app.models.enums import PermissionLevel
 from app.models.user import User
 from app.schemas.common import EnvelopeResponse, PaginationMeta
 from app.schemas.document import DocumentResponse, DocumentUpdate, DocumentVersionResponse
-from app.services import document_service
+from app.services import document_service, document_type_service
 from app.services.audit_service import create_audit_record
 
 router = APIRouter(prefix="/documents", tags=["documents"])
+
+
+def _doc_response(doc: Document) -> DocumentResponse:
+    """Build DocumentResponse with document_type_name populated from eagerly-loaded relationship."""
+    base = DocumentResponse.model_validate(doc)
+    document_type_name = doc.document_type.name if doc.document_type else None
+    return base.model_copy(update={"document_type_name": document_type_name})
 
 
 @router.post(
@@ -27,6 +35,7 @@ async def upload_document(
     title: str = Form(...),
     author: str | None = Form(None),
     custom_properties: str | None = Form(None),
+    document_type_id: str | None = Form(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -35,6 +44,11 @@ async def upload_document(
     if custom_properties is not None:
         props = json.loads(custom_properties)
 
+    type_id = uuid.UUID(document_type_id) if document_type_id else None
+
+    # Validate metadata against document type schema before saving
+    await document_type_service.validate_metadata(db, type_id, props or {})
+
     document = await document_service.upload_document(
         db,
         file=file,
@@ -42,8 +56,9 @@ async def upload_document(
         author=author,
         custom_properties=props,
         user_id=str(current_user.id),
+        document_type_id=type_id,
     )
-    return EnvelopeResponse(data=DocumentResponse.model_validate(document))
+    return EnvelopeResponse(data=_doc_response(document))
 
 
 @router.get(
@@ -65,7 +80,7 @@ async def list_documents(
         is_superuser=current_user.is_superuser,
     )
     return EnvelopeResponse(
-        data=[DocumentResponse.model_validate(d) for d in documents],
+        data=[_doc_response(d) for d in documents],
         meta=PaginationMeta(
             page=page,
             page_size=page_size,
@@ -86,7 +101,7 @@ async def get_document(
 ):
     """Get a single document by ID."""
     document = await document_service.get_document(db, document_id)
-    return EnvelopeResponse(data=DocumentResponse.model_validate(document))
+    return EnvelopeResponse(data=_doc_response(document))
 
 
 @router.put(
@@ -100,6 +115,18 @@ async def update_document(
     current_user: User = Depends(require_permission(PermissionLevel.WRITE)),
 ):
     """Update document metadata."""
+    # Validate metadata if custom_properties or document_type_id is being updated
+    if data.custom_properties is not None or data.document_type_id is not None:
+        # Determine effective type: use provided type_id; if not provided, fetch current doc type
+        if data.document_type_id is not None:
+            effective_type_id = data.document_type_id
+        else:
+            current_doc = await document_service.get_document(db, document_id)
+            effective_type_id = current_doc.document_type_id
+        await document_type_service.validate_metadata(
+            db, effective_type_id, data.custom_properties or {}
+        )
+
     document = await document_service.update_document_metadata(
         db,
         document_id=document_id,
@@ -107,8 +134,9 @@ async def update_document(
         author=data.author,
         custom_properties=data.custom_properties,
         user_id=str(current_user.id),
+        document_type_id=data.document_type_id,
     )
-    return EnvelopeResponse(data=DocumentResponse.model_validate(document))
+    return EnvelopeResponse(data=_doc_response(document))
 
 
 @router.delete(
@@ -158,7 +186,7 @@ async def checkout(
     document = await document_service.checkout_document(
         db, document_id, str(current_user.id)
     )
-    return EnvelopeResponse(data=DocumentResponse.model_validate(document))
+    return EnvelopeResponse(data=_doc_response(document))
 
 
 @router.post(
@@ -206,7 +234,7 @@ async def force_unlock(
     document = await document_service.force_unlock_document(
         db, document_id, str(current_user.id)
     )
-    return EnvelopeResponse(data=DocumentResponse.model_validate(document))
+    return EnvelopeResponse(data=_doc_response(document))
 
 
 @router.get(

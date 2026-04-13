@@ -5,6 +5,7 @@ import uuid
 import jsonschema
 from fastapi import HTTPException, status
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.document import Document
@@ -129,6 +130,7 @@ async def list_document_types(db: AsyncSession) -> list[DocumentType]:
     """Return all non-deleted document types ordered by name."""
     result = await db.execute(
         select(DocumentType)
+        .options(selectinload(DocumentType.parent_type))
         .where(DocumentType.is_deleted == False)  # noqa: E712
         .order_by(DocumentType.name)
     )
@@ -239,9 +241,16 @@ async def get_document_count_for_type(db: AsyncSession, type_id: uuid.UUID) -> i
 
 
 async def _fetch_type_or_404(db: AsyncSession, type_id: uuid.UUID) -> DocumentType:
-    """Fetch DocumentType by ID or raise HTTP 404."""
+    """Fetch DocumentType by ID or raise HTTP 404.
+
+    Uses selectinload on parent_type to ensure the relationship is loaded
+    within the async context (avoids MissingGreenlet errors when accessing
+    doc_type.parent_type outside of an explicit await).
+    """
     result = await db.execute(
-        select(DocumentType).where(
+        select(DocumentType)
+        .options(selectinload(DocumentType.parent_type))
+        .where(
             DocumentType.id == type_id,
             DocumentType.is_deleted == False,  # noqa: E712
         )

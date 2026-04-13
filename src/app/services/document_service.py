@@ -8,6 +8,8 @@ from fastapi import HTTPException, UploadFile, status
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from sqlalchemy.orm import selectinload
+
 from app.core.minio_client import delete_object, download_object, upload_object
 from app.models.document import Document, DocumentVersion
 from app.models.enums import RenditionType
@@ -24,6 +26,7 @@ async def upload_document(
     author: str | None,
     custom_properties: dict | None,
     user_id: str,
+    document_type_id: uuid.UUID | None = None,
 ) -> Document:
     """Upload a new document. Creates Document + initial DocumentVersion (0.1)."""
     doc_id = uuid.uuid4()
@@ -56,6 +59,7 @@ async def upload_document(
             created_by=user_id,
             current_major_version=0,
             current_minor_version=1,
+            document_type_id=document_type_id,
         )
         db.add(document)
 
@@ -74,6 +78,7 @@ async def upload_document(
         db.add(version)
 
         await db.flush()
+        await db.refresh(document, ["document_type"])
 
         await create_audit_record(
             db,
@@ -119,7 +124,9 @@ async def upload_document(
 async def get_document(db: AsyncSession, document_id: uuid.UUID) -> Document:
     """Get a single document by ID. Raises 404 if not found or soft-deleted."""
     result = await db.execute(
-        select(Document).where(
+        select(Document)
+        .options(selectinload(Document.document_type))
+        .where(
             Document.id == document_id,
             Document.is_deleted == False,  # noqa: E712
         )
@@ -208,7 +215,8 @@ async def list_documents(
     # Paginated results
     offset = (page - 1) * page_size
     result = await db.execute(
-        base_query.order_by(Document.created_at.desc())
+        base_query.options(selectinload(Document.document_type))
+        .order_by(Document.created_at.desc())
         .offset(offset)
         .limit(page_size)
     )
@@ -224,6 +232,7 @@ async def update_document_metadata(
     author: str | None,
     custom_properties: dict | None,
     user_id: str,
+    document_type_id: uuid.UUID | None = None,
 ) -> Document:
     """Update document metadata fields. Only non-None fields are changed."""
     document = await get_document(db, document_id)
@@ -235,6 +244,7 @@ async def update_document_metadata(
         "title": document.title,
         "author": document.author,
         "custom_properties": document.custom_properties,
+        "document_type_id": str(document.document_type_id) if document.document_type_id else None,
     }
 
     if title is not None:
@@ -243,13 +253,17 @@ async def update_document_metadata(
         document.author = author
     if custom_properties is not None:
         document.custom_properties = custom_properties
+    if document_type_id is not None:
+        document.document_type_id = document_type_id
 
     await db.flush()
+    await db.refresh(document, ["document_type"])
 
     after_state = {
         "title": document.title,
         "author": document.author,
         "custom_properties": document.custom_properties,
+        "document_type_id": str(document.document_type_id) if document.document_type_id else None,
     }
 
     await create_audit_record(
@@ -286,6 +300,7 @@ async def checkout_document(
     document.locked_at = datetime.now(timezone.utc)
 
     await db.flush()
+    await db.refresh(document, ["document_type"])
 
     await create_audit_record(
         db,
@@ -451,6 +466,7 @@ async def force_unlock_document(
     document.locked_at = None
 
     await db.flush()
+    await db.refresh(document, ["document_type"])
 
     await create_audit_record(
         db,
