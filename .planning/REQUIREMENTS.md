@@ -9,10 +9,10 @@ Milestone: v1.3 Document-Centric ECM
 
 ### Document Type System
 
-- [ ] **TYPE-01**: User can define a named document type with a JSON Schema metadata definition
-- [ ] **TYPE-02**: User can assign a type to a document at creation or edit time
-- [ ] **TYPE-03**: System validates document metadata against the assigned type's JSON Schema on save, rejecting missing required fields with descriptive errors
-- [ ] **TYPE-04**: User can define a document type that inherits schema fields from a parent type
+- [x] **TYPE-01**: User can define a named document type with a JSON Schema metadata definition
+- [x] **TYPE-02**: User can assign a type to a document at creation or edit time
+- [x] **TYPE-03**: System validates document metadata against the assigned type's JSON Schema on save, rejecting missing required fields with descriptive errors
+- [x] **TYPE-04**: User can define a document type that inherits schema fields from a parent type
 - [ ] **TYPE-05**: Frontend renders type-specific metadata form fields based on the document's assigned type
 
 ### Cabinet/Folder Hierarchy
@@ -72,10 +72,10 @@ Milestone: v1.3 Document-Centric ECM
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| TYPE-01 | Phase 27 | Pending |
-| TYPE-02 | Phase 27 | Pending |
-| TYPE-03 | Phase 27 | Pending |
-| TYPE-04 | Phase 27 | Pending |
+| TYPE-01 | Phase 27 | Complete |
+| TYPE-02 | Phase 27 | Complete |
+| TYPE-03 | Phase 27 | Complete |
+| TYPE-04 | Phase 27 | Complete |
 | TYPE-05 | Phase 27 | Pending |
 | FOLD-01 | Phase 28 | Pending |
 | FOLD-02 | Phase 28 | Pending |

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Document-Centric ECM
 status: executing
-stopped_at: Completed 27-01-PLAN.md (Document Type Foundation)
-last_updated: "2026-04-13T03:56:00.169Z"
+stopped_at: Completed 27-02-PLAN.md (Document Type API Wiring)
+last_updated: "2026-04-13T04:03:34.303Z"
 last_activity: 2026-04-13
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 4
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-13)
 ## Current Position
 
 Phase: 27 (document-type-system) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-04-13
 
@@ -53,6 +53,7 @@ Progress: [..........] 0% (v1.3: 0/7 phases)
 | Phase 25 P01 | 2m | 2 tasks | 3 files |
 | Phase 26 P01 | 1m | 2 tasks | 1 files |
 | Phase 27-document-type-system P01 | 12 | 2 tasks | 9 files |
+| Phase 27-document-type-system P02 | 5min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -65,6 +66,8 @@ v1.3 architecture decisions (resolved during research):
 - PostgreSQL tsvector for full-text search -- no Elasticsearch
 - New Python packages: jsonschema, PyPDF2, python-docx
 - [Phase 27-document-type-system]: jsonschema Draft7Validator for metadata validation; max 1 level inheritance enforced at service layer; untyped documents skip validation for backward compatibility
+- [Phase 27-document-type-system]: Use explicit selectinload() in async queries for relationships accessed in response serialization (prevents MissingGreenlet in aiosqlite)
+- [Phase 27-document-type-system]: Place validate_metadata in router before service call to keep upload_document service pure and reusable
 
 ### Pending Todos
 
@@ -76,6 +79,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-13T03:56:00.162Z
-Stopped at: Completed 27-01-PLAN.md (Document Type Foundation)
+Last session: 2026-04-13T04:03:34.299Z
+Stopped at: Completed 27-02-PLAN.md (Document Type API Wiring)
 Resume file: None
