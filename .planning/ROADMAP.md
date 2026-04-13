@@ -47,7 +47,8 @@ See `.planning/milestones/v1.2-ROADMAP.md` for full phase details.
 **Milestone Goal:** Reorient the system from workflow-centric to document-centric, matching Documentum's ECM platform model -- where documents are the primary object and workflows exist to route them through structured processes.
 
 - [ ] **Phase 27: Document Type System** — Custom document types with JSON Schema metadata validation and type inheritance
-- [x] **Phase 28: Cabinet/Folder Hierarchy** — Navigable cabinet/folder tree with document filing and folder CRUD (completed 2026-04-13)
+- [x] **Phase 28: Cabinet/Folder Hierarchy** — Navigable cabinet/folder tree with document filing and folder CRUD
+ (completed 2026-04-13)
 - [ ] **Phase 29: Folder ACL Inheritance** — Folder-level permissions that propagate down to contained documents
 - [ ] **Phase 30: Full-Text Search & Content Extraction** — Text extraction pipeline and ranked search across document content and metadata
 - [ ] **Phase 31: Document Relationships** — Typed directional links between documents (supersedes, references, is-part-of)
@@ -97,7 +98,12 @@ Plans:
   1. User with read permission on a folder can see all documents filed in that folder (and its subfolders) without per-document ACL entries
   2. User without folder permission cannot see documents that rely solely on inherited folder ACL for access
   3. Direct document-level ACL entries override inherited folder permissions when both exist
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 29-01-PLAN.md -- Backend foundation: FolderACL model, migration, check_permission extension, ACL-filtered listing, tests
+- [ ] 29-02-PLAN.md -- API layer: folder ACL CRUD endpoints, filtered folder docs, access_source on document detail
+- [ ] 29-03-PLAN.md -- Frontend: FolderPermissionsTab, AddPermissionDialog, AccessSourceBadge, FoldersPage tabs
+**UI hint**: yes
 
 ### Phase 30: Full-Text Search & Content Extraction
 **Goal**: Users can search across document content and metadata with ranked results, powered by automatic text extraction from uploaded files
@@ -153,7 +159,7 @@ Plans:
 | 16–26. Advanced Engine | v1.2 | 26/26 | Complete | 2026-04-13 |
 | 27. Document Type System | v1.3 | 4/4 | Complete | 2026-04-13 |
 | 28. Cabinet/Folder Hierarchy | v1.3 | 3/3 | Complete    | 2026-04-13 |
-| 29. Folder ACL Inheritance | v1.3 | 0/? | Not started | — |
+| 29. Folder ACL Inheritance | v1.3 | 0/3 | Not started | — |
 | 30. Full-Text Search & Content Extraction | v1.3 | 0/? | Not started | — |
 | 31. Document Relationships | v1.3 | 0/? | Not started | — |
 | 32. Document-First Navigation | v1.3 | 0/? | Not started | — |
