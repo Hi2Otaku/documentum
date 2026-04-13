@@ -27,7 +27,7 @@ def poll_auto_activities():
 async def _poll_async():
     """Async implementation of poll: query for active auto activities."""
     from sqlalchemy import select
-    from sqlalchemy.orm import joinedload
+    from sqlalchemy.orm import contains_eager
 
     from app.core.database import create_task_session_factory
     from app.models.enums import ActivityState, ActivityType
@@ -45,7 +45,7 @@ async def _poll_async():
                 ActivityInstance.state == ActivityState.ACTIVE,
                 ActivityTemplate.activity_type == ActivityType.AUTO,
             )
-            .options(joinedload(ActivityInstance.activity_template))
+            .options(contains_eager(ActivityInstance.activity_template))
         )
 
         # Use row-level locking on PostgreSQL to prevent duplicate dispatch

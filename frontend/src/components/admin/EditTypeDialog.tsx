@@ -40,7 +40,7 @@ export function EditTypeDialog({
   const [name, setName] = useState(type.name);
   const [description, setDescription] = useState(type.description ?? "");
   const [parentTypeId, setParentTypeId] = useState<string>(
-    type.parent_type_id ?? "",
+    type.parent_type_id ?? "__none__",
   );
   const [schemaText, setSchemaText] = useState(
     JSON.stringify(type.metadata_schema, null, 2),
@@ -55,7 +55,7 @@ export function EditTypeDialog({
     if (open) {
       setName(type.name);
       setDescription(type.description ?? "");
-      setParentTypeId(type.parent_type_id ?? "");
+      setParentTypeId(type.parent_type_id ?? "__none__");
       setSchemaText(JSON.stringify(type.metadata_schema, null, 2));
       setSchemaError(null);
       setIsSubmitting(false);
@@ -95,7 +95,7 @@ export function EditTypeDialog({
         name: name.trim(),
         description: description.trim() || null,
         metadata_schema: parsed,
-        parent_type_id: parentTypeId || null,
+        parent_type_id: parentTypeId === "__none__" ? null : parentTypeId || null,
       });
       toast.success("Type updated");
       onSuccess();
@@ -164,7 +164,7 @@ export function EditTypeDialog({
                     <SelectValue placeholder="Select parent type..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="__none__">None</SelectItem>
                     {parentTypeOptions.map((t) => (
                       <SelectItem key={t.id} value={t.id}>
                         {t.name}

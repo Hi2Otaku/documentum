@@ -43,7 +43,7 @@ export function CreateTypeDialog({
 }: CreateTypeDialogProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [parentTypeId, setParentTypeId] = useState<string>("");
+  const [parentTypeId, setParentTypeId] = useState<string>("__none__");
   const [schemaText, setSchemaText] = useState(DEFAULT_SCHEMA_TEXT);
   const [schemaError, setSchemaError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,7 +53,7 @@ export function CreateTypeDialog({
     if (open) {
       setName("");
       setDescription("");
-      setParentTypeId("");
+      setParentTypeId("__none__");
       setSchemaText(DEFAULT_SCHEMA_TEXT);
       setSchemaError(null);
       setIsSubmitting(false);
@@ -92,7 +92,7 @@ export function CreateTypeDialog({
         name: name.trim(),
         description: description.trim() || null,
         metadata_schema: parsed,
-        parent_type_id: parentTypeId || null,
+        parent_type_id: parentTypeId === "__none__" ? null : parentTypeId || null,
       });
       toast.success("Type created");
       onSuccess();
@@ -148,7 +148,7 @@ export function CreateTypeDialog({
                   <SelectValue placeholder="Select parent type..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="__none__">None</SelectItem>
                   {parentTypeOptions.map((t) => (
                     <SelectItem key={t.id} value={t.id}>
                       {t.name}
