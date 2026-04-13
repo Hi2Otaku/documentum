@@ -108,5 +108,22 @@ Any workflow use case described in the Documentum specification can be modeled a
 | Phases 24–26 gap closure pattern | Separate integration/alignment phases after feature code written | ✓ Good — isolated wiring work from feature design |
 | REST/webhook over legacy protocols | Modern alternative to JMS/SOAP/FTP | ✓ Good — no legacy protocol debt |
 
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd:transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd:complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
 ---
-*Last updated: 2026-04-13 — Milestone v1.2 shipped (Advanced Engine & Document Platform). v1.3 Document-Centric ECM next.*
+*Last updated: 2026-04-13 — v1.3 Document-Centric ECM milestone started.*
