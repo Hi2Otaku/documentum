@@ -4,12 +4,14 @@ import { FolderOpen, Plus, Pencil, Move, Copy, Trash2, FolderPlus } from "lucide
 import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
 import { Separator } from "../components/ui/separator";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
 import { FolderTree } from "../components/folders/FolderTree";
 import { FolderBreadcrumb } from "../components/folders/FolderBreadcrumb";
 import { CreateFolderDialog } from "../components/folders/CreateFolderDialog";
 import { RenameFolderDialog } from "../components/folders/RenameFolderDialog";
 import { MoveFolderDialog } from "../components/folders/MoveFolderDialog";
 import { FolderPickerDialog } from "../components/folders/FolderPickerDialog";
+import { FolderPermissionsTab } from "../components/folders/FolderPermissionsTab";
 import {
   fetchFolderTree,
   fetchFolder,
@@ -176,60 +178,75 @@ export function FoldersPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {/* Breadcrumb */}
+              {/* Breadcrumb stays above tabs */}
               <FolderBreadcrumb
                 path={selectedFolder.path}
                 onNavigate={setSelectedId}
               />
 
-              {/* Folder info */}
-              <div>
-                <h2 className="text-lg font-semibold">{selectedFolder.name}</h2>
-                {selectedFolder.description && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {selectedFolder.description}
-                  </p>
-                )}
-                <p className="text-sm text-muted-foreground mt-1">
-                  {selectedFolder.document_count} document
-                  {selectedFolder.document_count !== 1 ? "s" : ""}
-                  {selectedFolder.is_cabinet ? " · Cabinet" : " · Folder"}
-                </p>
-              </div>
+              <Tabs defaultValue="details">
+                <TabsList>
+                  <TabsTrigger value="details">Details</TabsTrigger>
+                  <TabsTrigger value="permissions">Permissions</TabsTrigger>
+                </TabsList>
 
-              <Separator />
+                <TabsContent value="details">
+                  {/* Folder info */}
+                  <div className="space-y-4 pt-4">
+                    <div>
+                      <h2 className="text-lg font-semibold">{selectedFolder.name}</h2>
+                      {selectedFolder.description && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {selectedFolder.description}
+                        </p>
+                      )}
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {selectedFolder.document_count} document
+                        {selectedFolder.document_count !== 1 ? "s" : ""}
+                        {selectedFolder.is_cabinet ? " · Cabinet" : " · Folder"}
+                      </p>
+                    </div>
 
-              {/* Action buttons */}
-              <div className="flex flex-wrap gap-2">
-                <Button variant="outline" size="sm" onClick={handleNewSubfolder}>
-                  <FolderPlus className="h-4 w-4 mr-1" />
-                  New Subfolder
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleRename}>
-                  <Pencil className="h-4 w-4 mr-1" />
-                  Rename
-                </Button>
-                {!selectedFolder.is_cabinet && (
-                  <Button variant="outline" size="sm" onClick={handleMove}>
-                    <Move className="h-4 w-4 mr-1" />
-                    Move
-                  </Button>
-                )}
-                <Button variant="outline" size="sm" onClick={handleCopy}>
-                  <Copy className="h-4 w-4 mr-1" />
-                  Copy
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDelete}
-                  className="text-destructive hover:text-destructive"
-                  disabled={deleteMutation.isPending}
-                >
-                  <Trash2 className="h-4 w-4 mr-1" />
-                  Delete
-                </Button>
-              </div>
+                    <Separator />
+
+                    {/* Action buttons */}
+                    <div className="flex flex-wrap gap-2">
+                      <Button variant="outline" size="sm" onClick={handleNewSubfolder}>
+                        <FolderPlus className="h-4 w-4 mr-1" />
+                        New Subfolder
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={handleRename}>
+                        <Pencil className="h-4 w-4 mr-1" />
+                        Rename
+                      </Button>
+                      {!selectedFolder.is_cabinet && (
+                        <Button variant="outline" size="sm" onClick={handleMove}>
+                          <Move className="h-4 w-4 mr-1" />
+                          Move
+                        </Button>
+                      )}
+                      <Button variant="outline" size="sm" onClick={handleCopy}>
+                        <Copy className="h-4 w-4 mr-1" />
+                        Copy
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleDelete}
+                        className="text-destructive hover:text-destructive"
+                        disabled={deleteMutation.isPending}
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="permissions">
+                  <FolderPermissionsTab folderId={selectedFolder.id} />
+                </TabsContent>
+              </Tabs>
             </div>
           )}
         </div>

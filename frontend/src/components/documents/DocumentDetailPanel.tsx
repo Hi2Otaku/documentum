@@ -8,6 +8,7 @@ import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { LifecycleStateBadge } from "./LifecycleStateBadge";
 import { LockIndicator } from "./LockIndicator";
+import { AccessSourceBadge } from "./AccessSourceBadge";
 import { DocumentActions } from "./DocumentActions";
 import { VersionHistoryList } from "./VersionHistoryList";
 import { useSelectedType } from "./TypeSelector";
@@ -124,6 +125,10 @@ export function DocumentDetailPanel({
           <LockIndicator
             lockedBy={document.locked_by}
             currentUserId={currentUserId}
+          />
+          <AccessSourceBadge
+            accessSource={document.access_source}
+            folderName={document.access_source_folder_name}
           />
         </div>
       </div>
