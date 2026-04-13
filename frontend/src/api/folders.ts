@@ -72,6 +72,17 @@ export interface FolderResponse {
   created_by: string | null;
 }
 
+// --- Folder ACL types ---
+
+export interface FolderACLEntry {
+  id: string;
+  folder_id: string;
+  principal_id: string;
+  principal_type: string;
+  permission_level: string;
+  created_at: string;
+}
+
 // --- Query key factory ---
 
 export const folderKeys = {
@@ -79,6 +90,7 @@ export const folderKeys = {
   tree: () => [...folderKeys.all, "tree"] as const,
   detail: (id: string) => [...folderKeys.all, id] as const,
   documents: (id: string) => [...folderKeys.all, id, "documents"] as const,
+  acl: (id: string) => [...folderKeys.all, id, "acl"] as const,
 };
 
 // --- API functions ---
@@ -203,4 +215,37 @@ export async function fetchFolderDocuments(
     ? `/api/v1/folders/${folderId}/documents?page=${page}`
     : `/api/v1/folders/${folderId}/documents`;
   return apiFetch<{ data: unknown[]; meta: unknown }>(url);
+}
+
+// --- Folder ACL API functions ---
+
+export async function fetchFolderAcls(folderId: string): Promise<FolderACLEntry[]> {
+  const res = await apiFetch<{ data: FolderACLEntry[] }>(`/api/v1/folders/${folderId}/acl`);
+  return res.data;
+}
+
+export async function addFolderAcl(
+  folderId: string,
+  principalId: string,
+  principalType: "user" | "group",
+  permissionLevel: string,
+): Promise<FolderACLEntry> {
+  const res = await apiMutate<{ data: FolderACLEntry }>(
+    `/api/v1/folders/${folderId}/acl`,
+    "POST",
+    { principal_id: principalId, principal_type: principalType, permission_level: permissionLevel },
+  );
+  return res.data;
+}
+
+export async function removeFolderAcl(folderId: string, aclId: string): Promise<void> {
+  const res = await fetch(`/api/v1/folders/${folderId}/acl/${aclId}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (res.status === 401) handle401();
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`API error ${res.status}: ${text}`);
+  }
 }

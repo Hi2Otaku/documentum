@@ -79,6 +79,8 @@ export interface DocumentResponse {
   document_type_id: string | null;
   document_type_name: string | null;
   folder_ids?: string[];
+  access_source?: string | null;
+  access_source_folder_name?: string | null;
 }
 
 export interface DocumentVersionResponse {
