@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import { addFolderAcl, folderKeys } from "../../api/folders";
+import { listUsers, type UserSummary } from "../../api/users";
 
 interface AddPermissionDialogProps {
   open: boolean;
@@ -37,18 +38,11 @@ export function AddPermissionDialog({
   const [error, setError] = useState<string>("");
 
   // Fetch users for the dropdown
-  const { data: users = [] } = useQuery({
+  const { data: users = [], isLoading: usersLoading } = useQuery<UserSummary[]>({
     queryKey: ["users"],
-    queryFn: async () => {
-      const token = localStorage.getItem("token");
-      const res = await fetch("/api/v1/users", {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (!res.ok) return [];
-      const json = await res.json();
-      return json.data || [];
-    },
+    queryFn: listUsers,
     enabled: open && principalType === "user",
+    staleTime: 0,
   });
 
   const mutation = useMutation({
@@ -114,17 +108,23 @@ export function AddPermissionDialog({
             <SelectTrigger>
               <SelectValue
                 placeholder={
-                  principalType === "user" ? "Select a user..." : "Select a group..."
+                  usersLoading && principalType === "user"
+                    ? "Loading users..."
+                    : principalType === "user" ? "Select a user..." : "Select a group..."
                 }
               />
             </SelectTrigger>
             <SelectContent>
               {principalType === "user" ? (
-                users.map((u: { id: string; username: string }) => (
-                  <SelectItem key={u.id} value={u.id}>
-                    {u.username}
-                  </SelectItem>
-                ))
+                users.length === 0 && !usersLoading ? (
+                  <SelectItem value="__none__" disabled>No users found</SelectItem>
+                ) : (
+                  users.map((u) => (
+                    <SelectItem key={u.id} value={u.id}>
+                      {u.username}
+                    </SelectItem>
+                  ))
+                )
               ) : (
                 <SelectItem value="none" disabled>
                   No groups available

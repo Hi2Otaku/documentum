@@ -2,6 +2,31 @@ import { handle401 } from "./handle401";
 
 const BASE = "/api/v1/users";
 
+function authHeaders(): HeadersInit {
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+export interface UserSummary {
+  id: string;
+  username: string;
+}
+
+/**
+ * List all users for principal selection dropdowns.
+ */
+export async function listUsers(): Promise<UserSummary[]> {
+  const res = await fetch(BASE, {
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+  });
+  if (res.status === 401) handle401();
+  if (!res.ok) {
+    throw new Error(`Failed to fetch users: ${res.status}`);
+  }
+  const json = await res.json();
+  return (json.data ?? []) as UserSummary[];
+}
+
 export interface UserProfile {
   id: string;
   username: string;
