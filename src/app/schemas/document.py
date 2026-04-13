@@ -36,6 +36,7 @@ class DocumentResponse(BaseModel):
     lifecycle_state: str | None = None
     document_type_id: uuid.UUID | None = None
     document_type_name: str | None = None
+    folder_ids: list[str] = []
 
     model_config = ConfigDict(from_attributes=True)
 
