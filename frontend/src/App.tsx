@@ -7,6 +7,7 @@ import { QueryPage } from "./pages/QueryPage";
 import { InboxPage } from "./pages/InboxPage";
 import { DocumentsPage } from "./pages/DocumentsPage";
 import { WorkflowsPage } from "./pages/WorkflowsPage";
+import { DocumentTypesPage } from "./pages/DocumentTypesPage";
 import { ProtectedRoute } from "./components/layout/ProtectedRoute";
 import { AppShell } from "./components/layout/AppShell";
 import { AdminRoute } from "./components/layout/AdminRoute";
@@ -33,6 +34,7 @@ export default function App() {
           <Route element={<AdminRoute />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/query" element={<QueryPage />} />
+            <Route path="/admin/types" element={<DocumentTypesPage />} />
           </Route>
         </Route>
       </Route>
