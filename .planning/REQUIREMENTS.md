@@ -72,25 +72,25 @@ Milestone: v1.3 Document-Centric ECM
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| TYPE-01 | — | Pending |
-| TYPE-02 | — | Pending |
-| TYPE-03 | — | Pending |
-| TYPE-04 | — | Pending |
-| TYPE-05 | — | Pending |
-| FOLD-01 | — | Pending |
-| FOLD-02 | — | Pending |
-| FOLD-03 | — | Pending |
-| FOLD-04 | — | Pending |
-| FOLD-05 | — | Pending |
-| SRCH-01 | — | Pending |
-| SRCH-02 | — | Pending |
-| SRCH-03 | — | Pending |
-| SRCH-04 | — | Pending |
-| SRCH-05 | — | Pending |
-| REL-01 | — | Pending |
-| REL-02 | — | Pending |
-| REL-03 | — | Pending |
-| NAV-01 | — | Pending |
-| NAV-02 | — | Pending |
-| NAV-03 | — | Pending |
-| NAV-04 | — | Pending |
+| TYPE-01 | Phase 27 | Pending |
+| TYPE-02 | Phase 27 | Pending |
+| TYPE-03 | Phase 27 | Pending |
+| TYPE-04 | Phase 27 | Pending |
+| TYPE-05 | Phase 27 | Pending |
+| FOLD-01 | Phase 28 | Pending |
+| FOLD-02 | Phase 28 | Pending |
+| FOLD-03 | Phase 28 | Pending |
+| FOLD-04 | Phase 28 | Pending |
+| FOLD-05 | Phase 29 | Pending |
+| SRCH-01 | Phase 30 | Pending |
+| SRCH-02 | Phase 30 | Pending |
+| SRCH-03 | Phase 30 | Pending |
+| SRCH-04 | Phase 33 | Pending |
+| SRCH-05 | Phase 33 | Pending |
+| REL-01 | Phase 31 | Pending |
+| REL-02 | Phase 31 | Pending |
+| REL-03 | Phase 31 | Pending |
+| NAV-01 | Phase 32 | Pending |
+| NAV-02 | Phase 32 | Pending |
+| NAV-03 | Phase 32 | Pending |
+| NAV-04 | Phase 32 | Pending |
