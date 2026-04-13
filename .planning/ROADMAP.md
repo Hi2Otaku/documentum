@@ -69,7 +69,7 @@ See `.planning/milestones/v1.2-ROADMAP.md` for full phase details.
 Plans:
 - [x] 27-01-PLAN.md — Backend foundation: model, schemas, service, migration, test stubs
 - [x] 27-02-PLAN.md — API layer: document_types CRUD router + document upload/update integration
-- [ ] 27-03-PLAN.md — Frontend admin: types page, table, create/edit dialogs, schema editor
+- [x] 27-03-PLAN.md — Frontend admin: types page, table, create/edit dialogs, schema editor
 - [ ] 27-04-PLAN.md — Frontend integration: TypeSelector, TypeMetadataForm, table/detail mods
 **UI hint**: yes
 
@@ -147,7 +147,7 @@ Plans:
 | 1–11. Core Engine | v1.0 | 47/47 | Complete | 2026-03-30 |
 | 12–15. Full Frontend | v1.1 | 4/4 | Complete | 2026-04-06 |
 | 16–26. Advanced Engine | v1.2 | 26/26 | Complete | 2026-04-13 |
-| 27. Document Type System | v1.3 | 2/4 | In Progress|  |
+| 27. Document Type System | v1.3 | 3/4 | In Progress|  |
 | 28. Cabinet/Folder Hierarchy | v1.3 | 0/? | Not started | — |
 | 29. Folder ACL Inheritance | v1.3 | 0/? | Not started | — |
 | 30. Full-Text Search & Content Extraction | v1.3 | 0/? | Not started | — |

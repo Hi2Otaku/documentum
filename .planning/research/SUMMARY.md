@@ -1,238 +1,239 @@
-# Project Research Summary
+# Research Summary: v1.3 Document-Centric ECM
 
-**Project:** Documentum Workflow Clone v1.2 — Advanced Engine & Document Platform
-**Domain:** Business Process Management / Enterprise Content Management
-**Researched:** 2026-04-06
-**Confidence:** HIGH
+**Domain:** Enterprise Content Management -- cabinet/folder hierarchy, document types, full-text search, document-first navigation
+**Researched:** 2026-04-13
+**Overall confidence:** HIGH
 
-## Executive Summary
+---
 
-This project extends an already-functional Documentum workflow clone with eight advanced features: timer/deadline activities, sub-workflow spawning, event-driven activities, in-app and email notifications, document renditions, virtual/compound documents, retention policies, and digital signatures. The existing architecture — FastAPI + SQLAlchemy async + PostgreSQL + Celery + Redis + MinIO + React/Vite SPA — requires no structural changes. Every v1.2 feature is additive: new models, new services, new Celery tasks, and targeted hooks into three proven engine extension points: (1) the ActivityType dispatch in `_advance_from_activity`, (2) the Celery Beat schedule, and (3) the auto_methods decorator registry.
+## Resolved Architecture Decisions
 
-The recommended build order is event-first. A shared Redis pub/sub event bus with a persistent `events` table is the architectural keystone for v1.2 — 6 of 8 features either emit or consume domain events. Building the event bus and notification framework first (Phase 1) means timers emit deadline events, sub-workflows emit completion events, renditions emit conversion-complete events, and retention dispositions notify admins — all through a single integration layer established once. Skipping the event bus and bolting notifications on per-feature is the primary structural risk to avoid.
+Two conflicts emerged between researcher outputs. Both are resolved definitively below. These resolutions are non-negotiable constraints for every downstream phase plan.
 
-The four highest-priority risks, each with clear prevention strategies: (1) using Celery ETA tasks for deadlines — they vanish on worker restart, and must be replaced by database-backed Beat polling per the pattern already in the codebase; (2) sub-workflow recursion without depth enforcement causing infinite cascades; (3) event circular chains causing Celery queue exhaustion if circuit breakers are not built into the event bus from day one; and (4) running LibreOffice rendition conversion in the FastAPI process, which will crash the API server. All four are well understood from codebase analysis and have unambiguous prevention strategies.
+### Resolution 1: No dm_sysobject Polymorphic Base Table
 
-## Key Findings
+**What was proposed:** Stack researcher recommended SQLAlchemy joined-table polymorphic inheritance creating a physical `dm_sysobject` base table that folders and documents would inherit from.
 
-### Recommended Stack
+**Why it was rejected:** The existing `documents` table carries 10+ foreign key references: `DocumentVersion`, `DocumentACL`, `WorkflowPackage`, `Rendition`, `RetentionPolicy`, `LegalHold`, `DocumentSignature`, `VirtualDocumentChild`, and more. Converting `documents.id` to a FK pointing at a new `sysobjects.id` primary key would require migrating every one of those tables in a single Alembic migration. This is a destructive, multi-table schema change against a 26-phase production codebase with significant data. The risk of broken FKs, failed migration rollbacks, and data loss is unacceptable.
 
-The v1.0 stack is fully adequate. V1.2 adds only five new Python packages and two system dependencies (in Docker only). No new infrastructure services. Redis expands its role to event bus via pub/sub. A dedicated `Dockerfile.worker` for the Celery rendition worker isolates LibreOffice from the lean API image.
+**Chosen approach:** Keep `documents` and `folders` as separate, independent tables. Both extend the existing `BaseModel` mixin, which already provides `id`, `created_at`, `updated_at`, and soft-delete fields. This achieves the common attributes goal that dm_sysobject served conceptually, without touching a single existing FK reference. The Python mixin is the correct abstraction -- the schema stays unchanged.
 
-**Core technologies (unchanged):**
-- FastAPI 0.135.x: HTTP API — unchanged, all new features add routers following existing patterns
-- SQLAlchemy 2.0.48 (async + asyncpg): ORM — all new models extend `BaseModel` (soft delete, timestamps, created_by)
-- PostgreSQL 16+: primary store — JSONB for event payloads, timer config, process variables; recursive CTEs for virtual document cycle detection
-- Redis 7.x: Celery broker + event bus pub/sub — dual role, no additional infrastructure required
-- Celery 5.6.x + Beat: task execution and scheduling — adds 6 new Beat tasks (timer poll, sub-workflow poll, event processor, disposition, and notification flush)
-- MinIO: object storage — adds a `renditions` bucket alongside the existing `documents` bucket
-- React 19 + shadcn/ui: frontend — notification bell and rendition status use existing component patterns; no new frontend libraries required
+**Impact on phases:** Phase 28 creates the `folders` table fresh, extending `BaseModel`. No migration of the `documents` table beyond adding 3 new nullable columns (`document_type_id`, `search_vector`, `owner_id`).
 
-**New Python packages (backend only):**
-- Jinja2 3.1.x: email template rendering (already a transitive dep via Starlette)
-- Pillow 11.x: image thumbnail generation
-- pdf2image 1.17.x: PDF-to-image conversion (wraps poppler-utils system dep)
-- cryptography 44.x: PKCS7/CMS digital signatures (already a transitive dep via python-jose)
-- PyPDF 5.x: pure-Python PDF merge for virtual document assembly
+### Resolution 2: No ltree Extension -- Adjacency List + Recursive CTE
 
-**New system packages (in `Dockerfile.worker` only):**
-- `libreoffice-headless`: Office document to PDF conversion
-- `poppler-utils`: PDF rendering backend for pdf2image
+**What was proposed:** Stack researcher recommended PostgreSQL `ltree` extension combined with an adjacency list hybrid to enable O(1) subtree queries via GiST index.
 
-See `.planning/research/STACK.md` for full Celery Beat schedule additions and alternatives considered.
+**Why it was rejected:** ltree introduces three concrete problems for this use case. First, every folder move or rename requires rewriting the materialized path for all descendants -- a write-amplifying operation that is a known source of path desync bugs when transactions fail mid-update. Second, ltree label format restrictions (alphanumeric and underscore only) mean folder names with spaces, dots, or Unicode must be sanitized into opaque identifiers stored separately from the display name -- adding complexity with no benefit. Third, the existing codebase uses zero PostgreSQL extensions beyond core; adding ltree creates a new infrastructure dependency for marginal gain on ECM hierarchies that are typically 3-8 levels deep.
 
-### Expected Features
+**Chosen approach:** Standard adjacency list with `parent_id` FK on the `folders` table, augmented with PostgreSQL recursive CTEs for tree queries (subtree listing, ancestor walk for ACL inheritance, breadcrumb path). A B-tree index on `folders.parent_id` ensures these queries execute in single-digit milliseconds at expected scale. If performance bottlenecks appear in the future (trees regularly exceeding 15 levels, hundreds of breadcrumb calls per second), a denormalized `materialized_path TEXT` column can be added alongside `parent_id` without changing the model or breaking existing code.
 
-**Must have (table stakes — missing = incomplete Documentum clone):**
-- Timer/deadline activities — deadline config on ActivityTemplate, Beat polling every 30s, escalation actions (reassign, notify, bump priority, auto-complete)
-- Escalation on overdue — triggered by timer poll, consumes notification service, updates WorkItem audit trail
-- Sub-workflow spawning — `ActivityType.SUB_WORKFLOW`, parent-child lifecycle management, input variable mapping, depth limit of 5
-- Email notifications — Jinja2-rendered HTML dispatched via Celery (SMTP config already present in config.py)
-- In-app notifications — `Notification` model + REST API + frontend bell with unread count
+**Impact on phases:** Phase 28 uses simple `parent_id` FK. No PostgreSQL extension migration. Folder service implements recursive CTE helpers. Frontend lazy-loads tree nodes on expand.
 
-**Should have (differentiators, high value):**
-- Event-driven activities — Redis pub/sub event bus, `ActivityType.EVENT` that completes on matching event, webhook endpoint for external triggers
-- Document renditions — LibreOffice headless PDF generation, Pillow thumbnails, auto-trigger on upload/check-in, dedicated Celery worker
-- Virtual/compound documents — metadata-layer document tree with cycle-safe resolution, optional PyPDF assembly
-- Retention policies — policy engine, legal hold, two-phase disposition (mark then hard-delete after grace period), audit trail preservation
-- Digital signatures — PKCS7/CMS signing on `DocumentVersion` (not `Document`), streaming hash from MinIO, post-signing version immutability
+---
 
-**Lower priority (implement later within their respective phases):**
-- Notification preferences — per-user opt-in/out by type and channel (defer within Phase 1)
-- Webhook-triggered activities — external systems firing workflow events (add after event bus is stable)
+## Stack Additions
 
-**Defer to v2+:**
-- Real-time collaborative editing, calendar/scheduling UI for timers, full PKI/CA infrastructure, email-based workflow actions (reply to approve), multi-tenant isolation, rendition preview editing, complex retention schedule builder UI
+No new infrastructure services are needed for v1.3. The existing PostgreSQL, Celery, Redis, MinIO, and FastAPI stack covers everything. No new PostgreSQL extensions are required -- tsvector/tsquery is built into PostgreSQL core.
 
-See `.planning/research/FEATURES.md` for the full feature dependency graph and MVP scope recommendations per feature.
+Three new Python packages are added to production dependencies:
 
-### Architecture Approach
+| Package | Version | Purpose | Rationale |
+|---------|---------|---------|-----------|
+| jsonschema | 4.x | Validate `Document.custom_properties` against type-specific JSON Schema definitions | Pydantic validates fixed schemas at compile time; jsonschema validates arbitrary user-defined schemas at runtime. Required for the document type system where admins define metadata schemas. |
+| PyPDF2 | 3.x | Extract text from PDF files for full-text search indexing | Pure Python, no C dependency. Sufficient for text extraction. Lighter than PyMuPDF (C extension) and avoids the JVM requirement of Apache Tika. |
+| python-docx | 1.1.x | Extract text from .docx Word files for full-text search indexing | Pure Python, lightweight. Covers the second most common document format after PDF. |
 
-The existing system is a clean layered architecture: React SPA → FastAPI routers → service layer → PostgreSQL/MinIO/Redis/Celery. The token-based Petri-net engine (`engine_service.py`, ~1100 lines) uses a `match` on `ActivityType` — new types `SUB_WORKFLOW` and `EVENT` slot into this dispatch directly. The architectural keystone for v1.2 is a shared event bus (Redis pub/sub + persistent `events` table) that every new feature either emits to or subscribes from. All new Celery tasks follow the proven `sync-wrapper-over-async` pattern from `auto_activity.py`.
+No new frontend npm packages are required. The folder tree component is built using existing shadcn/ui primitives (Collapsible, Button, DropdownMenu, ScrollArea) with React Query for data fetching. Beta-stage tree libraries (@headless-tree, react-arborist) are explicitly avoided. For ECM hierarchies at expected scale (hundreds of nodes, 3-8 levels), a custom implementation built on existing components gives full behavioral control without the stability risk.
 
-**New major components:**
-1. Event Bus (`event_bus.py` + `events` table) — cross-cutting; all state-changing services emit post-commit; `events` table provides durability and catch-up on worker startup
-2. Notification Service (`notification_service.py` + `Notification` + `NotificationPreference` models + Celery tasks) — consumes event bus, renders Jinja2 templates, writes in-app records with batching and deduplication
-3. Timer System (`TimerConfig` model + `timer_service.py` + `timer_tasks.py` Beat task every 30s) — extends ActivityTemplate; uses `WorkItem.due_date` which already exists
-4. Sub-Workflow Engine (`SubWorkflowLink` model + `sub_workflow_tasks.py` Beat task + engine_service extension) — new ActivityType, parent-child cascade halt/fail, depth tracking on `WorkflowInstance`
-5. Event-Driven Activities (`EventSubscription` + `EventLog` models + `event_tasks.py` + engine_service extension) — new ActivityType, `FOR UPDATE SKIP LOCKED` on completion, chain depth circuit breaker
-6. Rendition Pipeline (`DocumentRendition` model + `rendition_service.py` + `rendition_tasks.py` + dedicated Celery rendition worker) — LibreOffice for Office/PDF, Pillow for images, isolated `-Q renditions` queue
-7. Virtual Documents (`VirtualDocumentNode` model + `virtual_document_service.py`) — metadata-layer tree, PostgreSQL recursive CTE cycle detection at add-component time, optional PyPDF assembly
-8. Retention & Records (`RetentionPolicy` + `RetentionAssignment` + `LegalHold` + `LegalHoldAssignment` models + `retention_service.py` + daily Beat task) — hooks into document_service before delete/modify, lifecycle_service for auto-assignment
-9. Digital Signatures (`DigitalSignature` + `SigningCertificate` models + `signature_service.py`) — signs `DocumentVersion` (immutable), streaming SHA-256 from MinIO, 409 Conflict on post-signing modifications
+---
 
-**Key architectural patterns mandated by research:**
-- Service-layer event emission post-commit (never inline in HTTP request handler)
-- Celery Beat polling for all time-based operations (never `apply_async(eta=...)`)
-- Model extension via JSON columns and separate linking tables, not WorkflowInstance expansion
-- All new tasks mirror the `sync-wrapper-over-async` pattern from `auto_activity.py`
+## Feature Landscape
 
-See `.planning/research/ARCHITECTURE.md` for component boundary diagram, full integration patterns, and scalability table.
+### Table Stakes
 
-### Critical Pitfalls
+These features define the line between a workflow engine with document attachments and a genuine ECM platform. All must ship in v1.3.
 
-1. **Individual Celery ETA tasks for deadlines vanish on worker restart** — Use database-backed Beat polling (`check_timer_deadlines` every 30s queries `WHERE state='active' AND timer_deadline < NOW()`). Store all timer state in the database. Consider RedBeat for per-instance dynamic scheduling. Never use `apply_async(eta=...)` for deadline or escalation logic.
+| Feature | Complexity | Key Implementation Note |
+|---------|------------|------------------------|
+| Cabinet/folder hierarchy | Medium | Single `folders` table; `is_cabinet` boolean distinguishes cabinets (root) from folders. Adjacency list with recursive CTE. |
+| Folder CRUD + move | Medium | Move updates `parent_id`; name uniqueness enforced per parent via DB unique constraint on `(parent_id, name)`. |
+| Document-folder linking (multi-filing) | Low | Many-to-many `folder_documents` join table. Documents may live in multiple folders simultaneously (Documentum link/unlink semantics). |
+| Document type definitions | Medium | `document_types` table with `metadata_schema` as JSON Schema. Validates `Document.custom_properties` on write via `jsonschema`. |
+| Type inheritance | Medium | Self-referential `parent_type_id`. Schema merging at validation time (child schema merges with parent schema). |
+| Full-text search | Medium | PostgreSQL tsvector on `documents` (metadata vector) + separate `document_content_text` table (body vector). GIN indexes. Trigger auto-updates metadata vector. |
+| Search results with ranking | Low | `ts_rank` + `ts_headline` built into PostgreSQL. Zero extra infrastructure. |
+| Metadata search and filtering | Low | Standard SQL WHERE clauses + JSONB operators on `custom_properties`. |
+| Folder-level ACL inheritance | High | Recursive CTE walks folder tree upward to find effective permissions. Additive to existing `DocumentACL` -- does not replace it. |
+| Breadcrumb navigation | Low | Single recursive CTE from folder to root. Cache recent breadcrumbs in React Query. |
+| Document-first browse UI | High | New `BrowsePage` with split-panel layout: folder tree left, content grid center, detail panel right. Becomes default app route. |
 
-2. **Sub-workflow recursion cascades infinitely** — Enforce `max_depth = 5` on `WorkflowInstance`. Run DFS cycle detection at template installation time. Both checks are mandatory; neither alone is sufficient. Monitor for rapid growth in `workflow_instances` rows after starting specific templates.
+### Differentiators
 
-3. **Sub-workflow lifecycle orphans and zombies** — Halting a parent must recursively halt all children. Child failure must error the parent's spawning activity. Child completion when parent is halted must be a graceful no-op. Wire via callback in `advance_workflow`, not polling.
+Features that match Documentum advanced capabilities beyond basic file storage.
 
-4. **Event circular chains exhaust the Celery queue** — Add `chain_depth` counter and `source_event_id` to all emitted events from day one. Persist all events to the `events` table before pub/sub emission. Rate-limit per workflow instance. Circuit breakers cannot be added retroactively without re-architecting event emission.
+| Feature | Value | Complexity |
+|---------|-------|------------|
+| Document relationships | Typed traceability links: supersedes, references, is-part-of, related-to. Junction table with `relationship_type` enum. | Low |
+| Saved searches / smart folders | Named JSON queries appearing as virtual folders in the tree. Executed on access, paginated. | Medium |
+| Type-specific metadata forms | Dynamic React form generated from JSON Schema at render time. Different types present different fields. | Medium |
+| Content text extraction pipeline | Celery task extracts text from PDFs and Word docs on upload. Background, non-blocking, with status tracking. | Medium |
 
-5. **Rendition processing in the API worker crashes the server** — LibreOffice uses 500MB+ RAM, can segfault on malformed input, and blocks the async event loop if called in FastAPI. Always dispatch to a dedicated Celery queue (`-Q renditions`) with `max_tasks_per_child=20` and `max_memory_per_child=512000`.
+### Anti-Features (Do Not Build in v1.3)
 
-6. **Digital signature linked to Document instead of DocumentVersion** — Signatures must reference `DocumentVersion.id` (immutable by construction). Hash must be computed by streaming from MinIO, not from DB fields. Signed versions must reject further check-in and metadata updates with 409 Conflict.
+| Anti-Feature | Reason |
+|--------------|--------|
+| dm_sysobject polymorphic base table | Destructive schema migration with 10+ FK dependencies. Resolved above. |
+| ltree PostgreSQL extension | Path desync bugs, label restrictions, unnecessary for shallow hierarchies. Resolved above. |
+| Elasticsearch / Meilisearch integration | New infrastructure service, sync complexity. PostgreSQL tsvector is sufficient for internal ECM. |
+| Real-time collaborative editing | CRDT/OT complexity out of scope. Existing check-in/check-out covers the use case. |
+| Content auto-classification (AI/ML) | Scope creep, not in Documentum spec. Future milestone. |
+| Version tree branching | Linear major/minor versioning is sufficient. Branching adds significant complexity. |
+| @headless-tree or react-arborist | Beta-stage or under-maintained. Custom shadcn/ui tree is simpler and more controllable. |
 
-See `.planning/research/PITFALLS.md` for 14 pitfalls with phase-to-pitfall mapping, UX pitfalls, integration gotchas, performance traps, security mistakes, and a "Looks Done But Isn't" verification checklist.
+---
 
-## Implications for Roadmap
+## Critical Pitfalls
 
-The architecture's event-first dependency graph maps cleanly to 8 sequential phases. This order is validated against the pitfall-to-phase mapping in PITFALLS.md and the build-order recommendation in ARCHITECTURE.md.
+### Pitfall 1: ACL Inheritance Permission Leaks (Phase 29)
 
-### Phase 1: Notifications + Event Bus Foundation
-**Rationale:** The event bus is consumed by every subsequent feature. Building it first establishes the integration pattern once, prevents ad-hoc feature coupling, and provides immediate user-visible value. Lowest engine complexity of all 8 features — ideal validation of the integration approach before any engine modifications.
-**Delivers:** Redis pub/sub event bus with persistent `events` table and worker catch-up on startup; `Notification` + `NotificationPreference` models; REST API for listing, marking read, and preference management; frontend notification bell with unread count; Jinja2 email templates dispatched via Celery; notification batching and per-user deduplication.
-**Addresses:** In-app notifications (table stakes), email notifications (table stakes).
-**Avoids:** Pitfall #7 (notification storm) — batching infrastructure established from the start.
+Stale cached permissions after folder ACL changes cause restricted documents to become accessible to unauthorized users. This is a security vulnerability, not a performance problem.
 
-### Phase 2: Timer Activities & Escalation
-**Rationale:** Most immediately visible missing feature. Validates the Celery Beat polling pattern before sub-workflows require it at higher complexity. Depends on Phase 1 notifications for escalation alerts.
-**Delivers:** `TimerConfig` model (linked to ActivityTemplate); deadline enforcement via existing `WorkItem.due_date`; `check_timer_deadlines` Beat task (every 30s); escalation actions (reassign, notify, bump priority, auto-complete); timer cancellation on ALL terminal paths (completion, rejection, halt, failure, parallel branch cancellation); template versioning test (extended by each subsequent phase).
-**Addresses:** Timer/deadline activities (table stakes), escalation on overdue (table stakes).
-**Avoids:** Pitfall #1 (ETA tasks lost on restart), Pitfall #11 (timer config lost on template versioning).
+**Prevention:** Compute effective permissions fresh on every request during initial implementation. Introduce caching only when performance data demands it, and invalidate on ACL change, folder move, and `inherit_acl` flag change. Write comprehensive tests covering: direct document ACL, inherited folder ACL, folder ACL override, folder move changing inherited permissions, and multi-filing scenarios where a document belongs to folders with different ACLs.
 
-### Phase 3: Sub-Workflows
-**Rationale:** Highest engine complexity. Placed after Phases 1-2 so engine modification patterns are proven and notification infrastructure is available for lifecycle events. Parent-child cascade semantics require careful design before coding begins.
-**Delivers:** `ActivityType.SUB_WORKFLOW` enum value; `SubWorkflowLink` model with depth tracking; `parent_workflow_id` and `spawning_activity_instance_id` on `WorkflowInstance`; `poll_sub_workflows` Beat task (every 10s); cascade halt/fail logic in `engine_service`; variable mapping with type validation; DFS cycle detection at template installation time.
-**Addresses:** Sub-workflow spawning (table stakes).
-**Avoids:** Pitfall #2 (infinite recursion), Pitfall #3 (zombie workflows), Pitfall #12 (variable type mismatch).
+### Pitfall 2: Folder Deletion Cascading to Workflow-Attached Documents (Phase 28)
 
-### Phase 4: Event-Driven Activities
-**Rationale:** Second new ActivityType. Depends on the event bus from Phase 1. Validates the event bus under real workflow load. Adds external webhook endpoint for third-party integration.
-**Delivers:** `ActivityType.EVENT` enum value; `EventSubscription` and `EventLog` models; Redis pub/sub event listener with `FOR UPDATE SKIP LOCKED`; chain depth circuit breaker (`chain_depth` counter, rate-limit per workflow instance); webhook endpoint (`POST /events/external`); event emission hooks in `document_service` and `lifecycle_service`.
-**Addresses:** Event-driven activities (differentiator), webhook-triggered activities (differentiator).
-**Avoids:** Pitfall #4 (event race conditions), Pitfall #6 (infinite event loops), Pitfall #13 (event message loss).
+Deleting a folder that contains documents attached to active workflows orphans those workflow packages. Work items reference documents that can no longer be located.
 
-### Phase 5: Document Renditions
-**Rationale:** Independent of workflow engine changes. Introduces the only new Docker dependency (LibreOffice headless), isolated to a dedicated `rendition-worker` service to keep the API image lean. Foundational for Phase 6 (virtual document PDF assembly).
-**Delivers:** `DocumentRendition` model with status lifecycle (pending/processing/completed/failed); `rendition_service.py`; LibreOffice headless PDF generation task; Pillow thumbnail task; dedicated Celery worker (`-Q renditions`) with `max_tasks_per_child=20` and `max_memory_per_child=512000`; `renditions` MinIO bucket; rendition status and retry button in document detail UI.
-**Addresses:** Document renditions (differentiator).
-**Avoids:** Pitfall #10 (rendition in API worker crashes server).
+**Prevention:** Require folders to be empty (no children, no filed documents) before deletion. Use soft-delete only (`is_deleted = true`). Before unfiling a document last folder link, check `retention_service.check_document_deletable()`. Do not use CASCADE on the `folder_documents` FK.
 
-### Phase 6: Virtual/Compound Documents
-**Rationale:** Metadata-layer only, no engine changes. Depends on Phase 5 renditions for optional PDF assembly. Lower risk than engine phases; clear service boundary.
-**Delivers:** `VirtualDocumentNode` model (parent_document_id, child_document_id, sort_order, binding_type); `virtual_document_service.py` with `add_child`, `remove_child`, `reorder_children`, `resolve_tree` (cycle detection + depth limit of 10), `assemble_pdf` (via PyPDF); `is_virtual` boolean on `Document`; PostgreSQL recursive CTE cycle detection at add-component time.
-**Addresses:** Virtual/compound documents (differentiator).
-**Avoids:** Pitfall #8 (circular references crash rendering) — cycle detection happens at component add time, not render time.
+### Pitfall 3: Document Type Schema Evolution Breaks Existing Documents (Phase 27)
 
-### Phase 7: Retention & Records Management
-**Rationale:** Independent of workflow engine. Hooks into `document_service` and `lifecycle_service`. The legal hold integration with `WorkflowPackage` must be designed before any disposition logic to prevent the most critical data loss scenario.
-**Delivers:** `RetentionPolicy`, `RetentionAssignment`, `LegalHold`, `LegalHoldAssignment` models; `retention_service.py`; daily disposition Beat task with two-phase deletion (mark → 30-day grace → hard delete); legal hold blocks on documents attached to RUNNING/HALTED workflows; soft-delete guard checks; audit trail preservation (audit records never cascade-deleted on disposition).
-**Addresses:** Retention policies (differentiator).
-**Avoids:** Pitfall #9 (retention disposes documents in active workflows), Pitfall #14 (retention bypass via soft delete).
+Adding a new required field to a type `metadata_schema` causes all existing documents of that type to fail validation on their next edit.
 
-### Phase 8: Digital Signatures
-**Rationale:** Placed last because it requires a stable document model (Phases 5-7), highest cryptographic care, and adds optional engine integration (`requires_signature` on ActivityTemplate with enforcement in `complete_work_item`). No other features depend on signatures.
-**Delivers:** `DigitalSignature` and `SigningCertificate` models; `signature_service.py` with streaming MinIO hash (64KB chunks), PKCS7/CMS signing via `cryptography` library, PAdES format for PDFs via `endesive`; post-signing version immutability (409 Conflict on check-in and metadata updates for signed versions); `requires_signature` ActivityTemplate flag; sign and verify REST endpoints.
-**Addresses:** Digital signatures (differentiator).
-**Avoids:** Pitfall #5 (signature linked to Document instead of DocumentVersion).
+**Prevention:** Validate on write only, never on read. Block service-layer requests to add required fields without defaults. New fields must be optional by default or include a default value. Provide a migration utility for backfilling existing documents when schemas change.
 
-### Phase Ordering Rationale
+### Pitfall 4: Silent Text Extraction Failures Kill Searchability (Phase 30)
 
-- Event bus first because 6 of 8 features depend on it; building it last would require retrofitting integration patterns into already-built features
-- Timer activities before sub-workflows because they validate the Beat polling pattern at lower complexity, making the sub-workflow Beat task straightforward
-- Sub-workflows before event-driven activities because both add new ActivityTypes to the engine dispatch; handling the more complex case (sub-workflows) first means the event activity addition is a familiar operation
-- Renditions before virtual documents because virtual document PDF assembly consumes the rendition pipeline
-- Retention before signatures because signed versions must be protected from retention disposition; having retention enforcement in place first means the signature immutability constraint is consistent with existing retention holds
-- Template versioning test established in Phase 2 and extended in every subsequent phase, preventing the v1.2 config loss pitfall from silently accumulating
+A Celery extraction task fails silently (corrupt PDF, unsupported format, timeout). The document is uploaded successfully but never appears in content search results, with no indication to users or admins.
 
-### Research Flags
+**Prevention:** Track `extraction_status` on `document_content_text`: pending, processing, completed, failed, unsupported. Log failures at WARNING level with `document_id`. Enforce a 60-second timeout per document. Retry transient failures with exponential backoff. Surface failed extractions in an admin view. Unsupported formats remain searchable by metadata tsvector.
 
-Phases likely needing deeper research during planning:
-- **Phase 3 (Sub-Workflows):** Parent-child lifecycle cascade in `advance_workflow` / `_enforce_activity_transition` is the most complex cross-feature engine interaction in v1.2. Variable mapping type coercion semantics and failure propagation (auto-fail vs. allow retry) need explicit design decisions before coding. Recommend a brief design spike before Phase 3 planning.
-- **Phase 4 (Event-Driven Activities):** Circuit breaker design has multiple valid approaches (chain depth tracking vs. Redis rate limiter vs. event deduplication table). The choice affects event bus schema. Confirm approach at the start of Phase 4 planning.
-- **Phase 8 (Digital Signatures):** PAdES (PDF signing via `endesive`) vs. PKCS7/CMS (via `cryptography`) routing logic, certificate storage encryption strategy (env var passphrase vs. secrets manager), and concurrent signing edge cases (two users signing the same version simultaneously) should be researched before Phase 8 implementation begins.
+### Pitfall 5: Search Vector Excludes Custom Properties (Phase 30)
 
-Phases with standard patterns (skip research-phase):
-- **Phase 1 (Notifications + Event Bus):** Redis pub/sub, Jinja2 templates, and notification REST APIs are well-documented patterns. Existing Celery convention provides clear precedent.
-- **Phase 2 (Timer Activities):** Beat polling is the established pattern in this codebase. Database-backed timer polling with idempotency guard is straightforward.
-- **Phase 5 (Renditions):** LibreOffice headless, Pillow, and dedicated Celery queues are standard DevOps patterns.
-- **Phase 6 (Virtual Documents):** PostgreSQL recursive CTEs for cycle detection and metadata-layer tree models are well-understood relational patterns.
-- **Phase 7 (Retention):** Two-phase disposition and legal hold models follow standard records management patterns; FK query against `WorkflowPackage` is straightforward.
+The PostgreSQL trigger auto-updates the tsvector for `title`, `filename`, and `author` but not for `custom_properties` JSONB. Documents with important metadata in custom fields are unfindable by keyword search.
+
+**Prevention:** Decide the searchability scope before writing the trigger. The recommended default for v1.3 is to exclude custom properties from the tsvector and expose them via JSONB operator filtering in the metadata search path. Document this decision so users understand what is and is not full-text searchable. The trigger can be extended later to include JSONB text values without changing the data model.
+
+---
+
+## Suggested Phase Structure
+
+The architecture researcher dependency graph drives the build order. The critical path runs: types -> folders -> ACL -> search -> relationships -> browse UI -> saved searches.
+
+### Phase 27: Document Type System
+
+**Rationale:** Zero dependencies on other new features. Must execute before Phase 28 because it modifies the `Document` model (adds `document_type_id`), and consolidating Document model changes early avoids layered migrations. Provides metadata validation that improves document quality for all subsequent uploads. Low risk, clean scope.
+
+- New: `DocumentType` model with self-referential `parent_type_id`, `document_type_service.py`, `document_types.py` router, request/response schemas
+- Modified: `Document` model adds nullable `document_type_id` FK; `document_service` validates `custom_properties` against type schema on write
+- Frontend: `DocumentTypesPage` (admin CRUD), `TypeSelector` dropdown, `TypeMetadataForm` (dynamic form from JSON Schema)
+- New dependency: `jsonschema` package
+- Pitfall to avoid: Schema evolution breaks existing docs -- validate on write only, block required-without-default field additions
+
+### Phase 28: Cabinet/Folder Hierarchy + Document Filing
+
+**Rationale:** Core structural infrastructure. Three subsequent phases (ACL inheritance, browse UI, saved searches) depend on folders existing. Filing and the folder model are inseparable and should ship together.
+
+- New: `Folder` model (`parent_id`, `is_cabinet`, `acl_inherited`), `folder_documents` many-to-many association table, `folder_service.py` with recursive CTE helpers, `folders.py` router, schemas
+- Modified: `Document` model adds nullable `owner_id` column (backfilled from `created_by`); document upload/CRUD endpoints accept optional `folder_id`
+- Frontend: `FolderTree`, `FolderTreeNode`, `FolderBreadcrumb`, `CreateFolderDialog`, basic browse layout scaffold
+- Events: `folder.created`, `folder.moved`, `document.filed`, `document.unfiled`
+- Pitfall to avoid: Deletion cascading -- require empty folders, soft-delete, check workflow attachments before unfiling
+
+### Phase 29: Folder ACL Inheritance
+
+**Rationale:** Must follow Phase 28 (needs folders). Security layer required before the browse UI is exposed to general users in Phase 32. Entirely additive to existing `DocumentACL` -- no existing permissions are changed.
+
+- New: `FolderACL` model (mirrors `DocumentACL` structure), `folder_acl_service.py` with recursive CTE ancestor walk
+- Modified: `acl_service.check_permission()` gains folder ACL fallback path; `core/dependencies.py` gains `require_folder_permission` dependency
+- ACL resolution order: (1) direct `DocumentACL`, (2) inherited `FolderACL` walking tree upward via recursive CTE, (3) workflow participant fallback, (4) open access backward compat
+- Frontend: `FolderACLEditor` component
+- Pitfall to avoid: Permission leaks -- no caching initially, fresh computation per request, comprehensive inheritance test suite required
+
+### Phase 30: Full-Text Search + Content Extraction
+
+**Rationale:** Independent of folder ACL, but placed after Phase 29 so search results can display folder paths (requires folder data to exist). Documents from Phase 27-28 onward are indexed from day one; admin reindex task backfills earlier uploads.
+
+- New: `DocumentContentText` model with `content_search_vector` TSVECTOR and `extraction_status` enum; `search_service.py`; `content_extraction_service.py`; `search.py` router; `extract_document_text` and `reindex_all_documents` Celery tasks
+- Modified: `Document` model adds nullable `search_vector` TSVECTOR column + GIN index + PostgreSQL trigger; document upload and checkin dispatch extraction task
+- Frontend: `SearchPage`, `SearchBar`, `SearchResults` with `ts_headline` snippets, `SearchFacets` sidebar
+- New dependencies: `PyPDF2`, `python-docx`
+- Pitfall to avoid: Silent extraction failures (status tracking, admin view, retry with backoff); custom properties excluded from tsvector by default (document the decision)
+
+### Phase 31: Document Relationships
+
+**Rationale:** Independent of folders and search. Only requires the existing `Document` model. Low risk, clear scope, quick win that closes a Documentum feature gap before the final integration phase.
+
+- New: `DocumentRelationship` model with `RelationshipType` enum (supersedes, references, is_part_of, related_to); `relationship_service.py`; endpoints under `/api/documents/{id}/relationships`
+- Frontend: `RelationshipPanel` tab in existing `DocumentDetailPanel`
+- No new dependencies, no schema changes to existing tables
+
+### Phase 32: Document-First Navigation (Browse UI Integration)
+
+**Rationale:** Integration phase requiring all of Phase 27-31 to be complete. Brings the document-centric paradigm together into a coherent UI. Default route change from `/inbox` to `/browse` signals the milestone completion.
+
+- New: Full `BrowsePage` implementation (three-panel layout: folder tree left, content grid center, detail panel right)
+- Modified: `App.tsx` default route `/inbox` -> `/browse`; `SidebarNav.tsx` restructured with Browse and Search as primary nav items; `DocumentDetailPanel` gains Location, Relationships, and Type sections; `DocumentTable` gains Type and Location columns; `DocumentDropZone` accepts optional `folderId` prop
+- Performance: virtual list for large content grids, debounced tree expansion, React Query caching with appropriate stale times
+- Pitfall to avoid: Slow initial tree load -- lazy-load children on expand, root shows cabinets only on mount
+
+### Phase 33: Saved Searches / Smart Folders
+
+**Rationale:** Depends on both search (Phase 30) and the browse UI (Phase 32). Smart folders appear as virtual nodes in the folder tree; they require both the query execution infrastructure and the tree component to render correctly.
+
+- New: `SavedSearch` model with `query_definition` JSON and `show_in_tree` flag; `saved_search_service.py`; `saved_searches.py` router
+- Modified: `SearchPage` gains Save this search button; `FolderTree` renders smart folder nodes with distinct icon when `show_in_tree = true`
+- Pitfall to avoid: Complex saved search performance -- paginate results, 30-second TTL cache, loading states in UI
+
+---
+
+## Open Questions
+
+These decisions are unresolved and must be handled during individual phase planning, not pre-decided here.
+
+| Question | Relevant Phase | Why Unresolved |
+|----------|---------------|----------------|
+| Should `custom_properties` JSONB be included in the `search_vector` tsvector trigger? | Phase 30 | Requires product decision on user expectation vs. trigger complexity. Recommended default: exclude, expose via JSONB filtering. Confirm before writing trigger. |
+| What is the maximum enforced folder depth? | Phase 28 | Architecture recommends 15 levels as service-layer limit. Confirm before hardcoding. |
+| Should text extraction run for all existing documents on upgrade, or only new uploads going forward? | Phase 30 | Admin-triggered `reindex_all_documents` handles backfill, but timing and resource impact depend on existing document volume. Decide during phase planning. |
+| Which additional file formats beyond PDF and .docx should be supported for text extraction in v1.3? | Phase 30 | Plain text (.txt) is trivial. RTF, HTML, .xlsx, .pptx each require additional packages. Confirm scope before implementation. |
+| Should saved searches be user-private by default or shareable? | Phase 33 | `SavedSearch.is_public` flag exists in the model, but default behavior and UI treatment need a product decision. |
+
+---
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | All existing v1.0 technologies confirmed stable. New packages sourced from official documentation. No experimental dependencies. |
-| Features | HIGH | Derived from OpenText Documentum specification (primary reference) and direct codebase analysis of existing extension points. BPM comparison (Camunda, Flowable) used only for supplementary validation at MEDIUM confidence. |
-| Architecture | HIGH | All integration points verified against direct codebase analysis of `engine_service.py`, `auto_activity.py`, `celery_app.py`, `workflow.py`, `document.py`. No inference — every extension point confirmed in existing code. |
-| Pitfalls | HIGH | 14 pitfalls with prevention strategies. Critical pitfalls sourced from Celery official documentation, Temporal workflow engine design principles, Camunda patterns, and direct codebase analysis. Library-specific pitfalls (LibreOffice memory leaks, endesive PDF-only scope) confirmed by community documentation. |
+| Stack | HIGH | All recommended technologies (PostgreSQL tsvector, adjacency list CTE, jsonschema, PyPDF2, python-docx) are mature and production-proven. Zero experimental choices. |
+| Features | HIGH | Documentum ECM model is well-specified. Table stakes and anti-features are clear. Feature dependencies are fully mapped. |
+| Architecture | HIGH | Both conflicts resolved with simpler, lower-risk alternatives consistent with the existing codebase patterns. The 7-table data model is fully specified with exact column definitions. |
+| Pitfalls | HIGH | Pitfalls are grounded in concrete analysis of the existing schema (10+ FK references counted). Prevention strategies are specific and actionable, not theoretical. |
 
-**Overall confidence:** HIGH
-
-### Gaps to Address
-
-- **RedBeat adoption decision (Phase 2):** PITFALLS.md identifies RedBeat as a superior alternative to static Beat polling for per-activity-instance timer scheduling. The choice between Beat polling and RedBeat (`celery_app.conf.beat_scheduler = 'redbeat.RedBeatScheduler'`) affects the Celery Beat configuration globally. Decide at the start of Phase 2 planning.
-
-- **Sub-workflow failure propagation semantics (Phase 3):** When a child workflow fails, should the parent activity auto-fail (propagate the error upward) or should it allow the supervisor to retry by re-spawning the child? This is a product decision that must be resolved before Phase 3 implementation begins, as it determines the `_enforce_activity_transition` path in `engine_service`.
-
-- **Event bus durability mode (Phase 4):** ARCHITECTURE.md recommends Redis pub/sub + persistent `events` table now, migrating to Redis Streams later if message durability becomes critical at scale. Confirm this trade-off is acceptable at the start of Phase 4 planning.
-
-- **LibreOffice concurrency in Docker (Phase 5):** Multiple LibreOffice instances in the same container can conflict on lock files. The mitigation (Celery concurrency=1 or per-worker `--user-installation` paths) should be verified in a Docker test environment before Phase 5 completes.
-
-- **Certificate storage encryption strategy (Phase 8):** Storing encrypted private signing keys in the database is adequate for internal use, but the passphrase management approach (env var vs. secrets manager vs. project CA) should be decided before Phase 8 implementation to avoid post-implementation key rotation.
+---
 
 ## Sources
 
-### Primary (HIGH confidence)
-- Codebase: `src/app/services/engine_service.py` — token-based Petri-net, ActivityType dispatch, ~1100 lines
-- Codebase: `src/app/tasks/auto_activity.py` — Celery sync-wrapper-over-async pattern
-- Codebase: `src/app/celery_app.py` — Beat schedule, `task_acks_late` configuration
-- Codebase: `src/app/models/workflow.py` — ActivityTemplate, WorkItem.due_date, ExecutionToken
-- Codebase: `src/app/models/document.py` — Document, DocumentVersion, content_hash, minio_object_key
-- Codebase: `src/app/core/minio_client.py` — single bucket, asyncio.to_thread wrapping
-- Codebase: `src/app/auto_methods/` — decorator registry pattern for extensibility
-- OpenText Documentum Workflow Management specification — feature requirements and architecture reference
-- Celery 5.6 official docs (periodic tasks, memory management, optimizing guide)
-- Pillow, pdf2image, PyPDF, cryptography official documentation
-- Redis pub/sub documentation
-- endesive library (PyPI) — PDF digital signatures
+Aggregated from all four research files:
 
-### Secondary (MEDIUM confidence)
-- BPM feature comparison: Camunda, Flowable, Activiti feature sets
-- Temporal workflow engine design principles blog
-- Orkes Conductor sub-workflow reference
-- Event sourcing pitfalls (sylhare.github.io)
-- Documentum Virtual Documents architecture (ArgonDigital)
-- LibreOffice headless memory leak investigation (ask.libreoffice.org)
-- Document retention policy best practices
-- RedBeat: Redis-backed Beat Scheduler (GitHub)
-- Python Celery Kubernetes and memory (dev.to)
-
-### Tertiary (LOW confidence — needs validation)
-- Django async ORM limitations in 2026 (Kraken Engineering) — used only to validate FastAPI choice, not a v1.2 decision input
-
----
-*Research completed: 2026-04-06*
-*Ready for roadmap: yes*
+- [PostgreSQL Full-Text Search Documentation](https://www.postgresql.org/docs/current/textsearch-tables.html) -- HIGH confidence
+- [PostgreSQL GIN Index for Text Search](https://www.postgresql.org/docs/current/textsearch-indexes.html) -- HIGH confidence
+- [PostgreSQL ltree Documentation](https://www.postgresql.org/docs/current/ltree.html) -- HIGH confidence (evaluated, not recommended)
+- [SQLAlchemy 2.0 PostgreSQL Dialect](https://docs.sqlalchemy.org/en/20/dialects/postgresql.html) -- HIGH confidence
+- [jsonschema PyPI](https://pypi.org/project/jsonschema/) -- HIGH confidence
+- [PyPDF2 PyPI](https://pypi.org/project/PyPDF2/) -- HIGH confidence
+- [python-docx PyPI](https://pypi.org/project/python-docx/) -- HIGH confidence
+- [Documentum Object Types](https://argondigital.com/blog/ecm/object-types/) -- MEDIUM confidence
+- [Documentum Type Hierarchy](https://documentumexpert.wordpress.com/2012/08/11/hierarchical-list-of-documentum-types/) -- MEDIUM confidence
+- Codebase analysis: all model, service, router, and frontend files examined -- HIGH confidence

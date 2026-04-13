@@ -1,474 +1,664 @@
-# Architecture Patterns
+# Architecture Research: v1.3 Document-Centric ECM
 
-**Domain:** v1.2 Feature Integration -- Timer Activities, Sub-Workflows, Events, Notifications, Renditions, Virtual Documents, Retention, Digital Signatures
-**Researched:** 2026-04-06
+**Domain:** Document-centric ECM integration into existing workflow engine
+**Researched:** 2026-04-13
+**Overall confidence:** HIGH
 
-## Current Architecture Snapshot
+This document maps exactly how eight new ECM features integrate with the existing 26-phase codebase (~17,400 Python LOC, ~13,800 TypeScript LOC). Every recommendation accounts for existing models, services, routers, and frontend components.
 
-The existing system follows a clean layered architecture:
+---
+
+## Critical Design Decisions
+
+### Decision 1: Adjacency List + Recursive CTE (not ltree, not sysobject polymorphic base)
+
+**Rejected: ltree extension.** Requires rewriting materialized paths for all descendants on every move/rename. The existing codebase uses zero PostgreSQL extensions beyond core. Adding ltree creates a maintenance dependency for marginal benefit -- cabinet/folder trees in an ECM are typically 3-8 levels deep, where recursive CTEs perform fine.
+
+**Rejected: dm_sysobject polymorphic base table.** SQLAlchemy joined-table inheritance would require migrating the existing `documents` table to inherit from a new `sysobjects` table -- a destructive schema change touching every FK referencing `documents.id` (DocumentVersion, DocumentACL, WorkflowPackage, Rendition, Retention, Signature, VirtualDocumentChild). The migration risk is enormous for the existing 26-phase codebase. Instead, folders and documents share the same `BaseModel` (which already provides id, timestamps, soft-delete) and are kept as separate tables. This is the pragmatic choice.
+
+**Chosen: Adjacency list with `parent_id` FK on `folders`.** Consistent with existing codebase patterns. Augmented with recursive CTE helper functions for tree queries (breadcrumb, subtree listing, ancestor walk for ACL). If performance bottlenecks appear later, add a denormalized `materialized_path` TEXT column without changing the core model.
+
+### Decision 2: PostgreSQL tsvector for Full-Text Search (not Elasticsearch/Meilisearch)
+
+The existing stack is PostgreSQL-centric. Adding an external search engine is premature for an internal tool. PostgreSQL's tsvector with GIN indexes handles full-text search well up to ~1M documents. The tsvector approach requires zero new infrastructure and is maintained by a PostgreSQL trigger (no application-level index sync). If scale demands it later, Meilisearch can be added behind the same search service interface.
+
+### Decision 3: Separate `document_content_text` Table for Extracted Text
+
+Extracted text from document files (PDFs, Word docs) can be megabytes. Storing it directly on the `documents` table would bloat every query that touches documents. A separate `document_content_text` table (1:1 with documents) keeps the documents table lean. The content search vector lives on this separate table and is JOINed only during search queries.
+
+### Decision 4: Single `folders` Table for Cabinets + Folders
+
+In Documentum, `dm_cabinet` extends `dm_folder`. We collapse both into one table with an `is_cabinet` boolean. Cabinets are root folders (`parent_id IS NULL` + `is_cabinet = true`). This avoids unnecessary join complexity.
+
+---
+
+## Data Model Changes
+
+### New Tables/Models
+
+#### 1. `document_types` -- new model `DocumentType`
+
+Defines custom document types with metadata schemas. The type system Documentum calls dm_type.
+
+```python
+# src/app/models/document_type.py
+class DocumentType(BaseModel):
+    __tablename__ = "document_types"
+
+    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    display_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    parent_type_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid(), ForeignKey("document_types.id"), nullable=True
+    )
+    # JSON Schema defining required/optional metadata fields
+    metadata_schema: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
+    is_abstract: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    parent_type: Mapped["DocumentType | None"] = relationship(remote_side="DocumentType.id")
+```
+
+**Rationale:** `metadata_schema` stores a JSON Schema document that validates `Document.custom_properties`. Type inheritance via `parent_type_id` means a child type's schema extends the parent's. Validation at service layer via `jsonschema` library.
+
+#### 2. `folders` -- new model `Folder`
+
+Unified model for dm_cabinet and dm_folder.
+
+```python
+# src/app/models/folder.py
+class Folder(BaseModel):
+    __tablename__ = "folders"
+    __table_args__ = (
+        UniqueConstraint("parent_id", "name", name="uq_folder_name_in_parent"),
+    )
+
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    parent_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid(), ForeignKey("folders.id"), nullable=True, index=True
+    )
+    owner_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(), ForeignKey("users.id"), nullable=False
+    )
+    is_cabinet: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    acl_inherited: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+
+    parent: Mapped["Folder | None"] = relationship(
+        remote_side="Folder.id", back_populates="children"
+    )
+    children: Mapped[list["Folder"]] = relationship(back_populates="parent")
+```
+
+**Constraint:** Cabinets have `parent_id IS NULL` + `is_cabinet = true`. Non-cabinet folders must have a parent. Enforced via DB check constraint in migration.
+
+#### 3. `folder_documents` -- association table
+
+Many-to-many: documents can live in multiple folders (Documentum link/unlink semantics).
+
+```python
+# src/app/models/folder.py
+folder_documents = Table(
+    "folder_documents",
+    BaseModel.metadata,
+    Column("folder_id", Uuid(), ForeignKey("folders.id"), primary_key=True),
+    Column("document_id", Uuid(), ForeignKey("documents.id"), primary_key=True),
+    Column("linked_at", DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)),
+    Column("linked_by", Uuid(), nullable=True),
+)
+```
+
+#### 4. `folder_acl` -- new model `FolderACL`
+
+Mirror of existing `DocumentACL` but for folders. Enables ACL inheritance down the folder tree.
+
+```python
+# src/app/models/folder_acl.py (or extend acl.py)
+class FolderACL(BaseModel):
+    __tablename__ = "folder_acl"
+    __table_args__ = (
+        UniqueConstraint(
+            "folder_id", "principal_id", "principal_type", "permission_level",
+            name="uq_folder_acl_entry",
+        ),
+    )
+
+    folder_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(), ForeignKey("folders.id"), nullable=False, index=True
+    )
+    principal_id: Mapped[uuid.UUID] = mapped_column(Uuid(), nullable=False)
+    principal_type: Mapped[str] = mapped_column(String(20), nullable=False)
+    permission_level: Mapped[str] = mapped_column(
+        Enum(PermissionLevel, name="permissionlevel"), nullable=False
+    )
+```
+
+#### 5. `document_relationships` -- new model `DocumentRelationship`
+
+Typed relationships between documents.
+
+```python
+# src/app/models/document_relationship.py
+class RelationshipType(str, enum.Enum):
+    SUPERSEDES = "supersedes"
+    REFERENCES = "references"
+    IS_PART_OF = "is_part_of"
+    RELATED_TO = "related_to"
+
+class DocumentRelationship(BaseModel):
+    __tablename__ = "document_relationships"
+    __table_args__ = (
+        UniqueConstraint(
+            "source_document_id", "target_document_id", "relationship_type",
+            name="uq_document_relationship",
+        ),
+    )
+
+    source_document_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(), ForeignKey("documents.id"), nullable=False, index=True
+    )
+    target_document_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(), ForeignKey("documents.id"), nullable=False, index=True
+    )
+    relationship_type: Mapped[str] = mapped_column(
+        Enum(RelationshipType, name="relationshiptype"), nullable=False
+    )
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+```
+
+#### 6. `saved_searches` -- new model `SavedSearch`
+
+Named queries acting as virtual folders.
+
+```python
+# src/app/models/saved_search.py
+class SavedSearch(BaseModel):
+    __tablename__ = "saved_searches"
+
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    owner_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(), ForeignKey("users.id"), nullable=False
+    )
+    query_definition: Mapped[dict] = mapped_column(JSON, nullable=False)
+    is_public: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    show_in_tree: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+```
+
+#### 7. `document_content_text` -- new model `DocumentContentText`
+
+Extracted text from document files for full-text content search.
+
+```python
+# src/app/models/document_content.py
+class DocumentContentText(BaseModel):
+    __tablename__ = "document_content_text"
+
+    document_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(), ForeignKey("documents.id"), nullable=False, unique=True
+    )
+    extracted_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    extraction_status: Mapped[str] = mapped_column(
+        String(20), default="pending", nullable=False
+    )  # pending, processing, completed, failed
+    content_search_vector: Mapped[None] = mapped_column(
+        TSVECTOR, nullable=True  # GIN indexed
+    )
+```
+
+### Modified Existing Models
+
+#### `Document` model (`src/app/models/document.py`) -- 3 new columns
+
+```python
+# NEW columns to add:
+document_type_id: Mapped[uuid.UUID | None] = mapped_column(
+    Uuid(), ForeignKey("document_types.id"), nullable=True, index=True
+)
+
+search_vector: Mapped[None] = mapped_column(
+    TSVECTOR, nullable=True  # GIN index + PostgreSQL trigger
+)
+
+owner_id: Mapped[uuid.UUID | None] = mapped_column(
+    Uuid(), ForeignKey("users.id"), nullable=True
+)
+```
+
+**Migration strategy for `search_vector`:**
+1. Add nullable TSVECTOR column
+2. Create GIN index: `CREATE INDEX ix_documents_search_vector ON documents USING GIN(search_vector)`
+3. Create PostgreSQL trigger to auto-update on INSERT/UPDATE of title, filename, author
+4. Backfill existing rows in the same migration
+
+**Migration for `owner_id`:** Backfill from `created_by` (stored as string UUID): `UPDATE documents SET owner_id = created_by::uuid WHERE created_by IS NOT NULL`
+
+#### `enums.py` -- add `RelationshipType` enum
+
+#### `models/__init__.py` -- register all new models
+
+### Key Relationships
 
 ```
-React SPA (Vite + React 19)
+DocumentType (1) ------< (many) Document [via document_type_id]
+DocumentType (1) ------< (many) DocumentType [self-ref: parent_type_id]
+
+Folder (1) ------< (many) Folder [self-ref: parent_id]
+Folder (many) >---< (many) Document [via folder_documents]
+Folder (1) ------< (many) FolderACL
+
+Document (1) ------< (many) DocumentRelationship [as source]
+Document (1) ------< (many) DocumentRelationship [as target]
+Document (1) ------< (0..1) DocumentContentText
+
+User (1) ------< (many) SavedSearch
+User (1) ------< (many) Folder [as owner]
+```
+
+**All existing relationships preserved unchanged:** Document->DocumentVersion->Rendition, Document->DocumentACL, Document->WorkflowPackage, Document->VirtualDocumentChild, Document->RetentionPolicy/LegalHold, Document->DocumentSignature.
+
+---
+
+## API Surface
+
+### New Endpoints
+
+#### Folder/Cabinet Management -- `src/app/routers/folders.py`
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `POST` | `/api/folders` | Create folder or cabinet |
+| `GET` | `/api/folders` | List root cabinets |
+| `GET` | `/api/folders/{id}` | Get folder details |
+| `GET` | `/api/folders/{id}/children` | List child folders + documents |
+| `GET` | `/api/folders/{id}/tree` | Get subtree (recursive, depth-limited) |
+| `PUT` | `/api/folders/{id}` | Update folder metadata |
+| `DELETE` | `/api/folders/{id}` | Delete folder (must be empty) |
+| `POST` | `/api/folders/{id}/documents/{doc_id}` | File document into folder |
+| `DELETE` | `/api/folders/{id}/documents/{doc_id}` | Unlink document from folder |
+| `POST` | `/api/folders/{id}/move` | Move folder to new parent |
+| `GET` | `/api/folders/{id}/breadcrumb` | Path from root to folder |
+
+#### Folder ACL -- under folders router
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/api/folders/{id}/acl` | List folder ACL entries |
+| `POST` | `/api/folders/{id}/acl` | Add ACL entry |
+| `DELETE` | `/api/folders/{id}/acl/{entry_id}` | Remove ACL entry |
+| `GET` | `/api/folders/{id}/effective-acl` | Computed inherited + direct ACL |
+
+#### Document Types -- `src/app/routers/document_types.py`
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `POST` | `/api/document-types` | Create type (admin) |
+| `GET` | `/api/document-types` | List all types |
+| `GET` | `/api/document-types/{id}` | Get type with schema |
+| `PUT` | `/api/document-types/{id}` | Update type (admin) |
+| `DELETE` | `/api/document-types/{id}` | Delete if unused |
+| `GET` | `/api/document-types/{id}/schema` | Merged schema (type + ancestors) |
+
+#### Full-Text Search -- `src/app/routers/search.py`
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/api/search` | Full-text search with filters and facets |
+| `POST` | `/api/search/reindex` | Trigger full reindex (admin) |
+
+#### Document Relationships -- extend `src/app/routers/documents.py`
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/api/documents/{id}/relationships` | List relationships |
+| `POST` | `/api/documents/{id}/relationships` | Create relationship |
+| `DELETE` | `/api/documents/{id}/relationships/{rel_id}` | Remove relationship |
+
+#### Saved Searches -- `src/app/routers/saved_searches.py`
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `POST` | `/api/saved-searches` | Save a search |
+| `GET` | `/api/saved-searches` | List user's + public saved searches |
+| `GET` | `/api/saved-searches/{id}` | Get definition |
+| `GET` | `/api/saved-searches/{id}/results` | Execute saved search |
+| `PUT` | `/api/saved-searches/{id}` | Update |
+| `DELETE` | `/api/saved-searches/{id}` | Delete |
+
+### Modified Endpoints
+
+| Endpoint | Change |
+|----------|--------|
+| `POST /api/documents/` | Add optional `document_type_id` and `folder_id` params; validate custom_properties against type schema; dispatch text extraction task |
+| `PUT /api/documents/{id}` | Add `document_type_id` to payload; re-validate custom_properties on type change |
+| `GET /api/documents/` | Add `folder_id`, `document_type_id`, `q` query params for filtering |
+| `DELETE /api/documents/{id}` | Clean up `folder_documents` entries |
+
+### New Services
+
+| Service File | Purpose |
+|-------------|---------|
+| `folder_service.py` | Folder/cabinet CRUD, tree queries (recursive CTE), filing, move |
+| `document_type_service.py` | Type CRUD, schema inheritance, metadata validation |
+| `search_service.py` | Full-text search, tsvector queries, faceted filtering, ranking |
+| `relationship_service.py` | Document relationship CRUD |
+| `saved_search_service.py` | Saved search CRUD, execution |
+| `folder_acl_service.py` | Folder ACL CRUD, inheritance computation |
+| `content_extraction_service.py` | Text extraction from files (PDF, Word, etc.) |
+
+### New Celery Tasks
+
+| Task | Trigger | Purpose |
+|------|---------|---------|
+| `extract_document_text` | On upload/checkin | Extract text from document file for search index |
+| `reindex_all_documents` | Admin manual trigger | Full reindex of all document search vectors |
+
+---
+
+## Frontend Architecture
+
+### New Pages/Routes
+
+Add to `App.tsx`:
+
+```typescript
+<Route path="/browse" element={<BrowsePage />} />
+<Route path="/browse/:folderId" element={<BrowsePage />} />
+<Route path="/search" element={<SearchPage />} />
+<Route element={<AdminRoute />}>
+  <Route path="/admin/document-types" element={<DocumentTypesPage />} />
+</Route>
+```
+
+#### BrowsePage -- Document-centric navigation hub
+
+- **Left panel:** Folder tree (collapsible, lazy-loaded via `GET /api/folders/{id}/children`)
+  - Root shows cabinets; expand to see child folders
+  - Smart folders (saved searches with `show_in_tree=true`) with distinct icon
+  - Context menu: New Folder, Rename, Delete, Properties, Permissions
+- **Main panel:** Contents of selected folder (child folders + documents as table/grid)
+  - Sort by name, date, type, size
+  - Multi-select for batch operations
+  - Upload drop zone auto-files into current folder
+- **Right panel:** Detail panel for selected item (reuses `DocumentDetailPanel` pattern)
+- **Breadcrumb bar:** Clickable path from root cabinet to current folder
+
+#### SearchPage -- Full-text search with facets
+
+- Search bar with debounced query input
+- Results with highlighted snippets
+- Facet sidebar: document type, lifecycle state, date range, folder, author
+- "Save this search" button
+- Saved searches list in sidebar
+
+#### DocumentTypesPage (admin)
+
+- CRUD table for document types
+- Type hierarchy tree view
+- JSON Schema editor for metadata_schema
+- Preview of the metadata form users see during upload
+
+### Modified Components
+
+| Component | Changes |
+|-----------|---------|
+| `DocumentDetailPanel.tsx` | Add Location (folder paths), Relationships tab, Type display with type-specific metadata |
+| `DocumentTable.tsx` | Add Type and Location columns; accept `folderId` prop for folder-scoped view |
+| `DocumentDropZone.tsx` | Accept optional `folderId` prop for auto-filing |
+| `DocumentsPage.tsx` | Add document type filter, full-text search input |
+| `SidebarNav.tsx` | Restructure: Browse and Search as primary items |
+
+### New Frontend Components
+
+| Component | Purpose |
+|-----------|---------|
+| `components/folders/FolderTree.tsx` | Recursive tree with lazy loading, context menu |
+| `components/folders/FolderTreeNode.tsx` | Single expandable node |
+| `components/folders/FolderBreadcrumb.tsx` | Clickable path |
+| `components/folders/CreateFolderDialog.tsx` | Create folder/cabinet |
+| `components/folders/FolderACLEditor.tsx` | ACL management for folders |
+| `components/search/SearchBar.tsx` | Full-text search input |
+| `components/search/SearchResults.tsx` | Results with snippets |
+| `components/search/SearchFacets.tsx` | Facet filter sidebar |
+| `components/search/SaveSearchDialog.tsx` | Save current search |
+| `components/document-types/TypeSelector.tsx` | Type selection dropdown |
+| `components/document-types/TypeMetadataForm.tsx` | Dynamic form from JSON Schema |
+| `components/documents/RelationshipPanel.tsx` | View/manage relationships |
+
+### Navigation Changes
+
+Sidebar nav restructure (`SidebarNav.tsx`):
+
+```typescript
+const NAV_ITEMS: NavItem[] = [
+  { icon: FolderTree, label: "Browse", route: "/browse", adminOnly: false },    // NEW primary
+  { icon: Search, label: "Search", route: "/search", adminOnly: false },         // NEW
+  { icon: Inbox, label: "Inbox", route: "/inbox", adminOnly: false },
+  { icon: FileText, label: "Documents", route: "/documents", adminOnly: false },
+  { icon: GitBranch, label: "Workflows", route: "/workflows", adminOnly: false },
+  { icon: LayoutTemplate, label: "Templates", route: "/templates", adminOnly: false },
+  { icon: BarChart3, label: "Dashboard", route: "/dashboard", adminOnly: true },
+  { icon: Database, label: "Query", route: "/query", adminOnly: true },
+  { icon: Settings2, label: "Doc Types", route: "/admin/document-types", adminOnly: true },
+];
+```
+
+**Default route change:** Root redirect changes from `/inbox` to `/browse` -- signaling the document-centric reorientation.
+
+### New API Client Modules
+
+`frontend/src/api/folders.ts`, `search.ts`, `documentTypes.ts`, `savedSearches.ts`
+
+---
+
+## Build Order
+
+### Dependency Graph
+
+```
+Document Types (independent)
     |
-FastAPI (ASGI, async)
-    |-- Routers (auth, users, documents, templates, workflows, inbox, dashboard, query, ...)
-    |-- Services (engine_service, document_service, lifecycle_service, acl_service, ...)
-    |-- Models (workflow.py, document.py, user.py, acl.py, audit.py)
+    v
+Folders/Cabinets ---------> Folder ACL Inheritance
+    |                              |
+    +---> Document Filing ---------+
+    |                              |
+    v                              v
+Full-Text Search          Browse UI (integration phase)
+    |                              ^
+    v                              |
+Document Relationships      all features feed in
     |
-    +-- PostgreSQL 16 (asyncpg) -- primary data store
-    +-- MinIO -- document file storage (single "documents" bucket)
-    +-- Redis 7 -- Celery broker + cache
-    +-- Celery Worker -- auto activity execution (polls every 10s)
-    +-- Celery Beat -- periodic scheduling (auto-activity poll + metrics aggregation)
+    v
+Saved Searches / Smart Folders (needs search + browse)
 ```
 
-**Key Engine Pattern:** Token-based Petri-net execution in `engine_service.py` (~1100 lines). Activities are START/END/MANUAL/AUTO. The `_advance_from_activity` loop uses breadth-first iterative token placement with AND-join/OR-join semantics. Celery workers poll for ACTIVE AUTO activities and execute registered auto methods from the `auto_methods` registry.
+### Suggested Phase Sequence
 
-**Key Engine Extension Points:**
-- `_advance_from_activity` has a `match` on `ActivityType` (START/END, AUTO, MANUAL) -- new types slot in here
-- `auto_methods/__init__.py` provides a `@auto_method("name")` decorator registry -- new methods register the same way
-- `celery_app.py` beat_schedule dict -- new periodic tasks add entries here
-- `BaseModel` provides soft delete (`is_deleted`), timestamps, `created_by` on all models
+#### Phase 27: Document Type System
+**Why first:** Zero dependencies on other new features. Modifies Document model (adds `document_type_id`), so do this before other Document-modifying phases. Provides metadata validation that improves document quality for all subsequent uploads. Low risk, clear scope.
 
-## New Features and Their Integration Points
+- New: `DocumentType` model, `document_type_service.py`, router, schemas
+- Modify: `Document` model (+document_type_id), `document_service` (schema validation)
+- Frontend: `DocumentTypesPage`, `TypeSelector`, `TypeMetadataForm`
+- New dependency: `jsonschema` package
 
-### 1. Timer Activities and Escalation
+#### Phase 28: Cabinet/Folder Hierarchy + Document Filing
+**Why second:** Core infrastructure. Three later phases depend on folders existing. Filing and folders are inseparable.
 
-**What it needs:** Activities that fire based on time (delays, deadlines, SLA triggers) rather than user action or auto-method completion.
+- New: `Folder` model, `folder_documents` table, `folder_service.py`, router, schemas
+- New column: `Document.owner_id` (backfill from `created_by`)
+- Frontend: `FolderTree`, `FolderBreadcrumb`, `CreateFolderDialog`, basic browse layout
+- Events: `folder.created`, `folder.moved`, `document.filed`, `document.unfiled`
 
-**Integration approach:** Extend the existing Celery Beat + task system. Do NOT add a new activity type -- instead, add timer configuration to `ActivityTemplate` that applies to MANUAL activities (deadline/escalation) and can create pure delay nodes (AUTO activity with timer).
+#### Phase 29: Folder ACL Inheritance
+**Why third:** Needs folders. Critical security layer before browse UI goes to production users.
 
-**New components:**
-- `src/app/models/timer.py` -- `TimerConfig` model (one-to-many from ActivityTemplate)
-  - Fields: `activity_template_id` (FK), `timer_type` (delay/deadline/recurring), `duration_seconds`, `deadline_expression` (evaluable against process variables), `escalation_action` (reassign/notify/auto_complete/bump_priority), `escalation_target` (user ID or variable name)
-- `src/app/tasks/timer_tasks.py` -- Celery tasks for timer evaluation
-  - `check_timer_deadlines` -- Beat task (runs every 30s), queries for ACTIVE activities with timer configs past deadline
-  - `execute_timer_escalation` -- Handles the escalation action
-- `src/app/services/timer_service.py` -- Timer scheduling and management logic
+- New: `FolderACL` model, `folder_acl_service.py`
+- Modify: `acl_service.check_permission()` -- add folder ACL fallback path
+- Modify: `core/dependencies.py` -- extend `require_permission` for folder scoping
+- Frontend: `FolderACLEditor`
 
-**Modifications to existing:**
-- `ActivityTemplate` model: add `timer_config` JSON column (lightweight option) or FK relationship to `TimerConfig`
-- `engine_service._advance_from_activity`: when activating a MANUAL activity with timer config, set `WorkItem.due_date` from the timer config; for delay-type timers on AUTO activities, set a `timer_fires_at` timestamp
-- `WorkItem`: `due_date` column already exists -- use it for SLA tracking
-- `celery_app.py`: add `check-timer-deadlines` to beat schedule (every 30s)
-- `ActivityTemplate`: `expected_duration_hours` already exists -- use as default SLA when no explicit timer config
+**Extended ACL resolution order:**
+1. Direct `DocumentACL` (existing, unchanged)
+2. Folder ACL inheritance walk via recursive CTE (new)
+3. Workflow participant fallback (existing)
+4. No ACL = open access (existing backward compat)
 
-**Data flow:**
-```
-Activity activated with timer_config
-  -> WorkItem.due_date set from duration/deadline
-  -> Celery Beat polls check_timer_deadlines every 30s
-  -> Past-due items trigger execute_timer_escalation
-  -> Escalation: reassign / notify / bump priority / auto-complete
-```
+#### Phase 30: Full-Text Search
+**Why fourth:** Independent of folders but placed after them so results show folder paths.
 
-### 2. Sub-Workflows
+- New: `Document.search_vector` (TSVECTOR + GIN index + trigger), `DocumentContentText` model
+- New: `search_service.py`, `content_extraction_service.py`, search router
+- New Celery task: `extract_document_text`
+- Modify: document upload/checkin to dispatch extraction
+- Frontend: `SearchPage`, `SearchBar`, `SearchResults`, `SearchFacets`
+- New dependencies: `PyPDF2`, `python-docx`
 
-**What it needs:** A workflow activity that spawns a child workflow, optionally waits for completion, then continues the parent.
-
-**Integration approach:** Add `ActivityType.SUB_WORKFLOW` enum value. The engine handles it by spawning a child workflow and leaving the parent activity ACTIVE until the child finishes.
-
-**New components:**
-- `src/app/models/sub_workflow.py` -- `SubWorkflowLink` model
-  - Fields: `parent_workflow_id` (FK), `parent_activity_instance_id` (FK), `child_workflow_id` (FK), `variable_mapping_in` (JSON: parent->child), `variable_mapping_out` (JSON: child->parent), `state` (active/completed/failed), `max_depth` (enforced limit)
-- `src/app/tasks/sub_workflow_tasks.py` -- Celery task to monitor child completion
-  - `poll_sub_workflows` -- Beat task (every 10s), checks if child workflows are FINISHED/FAILED
-  - On child FINISHED: copy output variables back to parent, advance parent
-  - On child FAILED: mark parent activity as ERROR
-
-**Modifications to existing:**
-- `enums.py`: add `ActivityType.SUB_WORKFLOW = "sub_workflow"`
-- `ActivityTemplate`: add `sub_process_template_id` (FK to ProcessTemplate) and `variable_mapping` (JSON)
-- `engine_service._advance_from_activity`: new case in the activity type match:
-  ```python
-  case ActivityType.SUB_WORKFLOW:
-      # Spawn child workflow, create SubWorkflowLink, leave ACTIVE
-  ```
-- `engine_service.start_workflow`: accept optional `parent_link_id` for traceability
-- `celery_app.py`: add `poll-sub-workflows` to beat schedule
-
-**Data flow:**
-```
-Parent reaches SUB_WORKFLOW activity
-  -> engine calls start_workflow() for child template
-  -> SubWorkflowLink created (parent_ai <-> child_wf)
-  -> Parent activity stays ACTIVE
-  -> Celery Beat polls child state every 10s
-  -> Child FINISHED -> copy output vars -> advance parent
+**Search query combines metadata + content vectors:**
+```sql
+SELECT d.*, ts_rank(d.search_vector, q) AS meta_rank,
+       ts_rank(ct.content_search_vector, q) AS content_rank
+FROM documents d
+LEFT JOIN document_content_text ct ON ct.document_id = d.id,
+     to_tsquery('english', :query) q
+WHERE d.search_vector @@ q OR ct.content_search_vector @@ q
+ORDER BY (ts_rank(d.search_vector, q) * 2 + ts_rank(ct.content_search_vector, q)) DESC
 ```
 
-### 3. Event-Driven Activities
+#### Phase 31: Document Relationships
+**Why fifth:** Simple, independent. Only needs existing Document model. Low risk, quick win.
 
-**What it needs:** Activities that wait for a specific event (document uploaded, lifecycle changed, external webhook) rather than user/auto completion.
+- New: `DocumentRelationship` model, `RelationshipType` enum, `relationship_service.py`
+- New endpoints under `/api/documents/{id}/relationships`
+- Frontend: `RelationshipPanel` in `DocumentDetailPanel`
 
-**Integration approach:** Add `ActivityType.EVENT` and build a lightweight event bus on Redis pub/sub. Events emitted by existing services; event activities subscribe and complete when matched.
+#### Phase 32: Document-First Navigation (Browse UI Integration)
+**Why sixth:** Integration phase. Requires folders (28), ACL (29), search (30), types (27), relationships (31). Brings the document-centric paradigm together.
 
-**New components:**
-- `src/app/services/event_bus.py` -- Event dispatcher
-  - `emit_event(event_type: str, payload: dict)` -- publishes to Redis channel
-  - Standard event types: `document.uploaded`, `document.checked_in`, `lifecycle.changed`, `workflow.completed`, `external.webhook`
-- `src/app/models/event.py`
-  - `EventSubscription` model: `activity_template_id` (FK), `event_type`, `filter_expression` (optional condition on payload)
-  - `EventLog` model: `event_type`, `payload` (JSON), `timestamp`, `matched_subscription_id`
-- `src/app/tasks/event_tasks.py` -- Background event processor
-  - Listens to Redis pub/sub, matches against active EVENT activity subscriptions
-  - On match: completes the activity instance, advances workflow
-- `src/app/routers/events.py` -- Webhook endpoint for external events
+- New: `BrowsePage` (full implementation)
+- Modify: `App.tsx` default route `/inbox` -> `/browse`
+- Modify: `SidebarNav.tsx` -- restructure with Browse and Search as primary
+- Modify: `DocumentDetailPanel` -- add Location, Relationships, Type sections
+- Modify: `DocumentTable` -- add Type, Location columns
+- Performance: virtualized list, debounced tree expansion, React Query caching
 
-**Modifications to existing:**
-- `enums.py`: add `ActivityType.EVENT = "event"`
-- `ActivityTemplate`: add `event_type` (string) and `event_filter` (JSON)
-- `engine_service._advance_from_activity`: for EVENT type, leave ACTIVE (event listener completes)
-- `document_service.py`: add `emit_event("document.uploaded", ...)` after upload
-- `lifecycle_service.py`: add `emit_event("lifecycle.changed", ...)` after transitions
+#### Phase 33: Saved Searches / Smart Folders
+**Why last:** Depends on search (30) and browse UI (32) both existing.
 
-**Data flow:**
-```
-EVENT activity activated -> stays ACTIVE, subscription registered in DB
-  -> document_service uploads file -> event_bus.emit("document.uploaded", {...})
-  -> event_tasks listener matches subscription -> completes activity -> advances workflow
-```
+- New: `SavedSearch` model, `saved_search_service.py`, router
+- Frontend: `SaveSearchDialog`, smart folder nodes in `FolderTree`
+- Modify: `SearchPage` -- "Save this search" button
 
-### 4. Notifications Framework
+---
 
-**What it needs:** Email and in-app notifications triggered by workflow events (task assignment, delegation, approaching deadlines, workflow completions).
+## Integration Points with Existing System
 
-**Integration approach:** Cross-cutting service that hooks into existing operations. The existing `send_email` auto method handles SMTP -- extract and generalize the email logic.
+### Event Bus
 
-**New components:**
-- `src/app/models/notification.py`
-  - `Notification` model: `user_id` (FK), `type` (enum: task_assigned, deadline_approaching, workflow_completed, escalation, delegation), `title`, `body`, `is_read`, `link_url`, `metadata` (JSON)
-  - `NotificationPreference` model: `user_id`, `notification_type`, `channel` (email/in_app), `enabled`
-- `src/app/services/notification_service.py`
-  - `notify(user_ids, notification_type, context)` -- creates in-app records + queues email
-  - Jinja2 templates for email body rendering
-- `src/app/tasks/notification_tasks.py` -- Celery task for async email sending
-- `src/app/routers/notifications.py` -- REST endpoints (list, mark-read, preferences, count-unread)
-- Frontend: notification bell in AppShell header, notification dropdown/panel
+All new features emit via `event_bus.emit()` (existing singleton in `src/app/services/event_bus.py`). New event types: `document_type.*`, `folder.*`, `document.filed/unfiled`, `folder_acl.*`, `document.relationship_*`, `saved_search.*`. These feed the notification system (Phase 16) and can trigger event-driven workflow activities (Phase 19).
 
-**Modifications to existing:**
-- `engine_service._advance_from_activity`: call `notify()` when creating work items
-- `engine_service.complete_work_item`: notify on workflow completion (when FINISHED)
-- `timer_tasks.py`: notify on deadline approaching/breached
-- `config.py`: SMTP settings already present -- sufficient
-- `auto_methods/builtin.py`: `send_email` can optionally delegate to notification_service
+### ACL System
 
-### 5. Document Renditions and Transformations
+Existing `DocumentACL` + `check_permission()` in `acl_service.py` (lines 136-218) unchanged. Extension is additive: when no direct document ACL exists and the document is filed in a folder, walk up the folder tree checking `FolderACL`. The `require_permission` FastAPI dependency in `core/dependencies.py` needs a parallel `require_folder_permission` for folder endpoints.
 
-**What it needs:** Auto-generate PDF or thumbnail renditions of uploaded documents. Store alongside originals in MinIO.
+### Workflow Engine
 
-**Integration approach:** Celery worker tasks triggered on document upload/check-in. Separate MinIO bucket for renditions.
+`WorkflowPackage.document_id` FK unchanged. Workflows don't need to know about folders. Only UI change: workflow package display shows document's folder path for context. Optional: document types can restrict valid lifecycle states via `metadata_schema`.
 
-**New components:**
-- `src/app/models/rendition.py` -- `DocumentRendition` model
-  - Fields: `document_version_id` (FK), `rendition_type` (pdf/thumbnail/preview), `content_type`, `minio_object_key`, `status` (pending/processing/completed/failed), `file_size`, `error_message`
-- `src/app/services/rendition_service.py`
-  - `request_rendition(document_version_id, rendition_type)` -- creates record + dispatches Celery task
-  - `get_rendition(document_version_id, rendition_type)` -- returns rendition data or presigned URL
-- `src/app/tasks/rendition_tasks.py` -- Celery tasks for conversion
-  - `generate_pdf_rendition` -- LibreOffice headless for Office docs, passthrough for PDFs
-  - `generate_thumbnail` -- Pillow for images, pdf2image for PDFs (first page)
-- `src/app/routers/renditions.py` -- REST endpoints (list, download, request)
+### Audit Trail
 
-**Modifications to existing:**
-- `document_service.py`: after upload/check-in, dispatch rendition tasks automatically
-- `minio_client.py`: add `RENDITIONS_BUCKET = "renditions"` and ensure-bucket
-- `docker-compose.yml`: Celery worker image needs LibreOffice headless (or add dedicated rendition worker)
-- `Dockerfile`: install `libreoffice-headless`, `python3-pil`, `poppler-utils`
+All operations use existing `create_audit_record()`. New entity_type values: `folder`, `folder_acl`, `document_type`, `document_relationship`, `saved_search`.
 
-### 6. Virtual/Compound Documents
+### Retention System
 
-**What it needs:** Parent-child document assemblies where a container document references others in order.
+Documents under retention/legal hold cannot be unfiled from their last folder. `folder_service.unfile_document()` must check `retention_service.check_document_deletable()` when the document would have zero remaining folder links.
 
-**Integration approach:** Metadata-layer feature -- actual files stay in MinIO unchanged. New model for document tree relationships.
+### Virtual Documents
 
-**New components:**
-- `src/app/models/virtual_document.py`
-  - `VirtualDocumentNode` model: `parent_document_id` (FK to Document), `child_document_id` (FK), `child_version_id` (FK, nullable for late-bound), `sort_order`, `binding_type` (early/late)
-- `src/app/services/virtual_document_service.py`
-  - `add_child()`, `remove_child()`, `reorder_children()`
-  - `resolve_tree(document_id)` -- recursively resolves with cycle detection and depth limit
-  - `assemble_pdf(document_id)` -- merges children into single PDF via rendition pipeline
-- `src/app/routers/virtual_documents.py` -- REST endpoints
+Virtual documents (Phase 21) don't participate in folder hierarchy. No changes needed.
 
-**Modifications to existing:**
-- `Document` model: add `is_virtual` boolean flag
-- No changes needed to `WorkflowPackage` -- it already references `document_id`
+### Renditions
 
-### 7. Retention and Records Management
+Text extraction (Phase 30) can reuse the rendition worker's LibreOffice installation for extracting text from Office formats.
 
-**What it needs:** Retention policies enforcing document preservation, legal holds preventing deletion, disposition schedules for cleanup.
+### Existing Search/Query
 
-**New components:**
-- `src/app/models/retention.py`
-  - `RetentionPolicy` model: `name`, `retention_period_days`, `disposition_action` (delete/archive/review), `applies_to_lifecycle_state`
-  - `RetentionAssignment` model: `document_id` (FK), `policy_id` (FK), `retention_start_date`, `disposition_date`, `is_record` (declared immutable)
-  - `LegalHold` model: `name`, `reason`, `is_active`
-  - `LegalHoldAssignment` model: `hold_id` (FK), `document_id` (FK)
-- `src/app/services/retention_service.py`
-  - `assign_policy()`, `declare_record()`, `apply_legal_hold()`, `release_hold()`
-  - `process_dispositions()` -- handles expired retention (called by Celery Beat)
-- `src/app/tasks/retention_tasks.py` -- Daily Beat task for disposition processing
-- `src/app/routers/retention.py` -- REST endpoints
+The existing `/api/query` (DQL-like, admin-only) coexists with new `/api/search` (user-facing full-text). Different purposes: search finds by content keywords; query handles structured metadata/workflow queries.
 
-**Modifications to existing:**
-- `document_service.py`: before delete/modify, check retention holds and record status
-- `lifecycle_service.py`: auto-assign retention policy when entering ARCHIVED state
-- `celery_app.py`: add `process-dispositions` to beat schedule (every 24 hours)
-
-### 8. Digital Signatures
-
-**What it needs:** Cryptographic signing of documents and workflow approvals for non-repudiation.
-
-**New components:**
-- `src/app/models/signature.py`
-  - `DigitalSignature` model: `document_version_id` (FK), `signer_user_id` (FK), `signature_data` (base64), `certificate_fingerprint`, `signed_at`, `content_hash` (SHA-256 at signing time), `is_valid`
-  - `SigningCertificate` model: `user_id` (FK), `certificate_pem`, `private_key_encrypted`, `valid_from`, `valid_until`, `is_active`
-- `src/app/services/signature_service.py`
-  - `sign_document(document_version_id, user_id)` -- download from MinIO, hash, create PKCS7/CMS signature
-  - `verify_signature(signature_id)` -- re-download, verify hash, validate certificate chain
-  - `sign_work_item(work_item_id, user_id)` -- sign a workflow approval action
-  - Uses `cryptography` library (already transitive dependency via python-jose)
-- `src/app/routers/signatures.py` -- REST endpoints (sign, verify, list)
-
-**Modifications to existing:**
-- `ActivityTemplate`: add `requires_signature` boolean
-- `engine_service.complete_work_item`: if `requires_signature`, verify signature exists before allowing completion
-- `pyproject.toml`: add `cryptography` as explicit dependency
+---
 
 ## Component Boundary Summary
 
 ```
-EXISTING (modify)                         NEW (create)
-=================                         ============
+EXISTING (modify)                          NEW (create)
+=================                          ============
 
 models/
-  enums.py ............ +SUB_WORKFLOW, +EVENT     timer.py
-  workflow.py ......... +timer_config,            sub_workflow.py
-                         +sub_process_template_id, event.py
-                         +event_type,              notification.py
-                         +requires_signature       rendition.py
-  document.py ......... +is_virtual, +is_record   virtual_document.py
-                                                   retention.py
-                                                   signature.py
+  document.py ......... +document_type_id,   document_type.py
+                         +search_vector,      folder.py (+ folder_documents)
+                         +owner_id            folder_acl.py
+  enums.py ............ +RelationshipType    document_relationship.py
+  __init__.py ......... +new imports          document_content.py
+                                              saved_search.py
 
 services/
-  engine_service.py ... +sub-workflow spawn,       timer_service.py
-                         +event wait,              event_bus.py
-                         +notification hooks,      notification_service.py
-                         +signature check          rendition_service.py
-  document_service.py . +retention checks,         virtual_document_service.py
-                         +rendition triggers,      retention_service.py
-                         +event emission           signature_service.py
-  lifecycle_service.py  +event emission,
-                         +retention auto-assign
-
-tasks/
-  (auto_activity.py -- no changes)                 timer_tasks.py
-  (metrics_aggregation -- no changes)              sub_workflow_tasks.py
-                                                   event_tasks.py
-                                                   notification_tasks.py
-                                                   rendition_tasks.py
-                                                   retention_tasks.py
+  acl_service.py ...... +folder ACL fallback  folder_service.py
+  document_service.py . +type validation,     document_type_service.py
+                         +folder filing,       search_service.py
+                         +text extraction      relationship_service.py
+                         dispatch              folder_acl_service.py
+                                              saved_search_service.py
+                                              content_extraction_service.py
 
 routers/
-  (existing -- no changes)                         notifications.py
-                                                   renditions.py
-                                                   virtual_documents.py
-                                                   retention.py
-                                                   signatures.py
-                                                   events.py (webhook endpoint)
+  documents.py ........ +type/folder params   folders.py
+                         +relationship         document_types.py
+                         endpoints             search.py
+                                              saved_searches.py
 
-core/
-  config.py ........... +notification settings
-  minio_client.py ..... +renditions bucket
+tasks/
+  (existing unchanged)                        content_extraction.py
 
-celery_app.py ......... +4 beat schedules
-docker-compose.yml .... +rendition worker (LibreOffice)
+schemas/
+  document.py ......... +type_id, folder_id   folder.py
+                                              document_type.py
+                                              search.py
+                                              document_relationship.py
+                                              saved_search.py
+
+frontend/
+  pages/ .............. DocumentsPage mods    BrowsePage.tsx
+  App.tsx ............. +routes, / -> /browse  SearchPage.tsx
+  components/layout/                          DocumentTypesPage.tsx
+    SidebarNav.tsx .... +Browse,Search,Types
+  components/documents/                       folders/ (5 components)
+    DocumentDetailPanel +location,type,rels   search/ (4 components)
+    DocumentTable ..... +type,location cols   document-types/ (2 components)
+    DocumentDropZone .. +folderId prop        documents/RelationshipPanel.tsx
+  api/ ................ documents.ts mods     folders.ts, search.ts,
+                                              documentTypes.ts, savedSearches.ts
 ```
 
-## Recommended Architecture: Event-First Integration Layer
-
-All 8 features benefit from a shared event bus. Build notifications + event bus first because:
-
-1. **Notifications** subscribe to events (task_assigned, deadline_breached, workflow_completed)
-2. **Timer escalations** emit events that notifications consume
-3. **Event activities** are the primary event consumer
-4. **Rendition completion** emits events that workflows can wait on
-5. **Retention disposition** can notify admins via events
-
-```
-                         +-------------------+
-                         |   Redis Pub/Sub   |
-                         |   (Event Bus)     |
-                         +--------+----------+
-                                  |
-         +------------------------+------------------------+
-         |            |           |           |            |
-   engine_service  document_svc  lifecycle  timer_tasks  external
-   (emit: activity (emit: doc    (emit:     (emit:       webhooks
-    completed,      uploaded,    state      deadline     (emit:
-    work_item       checked_in)  changed)   breached)    custom)
-    created)
-         |
-         v
-   +-----+------+----+----------+-----------+
-   |            |            |              |
-  Event      Notification  Rendition     Sub-workflow
-  Activities  Service      Triggers      Completion
-  (complete   (email +     (auto-gen     Events
-   on match)   in-app)     on upload)
-```
-
-## Patterns to Follow
-
-### Pattern 1: Service-Layer Event Emission (Post-Commit)
-**What:** Every state-changing operation emits a domain event after the DB transaction succeeds.
-**When:** All service methods that mutate state.
-**Example:**
-```python
-# In engine_service.py, after creating work items and flushing:
-from app.services.event_bus import emit_event
-
-await emit_event("work_item.created", {
-    "work_item_id": str(work_item.id),
-    "performer_id": str(perf_id),
-    "workflow_id": str(workflow.id),
-    "activity_name": target_at.name,
-})
-```
-
-### Pattern 2: Celery Beat Polling for Time-Based Operations
-**What:** Use Beat polling rather than individual delayed tasks (`apply_async(eta=...)`).
-**When:** Timers, deadlines, retention dispositions, sub-workflow monitoring.
-**Why:** Individual ETA tasks are lost on worker restart. Polling is idempotent and survives restarts. The existing auto-activity poll already uses this pattern successfully.
-**Example:**
-```python
-# celery_app.py beat_schedule addition:
-"check-timer-deadlines": {
-    "task": "app.tasks.timer_tasks.check_timer_deadlines",
-    "schedule": 30.0,
-},
-```
-
-### Pattern 3: Model Extension via JSON Columns + Relationships
-**What:** Add new capabilities to ActivityTemplate via JSON columns and separate relationship tables rather than subclassing.
-**When:** Timer config, sub-workflow config, event config, signature requirements.
-**Why:** Keeps the core workflow model stable. New features are additive. Migrations are non-destructive.
-**Example:**
-```python
-# JSON column approach (simpler, good for config that does not need querying):
-timer_config: Mapped[dict | None] = mapped_column(JSON, nullable=True)
-
-# Relationship approach (better when you need to query across timers):
-class TimerConfig(BaseModel):
-    activity_template_id: Mapped[uuid.UUID] = mapped_column(FK)
-    ...
-```
-
-### Pattern 4: Consistent Task Pattern (mirror auto_activity.py)
-**What:** New Celery tasks follow the same sync-wrapper-over-async pattern as `auto_activity.py`.
-**When:** All new tasks (timer, sub-workflow, event, rendition, retention, notification).
-**Why:** Consistency. The pattern of `def task(): asyncio.run(_async())` with separate session factory is proven.
-```python
-@celery_app.task(name="app.tasks.timer_tasks.check_timer_deadlines")
-def check_timer_deadlines():
-    asyncio.run(_check_deadlines_async())
-```
-
-## Anti-Patterns to Avoid
-
-### Anti-Pattern 1: Individual Delayed Celery Tasks for Timers
-**What:** Scheduling `task.apply_async(eta=deadline)` for each work item.
-**Why bad:** Lost on worker restart. Hard to cancel/modify. No visibility into pending timers.
-**Instead:** Beat polls a deadlines query. Idempotent, restartable, queryable.
-
-### Anti-Pattern 2: Synchronous Event Processing in Request Path
-**What:** Processing notifications, renditions, or event matching inline during HTTP request handling.
-**Why bad:** Slows API responses. Couples features tightly. Partial failure risk.
-**Instead:** Emit to Redis pub/sub, background tasks consume asynchronously.
-
-### Anti-Pattern 3: God Object Expansion
-**What:** Adding sub_workflow_link, timer_state, signature_status columns directly onto `WorkflowInstance`.
-**Why bad:** WorkflowInstance grows unboundedly. Every migration affects all rows. Conceptual bloat.
-**Instead:** Separate linking tables (SubWorkflowLink, TimerConfig, DigitalSignature) with FK back to the relevant entity.
-
-### Anti-Pattern 4: Unbounded Sub-Workflow Recursion
-**What:** Allowing sub-workflows to spawn sub-workflows without depth tracking.
-**Why bad:** Infinite loops, stack-like resource consumption, impossible debugging.
-**Instead:** Track `depth` in SubWorkflowLink, enforce max (5 levels). Reject spawning beyond limit.
-
-### Anti-Pattern 5: Rendition Processing in API Worker
-**What:** Running LibreOffice conversion in the FastAPI process.
-**Why bad:** CPU-bound, blocks async event loop, can crash the API server.
-**Instead:** Always dispatch to Celery worker. Consider a dedicated rendition worker pool.
+---
 
 ## Scalability Considerations
 
-| Concern | At 100 workflows | At 10K workflows | At 1M workflows |
-|---------|-------------------|-------------------|-------------------|
-| Timer polling | Single Beat query, <100ms | Index on `(state, due_date)`, batch processing | Partition work_items by date, dedicated timer workers |
-| Sub-workflow tracking | FK query in poll task | Indexed query, batch advancement | Separate status table with partitioned polling |
-| Event bus throughput | Redis pub/sub trivially | Still fine (~100K msg/s) | Migrate to Redis Streams for persistence + consumer groups |
-| Notification volume | Direct DB insert + email | Batch email, async writes | Read replica for queries, message queue for email |
-| Rendition processing | Single Celery worker | Dedicated rendition worker pool (CPU-bound) | Separate rendition microservice |
-| Digital signatures | Inline crypto, <50ms per sign | Background batch verification | HSM integration, cert cache |
+| Concern | At 1K docs | At 100K docs | At 1M docs |
+|---------|------------|--------------|------------|
+| Folder tree loading | Eager load all | Lazy-load children, React Query cache | Virtual scrolling, paginate per level |
+| Full-text search | tsvector trivial | GIN index <100ms | Add pg_trgm for fuzzy; consider Meilisearch |
+| ACL inheritance walk | 3-5 levels, trivial | Cache effective ACL in Redis (60s TTL) | Materialize effective ACL table |
+| Content text extraction | Sync ok | Celery queue essential | Multiple extraction workers |
+| Type schema validation | In-memory <1ms | Same | Cache compiled schemas per type |
 
-## Suggested Build Order (Dependency-Driven)
-
-```
-Phase 1: Notifications + Event Bus Foundation
-  Why first: Event bus is consumed by every subsequent feature.
-  Notifications provide immediate UX value and are needed for timer escalation.
-  Lowest engine complexity -- validates the integration pattern.
-  Touches: new models, new service, new router, new tasks, minor engine hooks
-
-Phase 2: Timer Activities & Escalation
-  Depends on: Phase 1 (notifications for escalation alerts)
-  Why second: Most requested missing feature. Validates Celery Beat pattern.
-  Touches: ActivityTemplate modification, new beat task, engine_service hooks
-
-Phase 3: Sub-Workflows
-  Depends on: Stable engine (phases 1-2 validated engine modification patterns)
-  Why third: Most complex engine change. Parent-child lifecycle management.
-  Touches: new enum value, engine_service major addition, new beat task
-
-Phase 4: Event-Driven Activities
-  Depends on: Event bus (Phase 1)
-  Why fourth: Second new activity type. Validates event bus under workflow load.
-  Touches: new enum value, engine_service addition, event listener tasks
-
-Phase 5: Document Renditions
-  Independent of workflow engine changes.
-  Why fifth: New Docker dependency (LibreOffice). Clear service boundary.
-  Touches: new models/service/tasks, docker-compose, Dockerfile
-
-Phase 6: Virtual Documents
-  Depends on: Renditions (Phase 5) for assembled PDF output.
-  Why sixth: Metadata-layer only, no engine changes. Lower risk.
-  Touches: new models, document model modification
-
-Phase 7: Retention & Records Management
-  Independent of workflow engine.
-  Why seventh: Policy enforcement via document_service hooks. Careful testing needed.
-  Touches: document_service modification, lifecycle hooks, daily beat task
-
-Phase 8: Digital Signatures
-  Depends on: Stable document model (Phases 5-7).
-  Why last: Cryptographic complexity. Optional workflow integration.
-  Touches: new models, engine_service (requires_signature check), crypto deps
-```
+---
 
 ## Sources
 
-- Codebase analysis: `src/app/services/engine_service.py` -- token-based Petri-net, activity type dispatch, ~1100 lines -- HIGH confidence
-- Codebase analysis: `src/app/tasks/auto_activity.py` -- Celery worker pattern with asyncio.run wrapper -- HIGH confidence
-- Codebase analysis: `src/app/celery_app.py` -- Beat schedule with 2 existing tasks -- HIGH confidence
-- Codebase analysis: `src/app/models/workflow.py` -- ActivityTemplate has expected_duration_hours, WorkItem has due_date -- HIGH confidence
-- Codebase analysis: `src/app/auto_methods/` -- decorator registry pattern for extensibility -- HIGH confidence
-- Codebase analysis: `src/app/models/document.py` -- Document + DocumentVersion with MinIO keys -- HIGH confidence
-- Codebase analysis: `src/app/core/minio_client.py` -- single bucket, asyncio.to_thread wrapping -- HIGH confidence
-- Redis pub/sub for event bus: well-established pattern, redis-py async support -- HIGH confidence
-- Celery Beat polling vs individual ETA tasks: Celery best practices documentation -- HIGH confidence
-- LibreOffice headless for document conversion: standard server-side approach -- HIGH confidence
-- Python `cryptography` library for PKCS7/CMS signatures: standard, mature -- HIGH confidence
+- [PostgreSQL Full-Text Search: Tables and Indexes](https://www.postgresql.org/docs/current/textsearch-tables.html) -- HIGH confidence
+- [PostgreSQL GIN Index for Text Search](https://www.postgresql.org/docs/current/textsearch-indexes.html) -- HIGH confidence
+- [PostgreSQL ltree Extension](https://www.postgresql.org/docs/current/ltree.html) -- HIGH confidence (evaluated, not recommended)
+- [SQLAlchemy PostgreSQL TSVECTOR](https://docs.sqlalchemy.org/en/20/dialects/postgresql.html) -- HIGH confidence
+- [Documentum Object Types](https://argondigital.com/blog/ecm/object-types/) -- MEDIUM confidence
+- [Documentum Type Hierarchy](https://documentumexpert.wordpress.com/2012/08/11/hierarchical-list-of-documentum-types/) -- MEDIUM confidence
+- Codebase analysis: all model, service, router, and frontend files examined -- HIGH confidence

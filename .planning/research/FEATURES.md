@@ -1,139 +1,85 @@
-# Feature Landscape
+# Feature Landscape: v1.3 Document-Centric ECM
 
-**Domain:** Documentum Workflow Clone v1.2 -- Advanced Engine & Document Platform
-**Researched:** 2026-04-06
+**Domain:** Enterprise Content Management -- document-first ECM features
+**Researched:** 2026-04-13
 
 ## Table Stakes
 
-Features that close the gap with Documentum's specification. Missing = incomplete Documentum clone.
+Features that make the system a genuine ECM platform. Missing any of these and it remains "a workflow engine with document attachments."
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| Timer/deadline activities | Documentum has timer events and SLA tracking. Every BPM engine supports deadlines. | Medium | Leverage existing WorkItem.due_date and Celery Beat |
-| Escalation on overdue | Documentum auto-escalates overdue tasks. Expected in any workflow engine. | Medium | Reassign, notify, or bump priority when deadline passes |
-| Sub-workflow spawning | Documentum dm_process supports sub-processes. Essential for complex workflows. | High | Parent-child lifecycle, variable passing, depth limits |
-| Email notifications | Documentum sends email on task assignment. Users expect email alerts. | Medium | Existing SMTP config + send_email auto method as foundation |
-| In-app notifications | Modern web apps show notification badges. Users check inbox but expect alerts. | Medium | New model + router + frontend notification bell |
+| Cabinet/folder hierarchy | Every ECM has folder-based organization. Users expect to browse documents by navigating a tree. | Medium | Adjacency list with parent_id. Cabinets are root folders (parent_id IS NULL, is_cabinet=true). |
+| Folder CRUD + move | Users need to create, rename, move, and delete folders. Moving a folder moves its contents. | Medium | Move updates parent_id + revalidates name uniqueness in new parent. |
+| Document-folder linking | Documents must live in folders. A document can exist in multiple folders (Documentum link/unlink). | Low | Many-to-many `folder_documents` join table. |
+| Document type definitions | Admins define document types (Invoice, Contract, Policy) with type-specific required metadata. | Medium | `document_types` table with JSON Schema definition. Validates `custom_properties` on write. |
+| Type inheritance | Types extend a base type. "Invoice" inherits common fields from "Financial Document." | Medium | Self-referential `parent_type_id`. Schema merging at validation time. |
+| Full-text search | Users expect to search document content, not just titles. | Medium | PostgreSQL tsvector on documents (metadata) + document_content_text (body). GIN indexes. |
+| Search results with ranking | Results sorted by relevance with snippets showing matches. | Low | ts_rank + ts_headline built into PostgreSQL. |
+| Metadata search / filtering | Filter by type, author, date range, lifecycle state, custom properties. | Low | Standard SQL WHERE clauses + JSONB operators. |
+| Folder-level ACL inheritance | Permissions on a cabinet flow down to children unless overridden. | High | Recursive CTE walks folder tree upward. Merge folder ACL with direct document ACL. |
+| Breadcrumb navigation | Show full path: Cabinet > Folder > Subfolder > Document. | Low | Recursive CTE from folder to root. |
+| Document-first browse UI | Folder tree + content grid as primary navigation. | High | New BrowsePage. Becomes default route (replacing /inbox). |
 
 ## Differentiators
 
-Features that go beyond basic Documentum replication. Not strictly expected, but valuable.
+Features beyond basic ECM that match Documentum's advanced capabilities.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Event-driven activities | Activities triggered by document/system events. More flexible than polling. | High | Redis pub/sub event bus, webhook endpoint for external events |
-| Document renditions | Auto-generate PDF/thumbnails. Eliminates manual conversion. | Medium | LibreOffice headless + Celery workers. New Docker deps. |
-| Virtual/compound documents | Assemble multi-document packages with ordering. | Medium | Metadata-only feature with optional PDF assembly |
-| Retention policies | Enforce document preservation and automated disposition. | Medium | Policy engine with legal hold support |
-| Digital signatures | Cryptographic non-repudiation on documents and approvals. | High | PKCS7/CMS signing, certificate management, verification |
-| Notification preferences | Per-user opt-in/out by type and channel. | Low | Preference model, check before dispatching |
-| Webhook-triggered activities | External systems fire workflow events via REST. | Low | Simple authenticated endpoint that emits to event bus |
+| Document relationships | Typed links: supersedes, references, is-part-of. Enables traceability. | Low | Junction table with relationship_type enum. |
+| Saved searches / smart folders | Named queries appearing as folders in tree. | Medium | JSON query definition. Executed on access. Distinct icon in tree. |
+| Multi-filing | Document in multiple folders simultaneously. | Low | Supported by folder_documents many-to-many. Needs "File to folder" UI action. |
+| Type-specific metadata forms | Different types render different metadata forms. | Medium | Dynamic form generated from JSON Schema at frontend. |
+| Content text extraction | Auto-extract searchable text from PDFs, Word docs. | Medium | Celery task: download from MinIO, extract, store in document_content_text. |
 
 ## Anti-Features
 
-Features to explicitly NOT build in v1.2.
+Features to explicitly NOT build in v1.3.
 
 | Anti-Feature | Why Avoid | What to Do Instead |
 |--------------|-----------|-------------------|
-| Real-time collaborative editing | Massive complexity (OT/CRDT), out of scope for workflow engine | Document check-in/check-out already prevents conflicts |
-| Calendar/scheduling UI for timers | UI complexity with little value -- timers are configured in template designer | Configure timer durations in ActivityTemplate properties panel |
-| Full PKI/CA infrastructure | Way beyond scope for internal tool | Self-signed certs stored in DB. Add CA support later if needed. |
-| Email-based workflow actions | Replying to email to approve/reject | Web UI is the interaction point. Not worth the parsing complexity. |
-| Multi-tenant isolation | Internal/personal use. Adds complexity everywhere. | Single-tenant. Add later if product pivots. |
-| Rendition preview editing | Editing rendered PDFs in-browser | View-only. Editing happens on source document. |
-| Complex retention schedule builder UI | Retention policies are admin-configured, rarely changed | Simple form for policy creation. No visual schedule builder. |
+| dm_sysobject polymorphic base | Migrating documents table breaks 10+ FK references. Enormous risk. | Keep documents and folders as separate tables sharing BaseModel. |
+| ltree PostgreSQL extension | Path desync bugs, label restrictions, unnecessary for shallow hierarchies. | Adjacency list with recursive CTE. |
+| Elasticsearch integration | JVM service, sync complexity. Overkill for internal ECM. | PostgreSQL tsvector with GIN indexes. |
+| Real-time collaborative editing | CRDT/OT complexity. Documentum uses check-in/check-out. | Keep existing check-in/check-out. |
+| Content auto-classification (AI) | Scope creep. Not in Documentum spec. | Future milestone. |
+| Version tree (branching) | Significant complexity. Linear versioning sufficient. | Keep linear major/minor versioning. |
 
 ## Feature Dependencies
 
 ```
-Event Bus -------> Event-Driven Activities
-    |
-    +-----------> Notifications (consume events)
-    |
-    +-----------> Timer Escalation (emit deadline events)
+Document Type System (independent) -----> Upload validates against type schema
 
-Timer Config ----> Timer Activities (deadlines on work items)
-    |
-    +-----------> Escalation (triggered when deadline passes)
-    |
-    +-----------> Notifications (deadline approaching alerts)
+Cabinet/Folder Hierarchy --> Document-Folder Linking --> Multi-filing
+    |                              |
+    v                              v
+Folder ACL Inheritance      Document-First Browse UI
+    |                              ^
+    v                              |
+Breadcrumb Navigation        Search Page UI <-- Full-Text Search
+                                                      |
+                                                      v
+                                              Saved Searches / Smart Folders
 
-Renditions ------> Virtual Document Assembly (merge PDFs)
-
-Stable Document Model --> Digital Signatures (sign specific versions)
-                     +--> Retention Policies (hold specific documents)
-
-Sub-Workflows: Independent but benefits from stable engine (validated by timer/event phases)
+Document Relationships (independent)
 ```
 
-## MVP Recommendation per Feature
+## MVP Recommendation
 
-### Timer Activities
 Prioritize:
-1. Deadline configuration on ActivityTemplate (duration-based)
-2. Celery Beat polling for overdue work items
-3. Priority bump escalation action
+1. Document type system (structured metadata, no external deps)
+2. Cabinet/folder hierarchy + document filing (foundation for browse)
+3. Folder ACL inheritance (security non-negotiable)
+4. Full-text search + content extraction (core ECM expectation)
+5. Document-first navigation UI (makes it usable)
 
-Defer: Recurring timers, expression-based deadline calculation, multi-level escalation chains
-
-### Sub-Workflows
-Prioritize:
-1. Spawn child workflow from SUB_WORKFLOW activity
-2. Wait for child completion, then advance parent
-3. Input variable mapping (parent -> child)
-
-Defer: Output variable mapping (child -> parent), partial completion (wait for any-of-N children), parallel sub-workflows from single activity
-
-### Event-Driven Activities
-Prioritize:
-1. Event bus (emit + subscribe)
-2. document.uploaded and lifecycle.changed event types
-3. EVENT activity type that completes on matching event
-
-Defer: Complex filter expressions on event payloads, event replay, external webhook authentication
-
-### Notifications
-Prioritize:
-1. In-app notification model + REST API
-2. Task assignment notifications
-3. Frontend notification bell with unread count
-
-Defer: Email notifications (can use existing send_email auto method initially), notification preferences, push notifications
-
-### Document Renditions
-Prioritize:
-1. PDF rendition generation via LibreOffice headless
-2. Auto-trigger on document upload
-3. REST endpoint to download renditions
-
-Defer: Thumbnail generation, rendition for image formats, custom rendition profiles
-
-### Virtual Documents
-Prioritize:
-1. VirtualDocumentNode model (parent-child relationships)
-2. Add/remove/reorder children
-3. Resolve tree with cycle detection
-
-Defer: PDF assembly, nested virtual documents (depth > 1), late-bound version resolution
-
-### Retention Policies
-Prioritize:
-1. RetentionPolicy and RetentionAssignment models
-2. Block deletion of documents under retention
-3. Legal hold support
-
-Defer: Automated disposition (daily Beat task), retention auto-assignment on lifecycle change, disposition review workflow
-
-### Digital Signatures
-Prioritize:
-1. Sign a document version (hash + PKCS7 signature)
-2. Verify signature endpoint
-3. List signatures on a document
-
-Defer: Certificate management UI, sign-on-checkin automation, requires_signature on workflow activities, certificate revocation
+Defer:
+- Folder templates: Nice-to-have, post-v1.3
+- Type-specific detail views: Generic detail view initially
 
 ## Sources
 
-- OpenText Documentum Workflow Management specification (project reference doc) -- HIGH confidence
-- Codebase analysis of existing features and extension points -- HIGH confidence
-- BPM/workflow engine feature landscape (Camunda, Flowable, Activiti feature sets) -- MEDIUM confidence
+- Documentum specification (project reference)
+- Existing codebase analysis (models, ACL, document model)
+- [Documentum Object Types](https://argondigital.com/blog/ecm/object-types/) -- MEDIUM confidence
