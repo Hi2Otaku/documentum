@@ -126,4 +126,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-13 — v1.3 Document-Centric ECM milestone started.*
+*Last updated: 2026-04-13 — Phase 28 complete: cabinet/folder hierarchy (tree, CRUD, filing, frontend UI). Phase 29 (folder ACL inheritance) is next.*
