@@ -152,7 +152,7 @@ Plans:
 | 12–15. Full Frontend | v1.1 | 4/4 | Complete | 2026-04-06 |
 | 16–26. Advanced Engine | v1.2 | 26/26 | Complete | 2026-04-13 |
 | 27. Document Type System | v1.3 | 4/4 | Complete | 2026-04-13 |
-| 28. Cabinet/Folder Hierarchy | v1.3 | 0/3 | Planning | — |
+| 28. Cabinet/Folder Hierarchy | v1.3 | 0/3 | Planned    |  |
 | 29. Folder ACL Inheritance | v1.3 | 0/? | Not started | — |
 | 30. Full-Text Search & Content Extraction | v1.3 | 0/? | Not started | — |
 | 31. Document Relationships | v1.3 | 0/? | Not started | — |

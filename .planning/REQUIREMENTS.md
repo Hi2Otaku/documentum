@@ -17,10 +17,10 @@ Milestone: v1.3 Document-Centric ECM
 
 ### Cabinet/Folder Hierarchy
 
-- [ ] **FOLD-01**: User can create a cabinet (top-level container) and nested folders within any folder
-- [ ] **FOLD-02**: User can browse the full cabinet/folder tree via a hierarchical navigator
-- [ ] **FOLD-03**: User can file a document into one or more folders (multi-filing); removing from a folder does not delete the document
-- [ ] **FOLD-04**: User can move, rename, and copy folders; breadcrumb navigation shows the full path
+- [x] **FOLD-01**: User can create a cabinet (top-level container) and nested folders within any folder
+- [x] **FOLD-02**: User can browse the full cabinet/folder tree via a hierarchical navigator
+- [x] **FOLD-03**: User can file a document into one or more folders (multi-filing); removing from a folder does not delete the document
+- [x] **FOLD-04**: User can move, rename, and copy folders; breadcrumb navigation shows the full path
 - [ ] **FOLD-05**: Permissions assigned to a folder are inherited by all documents within it (folder-level ACL propagation)
 
 ### Full-Text Search
@@ -77,10 +77,10 @@ Milestone: v1.3 Document-Centric ECM
 | TYPE-03 | Phase 27 | Complete |
 | TYPE-04 | Phase 27 | Complete |
 | TYPE-05 | Phase 27 | Pending |
-| FOLD-01 | Phase 28 | Pending |
-| FOLD-02 | Phase 28 | Pending |
-| FOLD-03 | Phase 28 | Pending |
-| FOLD-04 | Phase 28 | Pending |
+| FOLD-01 | Phase 28 | Complete |
+| FOLD-02 | Phase 28 | Complete |
+| FOLD-03 | Phase 28 | Complete |
+| FOLD-04 | Phase 28 | Complete |
 | FOLD-05 | Phase 29 | Pending |
 | SRCH-01 | Phase 30 | Pending |
 | SRCH-02 | Phase 30 | Pending |

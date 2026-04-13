@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Document-Centric ECM
-status: executing
-stopped_at: Completed 27-03-PLAN.md (Document Type Admin UI)
-last_updated: "2026-04-13T04:10:13.835Z"
+status: verifying
+stopped_at: Completed 28-01-PLAN.md (Folder Foundation)
+last_updated: "2026-04-13T07:22:22.177Z"
 last_activity: 2026-04-13
 progress:
   total_phases: 7
-  completed_phases: 0
-  total_plans: 4
-  completed_plans: 3
+  completed_phases: 1
+  total_plans: 7
+  completed_plans: 4
   percent: 0
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-13)
 
 Phase: 27 (document-type-system) — EXECUTING
 Plan: 4 of 4
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-13
 
 Progress: [..........] 0% (v1.3: 0/7 phases)
@@ -55,6 +55,7 @@ Progress: [..........] 0% (v1.3: 0/7 phases)
 | Phase 27-document-type-system P01 | 12 | 2 tasks | 9 files |
 | Phase 27-document-type-system P02 | 5min | 2 tasks | 5 files |
 | Phase 27-document-type-system P03 | 3.5min | 2 tasks | 8 files |
+| Phase 28-cabinet-folder-hierarchy P01 | 3.5min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,7 @@ v1.3 architecture decisions (resolved during research):
 - [Phase 27-document-type-system]: Place validate_metadata in router before service call to keep upload_document service pure and reusable
 - [Phase 27-document-type-system]: Client-side JSON schema validation in dialog validates parse correctness and property count before API call
 - [Phase 27-document-type-system]: Parent type dropdown restricted to root types (parent_type_id === null) to prevent 3-level hierarchy in UI
+- [Phase 28-cabinet-folder-hierarchy]: Self-referential FK on folders.parent_id; document_folders uses Table() for extra columns; folder tree built in Python from flat query; recursive CTEs for path/descendants/copy/delete
 
 ### Pending Todos
 
@@ -82,6 +84,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-13T04:10:13.830Z
-Stopped at: Completed 27-03-PLAN.md (Document Type Admin UI)
+Last session: 2026-04-13T07:22:22.168Z
+Stopped at: Completed 28-01-PLAN.md (Folder Foundation)
 Resume file: None
