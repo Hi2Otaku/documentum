@@ -157,14 +157,20 @@ function renderField(
     );
   }
 
-  // Number
-  if (type === "number") {
+  // Number / Integer
+  if (type === "number" || type === "integer") {
+    const coerce = (raw: string) => {
+      if (raw === "") return null;
+      const n = type === "integer" ? parseInt(raw, 10) : parseFloat(raw);
+      return isNaN(n) ? null : n;
+    };
     return (
       <Input
         id={fieldId}
         type="number"
+        step={type === "integer" ? "1" : "any"}
         value={typeof currentValue === "number" ? String(currentValue) : ""}
-        onChange={(e) => handleChange(key, e.target.value === "" ? "" : Number(e.target.value))}
+        onChange={(e) => handleChange(key, coerce(e.target.value))}
         aria-required={isRequired ? "true" : undefined}
       />
     );

@@ -97,7 +97,16 @@ export function DocumentDropZone({ onUploadComplete }: DocumentDropZoneProps) {
           titleFromFilename(file.name),
           username,
           selectedTypeId ?? undefined,
-          Object.keys(metadata).length > 0 ? metadata : undefined,
+          (() => {
+            // Strip null/empty-string values — omitted fields are handled by
+            // schema validation (required → "missing", optional → simply absent)
+            const clean = Object.fromEntries(
+              Object.entries(metadata).filter(
+                ([, v]) => v !== null && v !== undefined && v !== "",
+              ),
+            );
+            return Object.keys(clean).length > 0 ? clean : undefined;
+          })(),
         );
         setUploadingFiles([{ ...entry, status: "done" }]);
         toast.success("Document uploaded");

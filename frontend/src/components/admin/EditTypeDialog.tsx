@@ -83,12 +83,6 @@ export function EditTypeDialog({
       return;
     }
 
-    const properties = parsed.properties as Record<string, unknown> | undefined;
-    if (!properties || Object.keys(properties).length === 0) {
-      setSchemaError("Schema must define at least one property");
-      return;
-    }
-
     setIsSubmitting(true);
     try {
       await updateDocumentType(type.id, {

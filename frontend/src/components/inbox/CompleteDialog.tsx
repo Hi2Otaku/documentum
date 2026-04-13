@@ -40,7 +40,7 @@ export function CompleteDialog({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inbox"] });
-      toast.success("Task completed");
+      toast.success("Task approved");
       setComment("");
       onOpenChange(false);
     },
@@ -53,9 +53,9 @@ export function CompleteDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Complete Task</DialogTitle>
+          <DialogTitle>Approve Task</DialogTitle>
           <DialogDescription>
-            Mark this task as complete. You can optionally add a comment.
+            Approve this task and advance the workflow. You can optionally add a comment.
           </DialogDescription>
         </DialogHeader>
         <Textarea
@@ -73,7 +73,7 @@ export function CompleteDialog({
             disabled={completeMutation.isPending}
             onClick={() => completeMutation.mutate()}
           >
-            {completeMutation.isPending ? "Completing..." : "Complete"}
+            {completeMutation.isPending ? "Approving..." : "Approve"}
           </Button>
         </DialogFooter>
       </DialogContent>

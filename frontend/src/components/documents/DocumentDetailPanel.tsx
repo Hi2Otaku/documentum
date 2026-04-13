@@ -1,3 +1,4 @@
+import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Separator } from "../ui/separator";
@@ -6,6 +7,7 @@ import { LifecycleStateBadge } from "./LifecycleStateBadge";
 import { LockIndicator } from "./LockIndicator";
 import { DocumentActions } from "./DocumentActions";
 import { VersionHistoryList } from "./VersionHistoryList";
+import { useSelectedType } from "./TypeSelector";
 import { fetchDocument } from "../../api/documents";
 
 interface DocumentDetailPanelProps {
@@ -22,6 +24,9 @@ export function DocumentDetailPanel({
     queryFn: () => fetchDocument(documentId!),
     enabled: !!documentId,
   });
+
+  // Resolve the type schema from the cached documentTypes list (no extra fetch)
+  const selectedType = useSelectedType(document?.document_type_id ?? null);
 
   // No selection state
   if (!documentId) {
@@ -118,15 +123,56 @@ export function DocumentDetailPanel({
         </Card>
       </div>
 
-      {/* Section 3 - Actions */}
+      {/* Section 3 - Type Metadata */}
+      {selectedType && Object.keys(document.custom_properties).length > 0 && (
+        <div className="px-6 pb-4">
+          <Card>
+            <CardHeader className="p-4 pb-0">
+              <CardTitle className="text-sm font-semibold">
+                {selectedType.name} Metadata
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 pt-3">
+              <div className="grid grid-cols-[auto_1fr] gap-y-2 gap-x-4">
+                {Object.entries(document.custom_properties).map(([key, val]) => {
+                  const schemaProp = (
+                    selectedType.metadata_schema?.properties as
+                      | Record<string, { title?: string }>
+                      | undefined
+                  )?.[key];
+                  const label = schemaProp?.title ?? key;
+                  const display =
+                    val === null || val === undefined
+                      ? "\u2014"
+                      : typeof val === "boolean"
+                        ? val ? "Yes" : "No"
+                        : String(val);
+                  return (
+                    <React.Fragment key={key}>
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        {label}
+                      </span>
+                      <span className="text-sm truncate" title={display}>
+                        {display}
+                      </span>
+                    </React.Fragment>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Section 4 - Actions */}
       <div className="px-6 py-4">
         <DocumentActions document={document} currentUserId={currentUserId} />
       </div>
 
-      {/* Section 4 - Separator */}
+      {/* Section 5 - Separator */}
       <Separator />
 
-      {/* Section 5 - Version History */}
+      {/* Section 6 - Version History */}
       <div className="px-6 py-4">
         <h3 className="text-base font-semibold mb-3">Version History</h3>
         <VersionHistoryList documentId={documentId} />

@@ -172,7 +172,7 @@ export function InboxDetailPanel({ workItemId }: InboxDetailPanelProps) {
                 size="sm"
                 onClick={() => setCompleteOpen(true)}
               >
-                Complete
+                Approve
               </Button>
               <Button
                 variant="outline"
