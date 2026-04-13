@@ -12,17 +12,20 @@ from app.models.enums import PermissionLevel
 from app.models.user import User
 from app.schemas.common import EnvelopeResponse, PaginationMeta
 from app.schemas.document import DocumentResponse, DocumentUpdate, DocumentVersionResponse
-from app.services import document_service, document_type_service
+from app.services import document_service, document_type_service, folder_service
 from app.services.audit_service import create_audit_record
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 
 
-def _doc_response(doc: Document) -> DocumentResponse:
-    """Build DocumentResponse with document_type_name populated from eagerly-loaded relationship."""
+def _doc_response(doc: Document, folder_ids: list[str] | None = None) -> DocumentResponse:
+    """Build DocumentResponse with document_type_name and folder_ids populated."""
     base = DocumentResponse.model_validate(doc)
     document_type_name = doc.document_type.name if doc.document_type else None
-    return base.model_copy(update={"document_type_name": document_type_name})
+    updates: dict = {"document_type_name": document_type_name}
+    if folder_ids is not None:
+        updates["folder_ids"] = folder_ids
+    return base.model_copy(update=updates)
 
 
 @router.post(
@@ -58,7 +61,8 @@ async def upload_document(
         user_id=str(current_user.id),
         document_type_id=type_id,
     )
-    return EnvelopeResponse(data=_doc_response(document))
+    fids = await folder_service.get_document_folder_ids(db, document.id)
+    return EnvelopeResponse(data=_doc_response(document, folder_ids=fids))
 
 
 @router.get(
@@ -70,6 +74,7 @@ async def list_documents(
     page_size: int = Query(20, ge=1, le=100),
     title: str | None = Query(None),
     author: str | None = Query(None),
+    folder_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -78,9 +83,14 @@ async def list_documents(
         db, page, page_size, title, author,
         user_id=str(current_user.id),
         is_superuser=current_user.is_superuser,
+        folder_id=folder_id,
     )
+    results = []
+    for d in documents:
+        fids = await folder_service.get_document_folder_ids(db, d.id)
+        results.append(_doc_response(d, folder_ids=fids))
     return EnvelopeResponse(
-        data=[_doc_response(d) for d in documents],
+        data=results,
         meta=PaginationMeta(
             page=page,
             page_size=page_size,
@@ -101,7 +111,8 @@ async def get_document(
 ):
     """Get a single document by ID."""
     document = await document_service.get_document(db, document_id)
-    return EnvelopeResponse(data=_doc_response(document))
+    fids = await folder_service.get_document_folder_ids(db, document.id)
+    return EnvelopeResponse(data=_doc_response(document, folder_ids=fids))
 
 
 @router.put(
@@ -136,7 +147,8 @@ async def update_document(
         user_id=str(current_user.id),
         document_type_id=data.document_type_id,
     )
-    return EnvelopeResponse(data=_doc_response(document))
+    fids = await folder_service.get_document_folder_ids(db, document.id)
+    return EnvelopeResponse(data=_doc_response(document, folder_ids=fids))
 
 
 @router.delete(
@@ -186,7 +198,8 @@ async def checkout(
     document = await document_service.checkout_document(
         db, document_id, str(current_user.id)
     )
-    return EnvelopeResponse(data=_doc_response(document))
+    fids = await folder_service.get_document_folder_ids(db, document.id)
+    return EnvelopeResponse(data=_doc_response(document, folder_ids=fids))
 
 
 @router.post(
@@ -234,7 +247,8 @@ async def force_unlock(
     document = await document_service.force_unlock_document(
         db, document_id, str(current_user.id)
     )
-    return EnvelopeResponse(data=_doc_response(document))
+    fids = await folder_service.get_document_folder_ids(db, document.id)
+    return EnvelopeResponse(data=_doc_response(document, folder_ids=fids))
 
 
 @router.get(

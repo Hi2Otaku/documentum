@@ -148,6 +148,7 @@ async def list_documents(
     author: str | None = None,
     user_id: str | None = None,
     is_superuser: bool = False,
+    folder_id: str | None = None,
 ) -> tuple[list[Document], int]:
     """List documents with pagination, filters, and ACL enforcement.
 
@@ -155,10 +156,13 @@ async def list_documents(
     - They have a direct ACL entry, OR
     - No ACL entries exist (open access), OR
     - They have an active work item on a workflow with the document attached
+
+    If folder_id is provided, only documents filed in that folder are returned.
     """
     from app.models.acl import DocumentACL
     from app.models.workflow import WorkItem, WorkflowPackage, ActivityInstance
     from app.models.enums import WorkItemState
+    from app.models.folder import document_folders
 
     base_conditions = [Document.is_deleted == False]  # noqa: E712
 
@@ -166,6 +170,15 @@ async def list_documents(
         base_conditions.append(Document.title.ilike(f"%{title}%"))
     if author:
         base_conditions.append(Document.author.ilike(f"%{author}%"))
+    if folder_id:
+        folder_uuid = uuid.UUID(folder_id)
+        base_conditions.append(
+            Document.id.in_(
+                select(document_folders.c.document_id).where(
+                    document_folders.c.folder_id == folder_uuid
+                )
+            )
+        )
 
     if is_superuser or not user_id:
         # Superusers see everything
