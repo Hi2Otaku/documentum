@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.2
-milestone_name: Advanced Engine & Document Platform
-status: verifying
-stopped_at: Completed 26-01-PLAN.md (Fix Signature Test Endpoints)
-last_updated: "2026-04-07T03:09:00.314Z"
-last_activity: 2026-04-07
+milestone: v1.3
+milestone_name: Document-Centric ECM
+status: planning
+stopped_at: v1.2 milestone archived — starting v1.3 planning
+last_updated: "2026-04-13T00:00:00.000Z"
+last_activity: 2026-04-13
 progress:
-  total_phases: 11
-  completed_phases: 11
-  total_plans: 26
-  completed_plans: 26
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
   percent: 0
 ---
 
@@ -18,19 +18,19 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-06)
+See: .planning/PROJECT.md (updated 2026-04-13)
 
-**Core value:** Any workflow use case described in the Documentum specification can be modeled and executed end-to-end through the system.
-**Current focus:** Phase 26 — digital-signatures-alignment
+**Core value:** Any workflow or document management use case described in the Documentum specification can be modeled and executed end-to-end.
+**Current focus:** v1.3 Document-Centric ECM — planning phase
 
 ## Current Position
 
-Phase: 26
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-04-07
+Phase: —
+Plan: —
+Status: Between milestones — v1.2 archived, v1.3 planning not yet started
+Last activity: 2026-04-13
 
-Progress: [..........] 0% (v1.2: 0/8 phases)
+Progress: [..........] 0% (v1.3: 0/? phases)
 
 ## Performance Metrics
 
@@ -62,30 +62,19 @@ Progress: [..........] 0% (v1.2: 0/8 phases)
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
 
-- [v1.2 Roadmap]: Event bus + notifications first -- 6 of 8 features emit or consume domain events
-- [v1.2 Roadmap]: Database-backed Beat polling for all timers -- never use Celery ETA tasks
-- [v1.2 Roadmap]: Dedicated Celery rendition worker with LibreOffice -- isolated from API process
-- [v1.2 Roadmap]: Sub-workflow depth limit enforced at template installation and runtime
-- [Phase 24]: Linear migration chain enforced across all phases (11 through 23)
-- [Phase 24]: Mount all 5 routers with api_v1_prefix; event handlers imported in lifespan; deadline check every 60s
-- [Phase 25]: Kept fetchVirtualDocuments without explicit envelope unwrap since PaginatedVirtualDocumentsResponse shape matches envelope naturally
-- [Phase 26]: Use non-empty string assertion for algorithm field rather than comparing to specific value
+v1.3 decisions pending — to be made during new-milestone planning.
 
 ### Pending Todos
 
-None yet.
+None.
 
 ### Blockers/Concerns
 
-- [Phase 17]: RedBeat vs static Beat polling decision needed at planning time
-- [Phase 18]: Sub-workflow failure propagation semantics (auto-fail vs allow retry) -- product decision
-- [Phase 20]: LibreOffice concurrency in Docker needs verification
-- [Phase 23]: Certificate storage encryption strategy (env var vs secrets manager)
+None — clean slate for v1.3.
 
 ## Session Continuity
 
-Last session: 2026-04-07T03:06:46.194Z
-Stopped at: Completed 26-01-PLAN.md (Fix Signature Test Endpoints)
+Last session: 2026-04-13
+Stopped at: v1.2 milestone archived and tagged
 Resume file: None
