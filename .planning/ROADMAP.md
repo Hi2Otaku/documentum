@@ -67,7 +67,7 @@ See `.planning/milestones/v1.2-ROADMAP.md` for full phase details.
   4. User can create a child type that inherits metadata fields from a parent type, and documents of the child type validate against both schemas
 **Plans**: 4 plans
 Plans:
-- [ ] 27-01-PLAN.md — Backend foundation: model, schemas, service, migration, test stubs
+- [x] 27-01-PLAN.md — Backend foundation: model, schemas, service, migration, test stubs
 - [ ] 27-02-PLAN.md — API layer: document_types CRUD router + document upload/update integration
 - [ ] 27-03-PLAN.md — Frontend admin: types page, table, create/edit dialogs, schema editor
 - [ ] 27-04-PLAN.md — Frontend integration: TypeSelector, TypeMetadataForm, table/detail mods
@@ -147,7 +147,7 @@ Plans:
 | 1–11. Core Engine | v1.0 | 47/47 | Complete | 2026-03-30 |
 | 12–15. Full Frontend | v1.1 | 4/4 | Complete | 2026-04-06 |
 | 16–26. Advanced Engine | v1.2 | 26/26 | Complete | 2026-04-13 |
-| 27. Document Type System | v1.3 | 0/4 | Planning | — |
+| 27. Document Type System | v1.3 | 1/4 | In Progress|  |
 | 28. Cabinet/Folder Hierarchy | v1.3 | 0/? | Not started | — |
 | 29. Folder ACL Inheritance | v1.3 | 0/? | Not started | — |
 | 30. Full-Text Search & Content Extraction | v1.3 | 0/? | Not started | — |
