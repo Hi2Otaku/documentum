@@ -211,12 +211,71 @@ async def list_documents(
             .correlate(None)
         )
 
+        # Build folder ACL subqueries
+        from app.models.acl import FolderACL
+        from app.models.folder import document_folders, Folder
+        from app.models.user import user_groups
+
+        group_result = await db.execute(select(user_groups.c.group_id).where(user_groups.c.user_id == uid))
+        user_group_ids = [row[0] for row in group_result.fetchall()]
+
+        # Subquery: folder_ids where user has FolderACL access (user or group)
+        user_folder_acl_ids = select(FolderACL.folder_id).where(
+            FolderACL.principal_id == uid,
+            FolderACL.principal_type == "user",
+            FolderACL.is_deleted == False,  # noqa: E712
+        ).correlate(None)
+
+        if user_group_ids:
+            group_folder_acl_ids = select(FolderACL.folder_id).where(
+                FolderACL.principal_type == "group",
+                FolderACL.principal_id.in_(user_group_ids),
+                FolderACL.is_deleted == False,  # noqa: E712
+            ).correlate(None)
+            all_acl_folder_ids = user_folder_acl_ids.union(group_folder_acl_ids)
+        else:
+            all_acl_folder_ids = user_folder_acl_ids
+
+        # Build descendant CTE: starting from folders where user has ACL,
+        # walk DOWN to include all descendant folders
+        folder_table = Folder.__table__
+        acl_folder_anchor = (
+            select(folder_table.c.id)
+            .where(folder_table.c.id.in_(all_acl_folder_ids), folder_table.c.is_deleted == False)  # noqa: E712
+            .cte(name="acl_folder_descendants", recursive=True)
+        )
+        desc_alias = acl_folder_anchor.alias("afd")
+        recursive_desc = select(folder_table.c.id).join(
+            desc_alias, folder_table.c.parent_id == desc_alias.c.id
+        ).where(folder_table.c.is_deleted == False)  # noqa: E712
+        acl_descendants_cte = acl_folder_anchor.union_all(recursive_desc)
+
+        # Document IDs filed in folders where user has access (or their descendants)
+        folder_acl_doc_ids = (
+            select(document_folders.c.document_id)
+            .where(document_folders.c.folder_id.in_(select(acl_descendants_cte.c.id)))
+            .correlate(None)
+        )
+
+        # Document IDs filed in ANY folder that has ANY FolderACL entries
+        folders_with_any_acl = select(FolderACL.folder_id).where(
+            FolderACL.is_deleted == False  # noqa: E712
+        ).distinct().correlate(None)
+
+        docs_in_acl_folders = (
+            select(document_folders.c.document_id)
+            .where(document_folders.c.folder_id.in_(folders_with_any_acl))
+            .correlate(None)
+        )
+
+        from sqlalchemy import and_
         base_query = select(Document).where(
             *base_conditions,
             or_(
-                Document.id.in_(acl_doc_ids),
-                Document.id.notin_(docs_with_acl),
-                Document.id.in_(wf_doc_ids),
+                Document.id.in_(acl_doc_ids),                                                          # Has direct ACL for user
+                and_(Document.id.notin_(docs_with_acl), Document.id.notin_(docs_in_acl_folders)),      # No direct ACL AND not in any folder with ACL = open
+                and_(Document.id.notin_(docs_with_acl), Document.id.in_(folder_acl_doc_ids)),          # No direct ACL AND folder ACL grants access
+                Document.id.in_(wf_doc_ids),                                                           # Workflow participant
             ),
         )
 

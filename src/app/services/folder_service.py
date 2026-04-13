@@ -460,10 +460,48 @@ async def get_folder_documents(
     folder_id: uuid.UUID,
     page: int = 1,
     page_size: int = 20,
+    user_id: uuid.UUID | None = None,
+    is_superuser: bool = False,
 ) -> tuple[list[Document], int]:
-    """Return paginated documents filed in a folder."""
+    """Return paginated documents filed in a folder.
+
+    When user_id is provided and is_superuser is False, filters documents
+    by per-document ACL check (N+1 is acceptable with page_size cap of 20-50).
+    """
     await _fetch_folder_or_404(db, folder_id)
 
+    if user_id is not None and not is_superuser:
+        from app.services.acl_service import check_permission
+        from app.models.enums import PermissionLevel
+
+        # Fetch all non-deleted documents in this folder (before pagination)
+        all_docs_result = await db.execute(
+            select(Document)
+            .join(document_folders, Document.id == document_folders.c.document_id)
+            .where(
+                document_folders.c.folder_id == folder_id,
+                Document.is_deleted == False,  # noqa: E712
+            )
+            .order_by(Document.created_at.desc())
+        )
+        all_docs = list(all_docs_result.scalars().all())
+
+        # Filter by permission check per document
+        visible_docs = []
+        for doc in all_docs:
+            has_access = await check_permission(
+                db, doc.id, user_id, PermissionLevel.READ, is_superuser=False
+            )
+            if has_access:
+                visible_docs.append(doc)
+
+        # Apply pagination to the filtered list
+        total = len(visible_docs)
+        start = (page - 1) * page_size
+        end = start + page_size
+        return visible_docs[start:end], total
+
+    # Superuser or unauthenticated: return all documents (original behavior)
     count_result = await db.execute(
         select(func.count())
         .select_from(document_folders)
@@ -476,7 +514,7 @@ async def get_folder_documents(
         .join(document_folders, Document.id == document_folders.c.document_id)
         .where(
             document_folders.c.folder_id == folder_id,
-            Document.is_deleted == False,
+            Document.is_deleted == False,  # noqa: E712
         )
         .offset((page - 1) * page_size)
         .limit(page_size)
