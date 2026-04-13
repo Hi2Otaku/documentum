@@ -33,7 +33,7 @@ export function AddPermissionDialog({
   const queryClient = useQueryClient();
   const [principalType, setPrincipalType] = useState<"user" | "group">("user");
   const [principalId, setPrincipalId] = useState<string>("");
-  const [permissionLevel, setPermissionLevel] = useState<string>("READ");
+  const [permissionLevel, setPermissionLevel] = useState<string>("read");
   const [error, setError] = useState<string>("");
 
   // Fetch users for the dropdown
@@ -139,10 +139,10 @@ export function AddPermissionDialog({
               <SelectValue placeholder="Select permission..." />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="READ">Read</SelectItem>
-              <SelectItem value="WRITE">Write</SelectItem>
-              <SelectItem value="DELETE">Delete</SelectItem>
-              <SelectItem value="ADMIN">Admin</SelectItem>
+              <SelectItem value="read">Read</SelectItem>
+              <SelectItem value="write">Write</SelectItem>
+              <SelectItem value="delete">Delete</SelectItem>
+              <SelectItem value="admin">Admin</SelectItem>
             </SelectContent>
           </Select>
 
