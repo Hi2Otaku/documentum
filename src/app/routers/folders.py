@@ -8,14 +8,16 @@ Read operations are available to any authenticated user.
 import math
 import uuid
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.dependencies import get_current_active_admin, get_current_user
+from app.models.enums import PermissionLevel
 from app.models.folder import Folder
 from app.models.user import User
+from app.schemas.acl import FolderACLEntryCreate, FolderACLEntryResponse
 from app.schemas.common import EnvelopeResponse, PaginationMeta
 from app.schemas.folder import (
     FileDocumentRequest,
@@ -26,7 +28,7 @@ from app.schemas.folder import (
     FolderTreeNode,
     FolderUpdate,
 )
-from app.services import folder_service
+from app.services import acl_service, folder_service
 
 router = APIRouter(prefix="/folders", tags=["folders"])
 
@@ -228,11 +230,13 @@ async def get_folder_documents(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> EnvelopeResponse:
-    """Return paginated documents filed in a folder."""
+    """Return paginated documents filed in a folder, filtered by ACL."""
     from app.schemas.document import DocumentResponse as DocResp
 
     documents, total = await folder_service.get_folder_documents(
-        db, folder_id, page, page_size
+        db, folder_id, page, page_size,
+        user_id=current_user.id,
+        is_superuser=current_user.is_superuser,
     )
     return EnvelopeResponse(
         data=[DocResp.model_validate(d) for d in documents],
@@ -243,6 +247,77 @@ async def get_folder_documents(
             total_pages=math.ceil(total / page_size) if page_size > 0 else 0,
         ),
     )
+
+
+@router.get(
+    "/{folder_id}/acl",
+    response_model=EnvelopeResponse[list[FolderACLEntryResponse]],
+)
+async def list_folder_acl(
+    folder_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> EnvelopeResponse:
+    """List folder ACL entries. Requires ADMIN on folder or superuser."""
+    if not current_user.is_superuser:
+        has_admin = await acl_service.check_folder_permission(
+            db, folder_id, current_user.id, PermissionLevel.ADMIN
+        )
+        if not has_admin:
+            raise HTTPException(status_code=403, detail="Insufficient permissions: requires ADMIN on folder")
+    entries = await acl_service.get_folder_acls(db, folder_id)
+    return EnvelopeResponse(data=[FolderACLEntryResponse.model_validate(e) for e in entries])
+
+
+@router.post(
+    "/{folder_id}/acl",
+    response_model=EnvelopeResponse[FolderACLEntryResponse],
+    status_code=201,
+)
+async def add_folder_acl(
+    folder_id: uuid.UUID,
+    request: FolderACLEntryCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> EnvelopeResponse:
+    """Add folder ACL entry. Requires ADMIN on folder or superuser."""
+    if not current_user.is_superuser:
+        has_admin = await acl_service.check_folder_permission(
+            db, folder_id, current_user.id, PermissionLevel.ADMIN
+        )
+        if not has_admin:
+            raise HTTPException(status_code=403, detail="Insufficient permissions: requires ADMIN on folder")
+    entry = await acl_service.create_folder_acl_entry(
+        db, folder_id=folder_id, principal_id=request.principal_id,
+        principal_type=request.principal_type, permission_level=request.permission_level,
+        user_id=str(current_user.id),
+    )
+    return EnvelopeResponse(data=FolderACLEntryResponse.model_validate(entry))
+
+
+@router.delete(
+    "/{folder_id}/acl/{acl_id}",
+    response_model=EnvelopeResponse,
+)
+async def remove_folder_acl(
+    folder_id: uuid.UUID,
+    acl_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> EnvelopeResponse:
+    """Remove folder ACL entry. Requires ADMIN on folder or superuser."""
+    if not current_user.is_superuser:
+        has_admin = await acl_service.check_folder_permission(
+            db, folder_id, current_user.id, PermissionLevel.ADMIN
+        )
+        if not has_admin:
+            raise HTTPException(status_code=403, detail="Insufficient permissions: requires ADMIN on folder")
+    removed = await acl_service.remove_folder_acl_entry(
+        db, folder_id, acl_id, user_id=str(current_user.id),
+    )
+    if not removed:
+        raise HTTPException(status_code=404, detail="ACL entry not found")
+    return EnvelopeResponse(data=None, meta={"message": "ACL entry removed"})
 
 
 @router.post(
