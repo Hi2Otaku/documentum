@@ -1,177 +1,96 @@
-# Requirements: Documentum Workflow Clone
+# Requirements: v1.3 Document-Centric ECM
 
-**Defined:** 2026-04-06
-**Core Value:** Any workflow use case described in the Documentum specification can be modeled and executed end-to-end through the system.
+Generated: 2026-04-13
+Milestone: v1.3 Document-Centric ECM
 
-## v1.2 Requirements
+---
 
-Requirements for milestone v1.2: Advanced Engine & Document Platform.
+## v1.3 Requirements
 
-### Notifications & Event Bus
+### Document Type System
 
-- [x] **NOTIF-01**: User receives in-app notification when a work item is assigned to them
-- [x] **NOTIF-02**: User receives in-app notification when a task is delegated to them
-- [x] **NOTIF-03**: User receives in-app notification when a work item deadline is approaching
-- [x] **NOTIF-04**: User receives email notification for task assignment and deadline events
-- [x] **NOTIF-05**: User can view notification list with unread count badge in the UI
-- [x] **NOTIF-06**: User can mark notifications as read individually or in bulk
-- [x] **EVENT-01**: System emits domain events on document upload, lifecycle change, and workflow state transitions
-- [x] **EVENT-02**: Events are persisted in a durable event table for reliability
+- [ ] **TYPE-01**: User can define a named document type with a JSON Schema metadata definition
+- [ ] **TYPE-02**: User can assign a type to a document at creation or edit time
+- [ ] **TYPE-03**: System validates document metadata against the assigned type's JSON Schema on save, rejecting missing required fields with descriptive errors
+- [ ] **TYPE-04**: User can define a document type that inherits schema fields from a parent type
+- [ ] **TYPE-05**: Frontend renders type-specific metadata form fields based on the document's assigned type
 
-### Timer Activities & Escalation
+### Cabinet/Folder Hierarchy
 
-- [x] **TIMER-01**: Admin can configure deadline duration on activity templates in the workflow designer
-- [x] **TIMER-02**: Work items automatically receive due dates based on activity template deadline configuration
-- [x] **TIMER-03**: Celery Beat periodically checks for overdue work items and triggers escalation
-- [x] **TIMER-04**: Overdue work items are automatically escalated (priority bump, reassignment, or notification)
+- [ ] **FOLD-01**: User can create a cabinet (top-level container) and nested folders within any folder
+- [ ] **FOLD-02**: User can browse the full cabinet/folder tree via a hierarchical navigator
+- [ ] **FOLD-03**: User can file a document into one or more folders (multi-filing); removing from a folder does not delete the document
+- [ ] **FOLD-04**: User can move, rename, and copy folders; breadcrumb navigation shows the full path
+- [ ] **FOLD-05**: Permissions assigned to a folder are inherited by all documents within it (folder-level ACL propagation)
 
-### Sub-Workflows
+### Full-Text Search
 
-- [x] **SUBWF-01**: Admin can add a SUB_WORKFLOW activity type in the workflow designer that references another template
-- [x] **SUBWF-02**: When a SUB_WORKFLOW activity executes, a child workflow instance is spawned from the referenced template
-- [x] **SUBWF-03**: Parent workflow pauses at the SUB_WORKFLOW activity until the child workflow completes
-- [x] **SUBWF-04**: Variables can be mapped from parent to child workflow on spawn
-- [x] **SUBWF-05**: System enforces depth limits to prevent recursive sub-workflow chains
+- [ ] **SRCH-01**: System automatically extracts and indexes text from PDF and Word documents via a background Celery worker; extraction failures are logged and do not block document save
+- [ ] **SRCH-02**: User can search documents by content (full-text body) and metadata fields (title, description, type-specific fields) with ranked results
+- [ ] **SRCH-03**: User can scope a search to a specific folder, document type, or lifecycle state
+- [ ] **SRCH-04**: User can save a named search query and retrieve it in future sessions
+- [ ] **SRCH-05**: User can display a saved search as a smart folder in the folder tree
 
-### Event-Driven Activities
+### Document Relationships
 
-- [x] **EVTACT-01**: Admin can add an EVENT activity type in the workflow designer with event filter configuration
-- [x] **EVTACT-02**: EVENT activities complete automatically when a matching domain event fires
-- [x] **EVTACT-03**: Supported event types include document.uploaded, lifecycle.changed, and workflow.completed
+- [ ] **REL-01**: User can create a typed relationship between two documents (supersedes, references, is-part-of), with direction
+- [ ] **REL-02**: User can view all relationships for a document in a relationships panel within the document detail view
+- [ ] **REL-03**: User can navigate from a document to any related document via the relationship link
 
-### Document Renditions
+### Document Navigation
 
-- [x] **REND-01**: System auto-generates PDF rendition when a document is uploaded (via LibreOffice headless worker)
-- [x] **REND-02**: System auto-generates thumbnail image for uploaded documents
-- [x] **REND-03**: User can download the PDF rendition of any document version
-- [x] **REND-04**: Rendition status is visible in the document detail view (pending, ready, failed)
+- [ ] **NAV-01**: User can access a `/browse` route as the document-first entry point with a collapsible folder tree sidebar
+- [ ] **NAV-02**: User can expand/collapse the folder tree to navigate cabinets, folders, and subfolders; each node shows document count
+- [ ] **NAV-03**: User can click a document in the folder listing to open its detail panel inline without leaving the browse view
+- [ ] **NAV-04**: User sees a breadcrumb showing the full cabinet > folder > subfolder path and can click any segment to navigate up
 
-### Virtual Documents
+---
 
-- [x] **VDOC-01**: User can create a virtual document and add child documents in a specified order
-- [x] **VDOC-02**: User can reorder or remove children from a virtual document
-- [x] **VDOC-03**: System detects and prevents circular references in virtual document trees
-- [x] **VDOC-04**: User can generate a merged PDF from a virtual document's children
+## Future Requirements (Deferred)
 
-### Retention & Records Management
+- Text extraction beyond PDF and Word (Excel, PowerPoint, RTF, plain text) — Phase 30 extension
+- Full-text indexing of custom_properties JSONB values — requires type system maturity first
+- dm_sysobject polymorphic base table — deemed too risky (10+ FK references); revisit in v1.4 if needed
+- ltree PostgreSQL extension for massive hierarchies — adjacency list + CTE is sufficient at current scale
+- Materialized effective ACL caching — implement only if query-time resolution proves too slow under load
 
-- [x] **RET-01**: Admin can create retention policies with retention period and disposition action
-- [x] **RET-02**: Admin can assign retention policies to documents
-- [x] **RET-03**: System blocks deletion of documents under active retention
-- [x] **RET-04**: Admin can place legal holds on documents that override retention expiration
-
-### Digital Signatures
-
-- [x] **SIG-01**: User can digitally sign a specific document version (PKCS7/CMS signature)
-- [x] **SIG-02**: User can verify the signature on a signed document version
-- [x] **SIG-03**: User can view all signatures on a document with signer, timestamp, and validity
-- [x] **SIG-04**: System enforces immutability on signed document versions (no re-upload or modification)
-
-## Future Requirements
-
-Deferred beyond v1.2.
-
-### Notifications (deferred)
-
-- **NOTIF-07**: User can configure notification preferences (opt-in/out per type and channel)
-- **NOTIF-08**: User receives push notifications via browser push API
-
-### Timer Activities (deferred)
-
-- **TIMER-05**: Admin can configure recurring timer activities
-- **TIMER-06**: Admin can use expression-based deadline calculation
-- **TIMER-07**: Multi-level escalation chains (escalate -> reassign -> notify supervisor)
-
-### Sub-Workflows (deferred)
-
-- **SUBWF-06**: Output variable mapping from child back to parent on completion
-- **SUBWF-07**: Partial completion (wait for any-of-N children)
-- **SUBWF-08**: Parallel sub-workflows spawned from a single activity
-
-### Event-Driven Activities (deferred)
-
-- **EVTACT-04**: Complex filter expressions on event payloads
-- **EVTACT-05**: Event replay for debugging
-- **EVTACT-06**: External webhook authentication for inbound events
-
-### Renditions (deferred)
-
-- **REND-05**: Custom rendition profiles (resolution, format options)
-- **REND-06**: Rendition for image format conversions
-
-### Virtual Documents (deferred)
-
-- **VDOC-05**: Nested virtual documents (depth > 1)
-- **VDOC-06**: Late-bound version resolution (always use latest child version)
-
-### Digital Signatures (deferred)
-
-- **SIG-05**: Certificate management UI
-- **SIG-06**: Sign-on-checkin automation
-- **SIG-07**: requires_signature flag on workflow activities
-- **SIG-08**: Certificate revocation checking
+---
 
 ## Out of Scope
 
-Explicitly excluded from v1.2.
+- **Multi-tenant isolation** — internal/personal use, adds complexity everywhere
+- **Mobile native app** — web-responsive UI is sufficient
+- **Real-time collaborative editing** — check-in/check-out prevents conflicts; OT/CRDT is excessive
+- **Full PKI/CA infrastructure** — already in v1.2 out of scope; not re-opened here
+- **Separate DB table per document type** — Documentum's legacy approach; JSONB + JSON Schema is the modern alternative
+- **Elasticsearch / Typesense** — PostgreSQL tsvector handles the expected volume with zero new infrastructure
+- **ltree PostgreSQL extension** — Unicode label restrictions and path-desync bugs outweigh the query performance benefit at this scale
 
-| Feature | Reason |
-|---------|--------|
-| Real-time collaborative editing | Massive OT/CRDT complexity; check-in/check-out prevents conflicts |
-| Calendar/scheduling UI for timers | Timer durations configured in template designer; no calendar needed |
-| Full PKI/CA infrastructure | Internal tool; self-signed certs stored in DB suffice |
-| Email-based workflow actions | Web UI is the interaction point; email parsing too complex |
-| Multi-tenant isolation | Internal/personal use; adds complexity everywhere |
-| Rendition preview editing | View-only; editing happens on source document |
-| Complex retention schedule builder UI | Simple form suffices; retention policies rarely change |
+---
 
 ## Traceability
 
-| Requirement | Phase | Gap Closure | Status |
-|-------------|-------|-------------|--------|
-| NOTIF-01 | Phase 16 | Phase 24 | Complete |
-| NOTIF-02 | Phase 16 | Phase 24 | Complete |
-| NOTIF-03 | Phase 17 | Phase 24 | Complete |
-| NOTIF-04 | Phase 16 | Phase 24 | Complete |
-| NOTIF-05 | Phase 16 | Phase 24 | Complete |
-| NOTIF-06 | Phase 16 | Phase 24 | Complete |
-| EVENT-01 | Phase 16 | Phase 24 | Complete |
-| EVENT-02 | Phase 16 | -- | Complete |
-| TIMER-01 | Phase 17 | Phase 24 | Complete |
-| TIMER-02 | Phase 17 | -- | Complete |
-| TIMER-03 | Phase 17 | Phase 24 | Complete |
-| TIMER-04 | Phase 17 | Phase 24 | Complete |
-| SUBWF-01 | Phase 18 | -- | Complete |
-| SUBWF-02 | Phase 18 | -- | Complete |
-| SUBWF-03 | Phase 18 | Phase 24 | Complete |
-| SUBWF-04 | Phase 18 | -- | Complete |
-| SUBWF-05 | Phase 18 | -- | Complete |
-| EVTACT-01 | Phase 19 | -- | Complete |
-| EVTACT-02 | Phase 19 | Phase 24 | Complete |
-| EVTACT-03 | Phase 19 | Phase 24 | Complete |
-| REND-01 | Phase 20 | Phase 24 | Complete |
-| REND-02 | Phase 20 | Phase 24 | Complete |
-| REND-03 | Phase 20 | Phase 24 | Complete |
-| REND-04 | Phase 20 | Phase 24 | Complete |
-| VDOC-01 | Phase 21 | Phase 25 | Complete |
-| VDOC-02 | Phase 21 | Phase 25 | Complete |
-| VDOC-03 | Phase 21 | -- | Complete |
-| VDOC-04 | Phase 21 | Phase 25 | Complete |
-| RET-01 | Phase 22 | Phase 24 | Complete |
-| RET-02 | Phase 22 | Phase 24 | Complete |
-| RET-03 | Phase 22 | Phase 24 | Complete |
-| RET-04 | Phase 22 | Phase 24 | Complete |
-| SIG-01 | Phase 23 | Phase 26 | Complete |
-| SIG-02 | Phase 23 | Phase 26 | Complete |
-| SIG-03 | Phase 23 | Phase 26 | Complete |
-| SIG-04 | Phase 23 | Phase 24 | Complete |
-
-**Coverage:**
-- v1.2 requirements: 36 total
-- Complete: 36/36
-- Pending: 0
-- Unmapped: 0
-
----
-*Requirements defined: 2026-04-06*
-*Last updated: 2026-04-07 after milestone re-audit (all gaps closed)*
+| REQ-ID | Phase | Status |
+|--------|-------|--------|
+| TYPE-01 | — | Pending |
+| TYPE-02 | — | Pending |
+| TYPE-03 | — | Pending |
+| TYPE-04 | — | Pending |
+| TYPE-05 | — | Pending |
+| FOLD-01 | — | Pending |
+| FOLD-02 | — | Pending |
+| FOLD-03 | — | Pending |
+| FOLD-04 | — | Pending |
+| FOLD-05 | — | Pending |
+| SRCH-01 | — | Pending |
+| SRCH-02 | — | Pending |
+| SRCH-03 | — | Pending |
+| SRCH-04 | — | Pending |
+| SRCH-05 | — | Pending |
+| REL-01 | — | Pending |
+| REL-02 | — | Pending |
+| REL-03 | — | Pending |
+| NAV-01 | — | Pending |
+| NAV-02 | — | Pending |
+| NAV-03 | — | Pending |
+| NAV-04 | — | Pending |
