@@ -82,7 +82,11 @@ Plans:
   2. User can browse the full folder tree by expanding/collapsing nodes in a hierarchical navigator
   3. User can file a document into multiple folders and remove it from a folder without deleting the document
   4. User can move, rename, and copy folders, and see the full path via breadcrumb navigation
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 28-01-PLAN.md — Backend foundation: Folder model, migration, FolderService with CTE operations
+- [ ] 28-02-PLAN.md — API layer: folders router, document API integration, test implementation
+- [ ] 28-03-PLAN.md — Frontend: FolderTree, admin page, filing UI, navigation wiring
 **UI hint**: yes
 
 ### Phase 29: Folder ACL Inheritance
@@ -148,7 +152,7 @@ Plans:
 | 12–15. Full Frontend | v1.1 | 4/4 | Complete | 2026-04-06 |
 | 16–26. Advanced Engine | v1.2 | 26/26 | Complete | 2026-04-13 |
 | 27. Document Type System | v1.3 | 4/4 | Complete | 2026-04-13 |
-| 28. Cabinet/Folder Hierarchy | v1.3 | 0/? | Not started | — |
+| 28. Cabinet/Folder Hierarchy | v1.3 | 0/3 | Planning | — |
 | 29. Folder ACL Inheritance | v1.3 | 0/? | Not started | — |
 | 30. Full-Text Search & Content Extraction | v1.3 | 0/? | Not started | — |
 | 31. Document Relationships | v1.3 | 0/? | Not started | — |
