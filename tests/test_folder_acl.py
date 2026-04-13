@@ -328,6 +328,124 @@ async def test_folder_acl_crud(db_session: AsyncSession, regular_user: User, adm
 
 
 @pytest.mark.asyncio
-async def test_access_source_field():
-    """Placeholder for access_source field test (implemented in Plan 02)."""
-    pass
+async def test_folder_acl_api_crud(async_client, admin_token, admin_user, regular_user, db_session):
+    """Test GET/POST/DELETE /folders/{id}/acl endpoints."""
+    headers = {"Authorization": f"Bearer {admin_token}"}
+
+    # Create a cabinet
+    resp = await async_client.post("/api/v1/folders/", json={"name": "ACL Test Cabinet"}, headers=headers)
+    assert resp.status_code == 201
+    folder_id = resp.json()["data"]["id"]
+
+    # List ACL (empty)
+    resp = await async_client.get(f"/api/v1/folders/{folder_id}/acl", headers=headers)
+    assert resp.status_code == 200
+    assert resp.json()["data"] == []
+
+    # Add ACL entry
+    resp = await async_client.post(f"/api/v1/folders/{folder_id}/acl", json={
+        "principal_id": str(regular_user.id),
+        "principal_type": "user",
+        "permission_level": "read",
+    }, headers=headers)
+    assert resp.status_code == 201
+    acl_id = resp.json()["data"]["id"]
+    assert resp.json()["data"]["principal_type"] == "user"
+    assert resp.json()["data"]["permission_level"] == "read"
+
+    # List ACL (one entry)
+    resp = await async_client.get(f"/api/v1/folders/{folder_id}/acl", headers=headers)
+    assert resp.status_code == 200
+    assert len(resp.json()["data"]) == 1
+
+    # Remove ACL entry
+    resp = await async_client.delete(f"/api/v1/folders/{folder_id}/acl/{acl_id}", headers=headers)
+    assert resp.status_code == 200
+
+    # List ACL (empty again)
+    resp = await async_client.get(f"/api/v1/folders/{folder_id}/acl", headers=headers)
+    assert resp.status_code == 200
+    assert resp.json()["data"] == []
+
+
+@pytest.mark.asyncio
+async def test_folder_acl_api_requires_admin(async_client, regular_token, admin_token, db_session):
+    """Non-admin without folder ADMIN cannot manage folder ACL."""
+    admin_headers = {"Authorization": f"Bearer {admin_token}"}
+    user_headers = {"Authorization": f"Bearer {regular_token}"}
+
+    # Create cabinet as admin
+    resp = await async_client.post("/api/v1/folders/", json={"name": "Protected"}, headers=admin_headers)
+    folder_id = resp.json()["data"]["id"]
+
+    # Regular user tries to list ACL — should get 403
+    resp = await async_client.get(f"/api/v1/folders/{folder_id}/acl", headers=user_headers)
+    assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_get_folder_documents_acl_filtered(async_client, admin_token, regular_token, admin_user, regular_user, db_session):
+    """GET /folders/{id}/documents filters by ACL for non-superusers."""
+    headers = {"Authorization": f"Bearer {admin_token}"}
+    user_headers = {"Authorization": f"Bearer {regular_token}"}
+
+    # Create cabinet
+    resp = await async_client.post("/api/v1/folders/", json={"name": "Filtered"}, headers=headers)
+    folder_id = resp.json()["data"]["id"]
+
+    # Upload a document
+    resp = await async_client.post(
+        "/api/v1/documents/",
+        files={"file": ("test.txt", b"hello", "text/plain")},
+        data={"title": "Filtered Doc"},
+        headers=headers,
+    )
+    assert resp.status_code == 201
+    doc_id = resp.json()["data"]["id"]
+
+    # File document in folder
+    resp = await async_client.post(
+        f"/api/v1/folders/{folder_id}/documents",
+        json={"document_id": doc_id},
+        headers=headers,
+    )
+    assert resp.status_code == 200
+
+    # Add folder ACL restricting to admin only
+    resp = await async_client.post(f"/api/v1/folders/{folder_id}/acl", json={
+        "principal_id": str(admin_user.id),
+        "principal_type": "user",
+        "permission_level": "read",
+    }, headers=headers)
+    assert resp.status_code == 201
+
+    # Admin sees the document
+    resp = await async_client.get(f"/api/v1/folders/{folder_id}/documents", headers=headers)
+    assert resp.status_code == 200
+    assert len(resp.json()["data"]) >= 1
+
+    # Regular user does NOT see the document (ACL restricts)
+    resp = await async_client.get(f"/api/v1/folders/{folder_id}/documents", headers=user_headers)
+    assert resp.status_code == 200
+    assert len(resp.json()["data"]) == 0
+
+
+@pytest.mark.asyncio
+async def test_access_source_field(async_client, admin_token, db_session):
+    """Document detail response includes access_source field."""
+    headers = {"Authorization": f"Bearer {admin_token}"}
+
+    # Upload a document — uploader gets owner (ADMIN) ACL, so access_source = "direct"
+    resp = await async_client.post(
+        "/api/v1/documents/",
+        files={"file": ("test.txt", b"hello", "text/plain")},
+        data={"title": "Open Doc"},
+        headers=headers,
+    )
+    assert resp.status_code == 201
+    doc_id = resp.json()["data"]["id"]
+
+    # Get document detail as admin (the owner) — should show "direct" access_source
+    resp = await async_client.get(f"/api/v1/documents/{doc_id}", headers=headers)
+    assert resp.status_code == 200
+    assert resp.json()["data"]["access_source"] in ("open", "direct")

@@ -110,9 +110,14 @@ async def get_document(
     current_user: User = Depends(require_permission(PermissionLevel.READ)),
 ):
     """Get a single document by ID."""
+    from app.services.acl_service import get_access_source
+
     document = await document_service.get_document(db, document_id)
     fids = await folder_service.get_document_folder_ids(db, document.id)
-    return EnvelopeResponse(data=_doc_response(document, folder_ids=fids))
+    access_info = await get_access_source(db, document_id, current_user.id, current_user.is_superuser)
+    resp = _doc_response(document, folder_ids=fids)
+    resp = resp.model_copy(update=access_info)
+    return EnvelopeResponse(data=resp)
 
 
 @router.put(

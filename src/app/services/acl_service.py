@@ -445,6 +445,110 @@ async def remove_folder_acl_entry(
     return True
 
 
+async def get_access_source(
+    db: AsyncSession,
+    document_id: uuid.UUID,
+    user_id: uuid.UUID,
+    is_superuser: bool = False,
+) -> dict:
+    """Determine how a user gained access to a document.
+
+    Returns {"access_source": "direct"|"folder_inherited"|"open", "access_source_folder_name": str|None}
+
+    Uses _get_ancestor_folder_ids() shared helper for CTE ancestor walk
+    (same helper used by check_permission).
+    """
+    if is_superuser:
+        return {"access_source": "direct", "access_source_folder_name": None}
+
+    # Check if document has direct ACL entries
+    count_result = await db.execute(
+        select(func.count()).select_from(DocumentACL).where(
+            DocumentACL.document_id == document_id,
+            DocumentACL.is_deleted == False,  # noqa: E712
+        )
+    )
+    total_direct = count_result.scalar()
+
+    if total_direct > 0:
+        return {"access_source": "direct", "access_source_folder_name": None}
+
+    # No direct ACL — check folder ACL
+    from app.models.folder import document_folders, Folder
+    from app.models.acl import FolderACL
+
+    folder_result = await db.execute(
+        select(document_folders.c.folder_id).where(
+            document_folders.c.document_id == document_id
+        )
+    )
+    doc_folder_ids = [row[0] for row in folder_result.all()]
+
+    if not doc_folder_ids:
+        return {"access_source": "open", "access_source_folder_name": None}
+
+    # Use shared helper instead of rebuilding CTE
+    all_ancestor_ids = await _get_ancestor_folder_ids(db, doc_folder_ids)
+
+    # Check if any FolderACL entries exist on any ancestor
+    acl_count_result = await db.execute(
+        select(func.count()).select_from(FolderACL).where(
+            FolderACL.folder_id.in_(all_ancestor_ids),
+            FolderACL.is_deleted == False,  # noqa: E712
+        )
+    )
+    total_folder_acl = acl_count_result.scalar()
+
+    if total_folder_acl == 0:
+        return {"access_source": "open", "access_source_folder_name": None}
+
+    # Folder ACL exists — find which folder grants access to this user
+    # Check user entries first
+    user_acl_result = await db.execute(
+        select(FolderACL.folder_id).where(
+            FolderACL.folder_id.in_(all_ancestor_ids),
+            FolderACL.principal_id == user_id,
+            FolderACL.principal_type == "user",
+            FolderACL.is_deleted == False,  # noqa: E712
+        ).limit(1)
+    )
+    user_acl_folder = user_acl_result.scalar_one_or_none()
+
+    if user_acl_folder:
+        # Get the folder name
+        folder_name_result = await db.execute(
+            select(Folder.name).where(Folder.id == user_acl_folder)
+        )
+        folder_name = folder_name_result.scalar_one_or_none()
+        return {"access_source": "folder_inherited", "access_source_folder_name": folder_name}
+
+    # Check group entries
+    from app.models.user import user_groups
+    group_result = await db.execute(
+        select(user_groups.c.group_id).where(user_groups.c.user_id == user_id)
+    )
+    group_ids = [row[0] for row in group_result.fetchall()]
+
+    if group_ids:
+        group_acl_result = await db.execute(
+            select(FolderACL.folder_id).where(
+                FolderACL.folder_id.in_(all_ancestor_ids),
+                FolderACL.principal_type == "group",
+                FolderACL.principal_id.in_(group_ids),
+                FolderACL.is_deleted == False,  # noqa: E712
+            ).limit(1)
+        )
+        group_acl_folder = group_acl_result.scalar_one_or_none()
+        if group_acl_folder:
+            folder_name_result = await db.execute(
+                select(Folder.name).where(Folder.id == group_acl_folder)
+            )
+            folder_name = folder_name_result.scalar_one_or_none()
+            return {"access_source": "folder_inherited", "access_source_folder_name": folder_name}
+
+    return {"access_source": "open", "access_source_folder_name": None}
+
+
 async def check_folder_permission(
     db: AsyncSession,
     folder_id: uuid.UUID,
