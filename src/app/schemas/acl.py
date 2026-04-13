@@ -28,3 +28,20 @@ class ACLEntryResponse(BaseModel):
 class PermissionCheckResponse(BaseModel):
     has_permission: bool
     granted_level: PermissionLevel | None = None
+
+
+class FolderACLEntryCreate(BaseModel):
+    principal_id: uuid.UUID
+    principal_type: Literal["user", "group"]
+    permission_level: PermissionLevel
+
+
+class FolderACLEntryResponse(BaseModel):
+    id: uuid.UUID
+    folder_id: uuid.UUID
+    principal_id: uuid.UUID
+    principal_type: str
+    permission_level: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
