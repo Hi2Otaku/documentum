@@ -27,6 +27,7 @@ import {
 import { LifecycleStateBadge } from "./LifecycleStateBadge";
 import { LockIndicator } from "./LockIndicator";
 import { DocumentEmptyState } from "./DocumentEmptyState";
+import { TypeBadge } from "./TypeBadge";
 import type { DocumentResponse } from "../../api/documents";
 
 interface DocumentTableProps {
@@ -132,6 +133,11 @@ export function DocumentTable({
         header: "State",
         cell: (info) => <LifecycleStateBadge state={info.getValue()} />,
         size: 100,
+      }),
+      columnHelper.accessor("document_type_name", {
+        header: "Type",
+        cell: (info) => <TypeBadge typeName={info.getValue()} />,
+        size: 120,
       }),
       columnHelper.accessor("current_version", {
         header: "Version",

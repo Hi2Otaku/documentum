@@ -88,8 +88,13 @@ export function DocumentDetailPanel({
               <span className="text-xs text-muted-foreground">Filename</span>
               <span className="text-sm truncate" title={document.filename}>{document.filename}</span>
 
-              <span className="text-xs text-muted-foreground">Type</span>
+              <span className="text-xs text-muted-foreground">MIME Type</span>
               <span className="text-sm truncate" title={document.content_type}>{document.content_type}</span>
+
+              <span className="text-xs text-muted-foreground">Doc Type</span>
+              <span className="text-sm truncate">
+                {document.document_type_name ?? "\u2014"}
+              </span>
 
               <span className="text-xs text-muted-foreground">Author</span>
               <span className="text-sm truncate">{document.author ?? "Unknown"}</span>
