@@ -100,7 +100,7 @@ Plans:
   3. Direct document-level ACL entries override inherited folder permissions when both exist
 **Plans**: 3 plans
 Plans:
-- [ ] 29-01-PLAN.md -- Backend foundation: FolderACL model, migration, check_permission extension, ACL-filtered listing, tests
+- [x] 29-01-PLAN.md -- Backend foundation: FolderACL model, migration, check_permission extension, ACL-filtered listing, tests
 - [ ] 29-02-PLAN.md -- API layer: folder ACL CRUD endpoints, filtered folder docs, access_source on document detail
 - [ ] 29-03-PLAN.md -- Frontend: FolderPermissionsTab, AddPermissionDialog, AccessSourceBadge, FoldersPage tabs
 **UI hint**: yes
@@ -159,7 +159,7 @@ Plans:
 | 16–26. Advanced Engine | v1.2 | 26/26 | Complete | 2026-04-13 |
 | 27. Document Type System | v1.3 | 4/4 | Complete | 2026-04-13 |
 | 28. Cabinet/Folder Hierarchy | v1.3 | 3/3 | Complete    | 2026-04-13 |
-| 29. Folder ACL Inheritance | v1.3 | 0/3 | Not started | — |
+| 29. Folder ACL Inheritance | v1.3 | 1/3 | In Progress|  |
 | 30. Full-Text Search & Content Extraction | v1.3 | 0/? | Not started | — |
 | 31. Document Relationships | v1.3 | 0/? | Not started | — |
 | 32. Document-First Navigation | v1.3 | 0/? | Not started | — |

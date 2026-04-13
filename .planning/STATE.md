@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Document-Centric ECM
 status: executing
-stopped_at: Completed 28-03-PLAN.md (frontend folder hierarchy UI — checkpoint approved)
-last_updated: "2026-04-13T08:07:41.578Z"
+stopped_at: Completed 29-01-PLAN.md (folder ACL inheritance backend)
+last_updated: "2026-04-13T13:55:07.636Z"
 last_activity: 2026-04-13
 progress:
   total_phases: 7
   completed_phases: 2
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 10
+  completed_plans: 8
   percent: 0
 ---
 
@@ -21,12 +21,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-13)
 
 **Core value:** Any workflow or document management use case described in the Documentum specification can be modeled and executed end-to-end.
-**Current focus:** Phase 28 — cabinet-folder-hierarchy
+**Current focus:** Phase 29 — folder-acl-inheritance
 
 ## Current Position
 
-Phase: 29
-Plan: Not started
+Phase: 29 (folder-acl-inheritance) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
 Last activity: 2026-04-13
 
@@ -56,6 +56,7 @@ Progress: [..........] 0% (v1.3: 0/7 phases)
 | Phase 27-document-type-system P02 | 5min | 2 tasks | 5 files |
 | Phase 27-document-type-system P03 | 3.5min | 2 tasks | 8 files |
 | Phase 28-cabinet-folder-hierarchy P03 | 60 | 3 tasks | 12 files |
+| Phase 29-folder-acl-inheritance P01 | 4min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -75,6 +76,9 @@ v1.3 architecture decisions (resolved during research):
 - [Phase 28-cabinet-folder-hierarchy]: FolderPickerDialog is reusable for both Move and file-document flows, avoiding UI duplication
 - [Phase 28-cabinet-folder-hierarchy]: deleteFolder and unfileDocument use raw fetch (not apiMutate) consistent with deleteDocumentType pattern
 - [Phase 28-cabinet-folder-hierarchy]: folder_ids on DocumentResponse is optional for backward compatibility
+- [Phase 29-folder-acl-inheritance]: _get_ancestor_folder_ids() extracted as shared CTE helper for reuse by check_permission and future get_access_source
+- [Phase 29-folder-acl-inheritance]: Direct document ACL overrides folder ACL entirely — folder ACL only runs when no direct DocumentACL entries exist
+- [Phase 29-folder-acl-inheritance]: N+1 per-document check_permission for get_folder_documents acceptable with page_size cap; list_documents uses subquery descendant CTE
 
 ### Pending Todos
 
@@ -86,6 +90,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-13T07:58:30.976Z
-Stopped at: Completed 28-03-PLAN.md (frontend folder hierarchy UI — checkpoint approved)
+Last session: 2026-04-13T13:55:07.632Z
+Stopped at: Completed 29-01-PLAN.md (folder ACL inheritance backend)
 Resume file: None
