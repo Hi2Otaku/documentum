@@ -1,7 +1,7 @@
 ---
 phase: 29
 slug: folder-acl-inheritance
-status: draft
+status: approved
 shadcn_initialized: true
 preset: default (neutral)
 created: 2026-04-13
