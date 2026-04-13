@@ -47,7 +47,7 @@ See `.planning/milestones/v1.2-ROADMAP.md` for full phase details.
 **Milestone Goal:** Reorient the system from workflow-centric to document-centric, matching Documentum's ECM platform model -- where documents are the primary object and workflows exist to route them through structured processes.
 
 - [ ] **Phase 27: Document Type System** — Custom document types with JSON Schema metadata validation and type inheritance
-- [ ] **Phase 28: Cabinet/Folder Hierarchy** — Navigable cabinet/folder tree with document filing and folder CRUD
+- [x] **Phase 28: Cabinet/Folder Hierarchy** — Navigable cabinet/folder tree with document filing and folder CRUD (completed 2026-04-13)
 - [ ] **Phase 29: Folder ACL Inheritance** — Folder-level permissions that propagate down to contained documents
 - [ ] **Phase 30: Full-Text Search & Content Extraction** — Text extraction pipeline and ranked search across document content and metadata
 - [ ] **Phase 31: Document Relationships** — Typed directional links between documents (supersedes, references, is-part-of)
@@ -85,8 +85,8 @@ Plans:
 **Plans**: 3 plans
 Plans:
 - [x] 28-01-PLAN.md — Backend foundation: Folder model, migration, FolderService with CTE operations
-- [ ] 28-02-PLAN.md — API layer: folders router, document API integration, test implementation
-- [ ] 28-03-PLAN.md — Frontend: FolderTree, admin page, filing UI, navigation wiring
+- [x] 28-02-PLAN.md — API layer: folders router, document API integration, test implementation
+- [x] 28-03-PLAN.md — Frontend: FolderTree, admin page, filing UI, navigation wiring
 **UI hint**: yes
 
 ### Phase 29: Folder ACL Inheritance
@@ -152,7 +152,7 @@ Plans:
 | 12–15. Full Frontend | v1.1 | 4/4 | Complete | 2026-04-06 |
 | 16–26. Advanced Engine | v1.2 | 26/26 | Complete | 2026-04-13 |
 | 27. Document Type System | v1.3 | 4/4 | Complete | 2026-04-13 |
-| 28. Cabinet/Folder Hierarchy | v1.3 | 1/3 | In Progress|  |
+| 28. Cabinet/Folder Hierarchy | v1.3 | 3/3 | Complete   | 2026-04-13 |
 | 29. Folder ACL Inheritance | v1.3 | 0/? | Not started | — |
 | 30. Full-Text Search & Content Extraction | v1.3 | 0/? | Not started | — |
 | 31. Document Relationships | v1.3 | 0/? | Not started | — |
