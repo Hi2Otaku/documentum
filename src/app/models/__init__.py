@@ -2,6 +2,7 @@ from app.models.base import Base, BaseModel
 from app.models.enums import ActivityState, ActivityType, FlowType, LifecycleState, PerformerType, PermissionLevel, ProcessState, TriggerType, WorkflowState, WorkItemState
 from app.models.user import Group, Role, User, user_groups, user_roles
 from app.models.audit import AuditLog
+from app.models.document_type import DocumentType
 from app.models.document import Document, DocumentVersion
 from app.models.acl import DocumentACL, LifecycleACLRule
 from app.models.execution_log import AutoActivityLog
@@ -50,6 +51,7 @@ __all__ = [
     "ProcessVariable",
     "WorkflowPackage",
     "ExecutionToken",
+    "DocumentType",
     "Document",
     "DocumentVersion",
     "LifecycleState",

@@ -18,6 +18,7 @@ dependencies = [
     "python-multipart",
     "minio",
     "cryptography",
+    "jsonschema>=4.26,<5",
 ]
 
 [project.optional-dependencies]

@@ -48,6 +48,14 @@ class Document(BaseModel):
         nullable=True,
     )
 
+    document_type_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid(), ForeignKey("document_types.id"), nullable=True
+    )
+    document_type: Mapped["DocumentType | None"] = relationship(  # noqa: F821
+        "DocumentType",
+        lazy="selectin",
+    )
+
     versions: Mapped[list["DocumentVersion"]] = relationship(
         back_populates="document",
         order_by="DocumentVersion.created_at",

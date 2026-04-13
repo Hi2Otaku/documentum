@@ -15,6 +15,7 @@ class DocumentUpdate(BaseModel):
     title: str | None = Field(default=None, max_length=500)
     author: str | None = None
     custom_properties: dict[str, Any] | None = None
+    document_type_id: uuid.UUID | None = None
 
 
 class DocumentResponse(BaseModel):
@@ -33,6 +34,8 @@ class DocumentResponse(BaseModel):
     created_by: str | None
     is_deleted: bool
     lifecycle_state: str | None = None
+    document_type_id: uuid.UUID | None = None
+    document_type_name: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
