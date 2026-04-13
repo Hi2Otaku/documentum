@@ -7,6 +7,7 @@ import {
   BarChart3,
   Search,
   Tags,
+  FolderOpen,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useAuthStore } from "../../stores/authStore";
@@ -29,6 +30,7 @@ const NAV_ITEMS: NavItem[] = [
   { icon: BarChart3, label: "Dashboard", route: "/dashboard", adminOnly: true },
   { icon: Search, label: "Query", route: "/query", adminOnly: true },
   { icon: Tags, label: "Types", route: "/admin/types", adminOnly: true },
+  { icon: FolderOpen, label: "Folders", route: "/admin/folders", adminOnly: true },
 ];
 
 interface SidebarNavProps {
