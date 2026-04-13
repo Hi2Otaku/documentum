@@ -76,6 +76,8 @@ export interface DocumentResponse {
   created_by: string | null;
   is_deleted: boolean;
   lifecycle_state: string | null;
+  document_type_id: string | null;
+  document_type_name: string | null;
 }
 
 export interface DocumentVersionResponse {
@@ -153,23 +155,49 @@ export async function uploadDocument(
   file: File,
   title: string,
   author: string,
+  documentTypeId?: string,
+  customProperties?: Record<string, unknown>,
 ): Promise<DocumentResponse> {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("title", title);
   formData.append("author", author);
+  if (documentTypeId) {
+    formData.append("document_type_id", documentTypeId);
+  }
+  if (customProperties && Object.keys(customProperties).length > 0) {
+    formData.append("custom_properties", JSON.stringify(customProperties));
+  }
 
   const res = await fetch("/api/v1/documents/", {
     method: "POST",
     headers: authHeaders(),
     body: formData,
   });
+  if (res.status === 401) handle401();
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`API error ${res.status}: ${text}`);
   }
   const json = (await res.json()) as { data: DocumentResponse };
   return json.data;
+}
+
+export async function updateDocument(
+  id: string,
+  data: {
+    title?: string;
+    author?: string;
+    document_type_id?: string | null;
+    custom_properties?: Record<string, unknown>;
+  },
+): Promise<DocumentResponse> {
+  const res = await apiMutate<{ data: DocumentResponse }>(
+    `/api/v1/documents/${id}`,
+    "PUT",
+    data,
+  );
+  return res.data;
 }
 
 export async function checkoutDocument(
