@@ -33,9 +33,9 @@ Milestone: v1.3 Document-Centric ECM
 
 ### Document Relationships
 
-- [ ] **REL-01**: User can create a typed relationship between two documents (supersedes, references, is-part-of), with direction
-- [ ] **REL-02**: User can view all relationships for a document in a relationships panel within the document detail view
-- [ ] **REL-03**: User can navigate from a document to any related document via the relationship link
+- [x] **REL-01**: User can create a typed relationship between two documents (supersedes, references, is-part-of), with direction
+- [x] **REL-02**: User can view all relationships for a document in a relationships panel within the document detail view
+- [x] **REL-03**: User can navigate from a document to any related document via the relationship link
 
 ### Document Navigation
 
@@ -87,9 +87,9 @@ Milestone: v1.3 Document-Centric ECM
 | SRCH-03 | Phase 30 | Pending |
 | SRCH-04 | Phase 33 | Pending |
 | SRCH-05 | Phase 33 | Pending |
-| REL-01 | Phase 31 | Pending |
-| REL-02 | Phase 31 | Pending |
-| REL-03 | Phase 31 | Pending |
+| REL-01 | Phase 31 | Complete |
+| REL-02 | Phase 31 | Complete |
+| REL-03 | Phase 31 | Complete |
 | NAV-01 | Phase 32 | Pending |
 | NAV-02 | Phase 32 | Pending |
 | NAV-03 | Phase 32 | Pending |
