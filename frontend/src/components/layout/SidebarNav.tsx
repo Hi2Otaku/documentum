@@ -8,6 +8,7 @@ import {
   Search,
   Tags,
   FolderOpen,
+  FolderTree,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useAuthStore } from "../../stores/authStore";
@@ -23,6 +24,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
+  { icon: FolderTree, label: "Browse", route: "/browse", adminOnly: false },
   { icon: LayoutTemplate, label: "Templates", route: "/templates", adminOnly: false },
   { icon: Inbox, label: "Inbox", route: "/inbox", adminOnly: false },
   { icon: FileText, label: "Documents", route: "/documents", adminOnly: false },
