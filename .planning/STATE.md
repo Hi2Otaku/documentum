@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Document-Centric ECM
-status: verifying
-stopped_at: Completed 32-02-PLAN.md (Route and Navigation Wiring)
-last_updated: "2026-04-14T04:10:19.809Z"
+status: executing
+stopped_at: Completed 33-01-PLAN.md (Saved Searches Backend)
+last_updated: "2026-04-14T04:19:24.796Z"
 last_activity: 2026-04-14
 progress:
   total_phases: 7
   completed_phases: 6
-  total_plans: 17
-  completed_plans: 17
+  total_plans: 19
+  completed_plans: 18
   percent: 0
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-13)
 
 **Core value:** Any workflow or document management use case described in the Documentum specification can be modeled and executed end-to-end.
-**Current focus:** Phase 32 — document-first-navigation
+**Current focus:** Phase 33 — saved-searches-smart-folders
 
 ## Current Position
 
-Phase: 33
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 33 (saved-searches-smart-folders) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
 Last activity: 2026-04-14
 
 Progress: [..........] 0% (v1.3: 0/7 phases)
@@ -60,6 +60,7 @@ Progress: [..........] 0% (v1.3: 0/7 phases)
 | Phase 31-document-relationships P02 | 2.5min | 2 tasks | 5 files |
 | Phase 32 P01 | 1min | 1 tasks | 1 files |
 | Phase 32 P02 | 1min | 2 tasks | 2 files |
+| Phase 33-saved-searches-smart-folders P01 | 2min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,7 @@ v1.3 architecture decisions (resolved during research):
 - [Phase 31-document-relationships]: Used existing 31-01 file names (relationships.ts, RelationshipPanel.tsx) and added direction grouping, onDocumentSelect prop for navigation
 - [Phase 32]: Inline document table in BrowsePage without @tanstack/react-table for simpler browse-only view
 - [Phase 32]: FolderTree icon for Browse nav item (FolderOpen already used by admin Folders)
+- [Phase 33-saved-searches-smart-folders]: Raw DDL migration matching phase31 pattern; partial index on (user_id, is_smart_folder) for smart folder queries
 
 ### Pending Todos
 
@@ -92,6 +94,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-14T04:08:11.491Z
-Stopped at: Completed 32-02-PLAN.md (Route and Navigation Wiring)
+Last session: 2026-04-14T04:19:24.792Z
+Stopped at: Completed 33-01-PLAN.md (Saved Searches Backend)
 Resume file: None

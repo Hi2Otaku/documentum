@@ -146,7 +146,7 @@ Plans:
   2. User can mark a saved search to appear as a smart folder in the folder tree, and clicking it displays the search results as if browsing a folder
 **Plans**: 2 plans
 Plans:
-- [ ] 33-01-PLAN.md — Backend: SavedSearch model, migration, service, router
+- [x] 33-01-PLAN.md — Backend: SavedSearch model, migration, service, router
 - [ ] 33-02-PLAN.md — Frontend: Save dialog, saved searches list, smart folder tree nodes
 **UI hint**: yes
 
@@ -163,4 +163,4 @@ Plans:
 | 30. Full-Text Search & Content Extraction | v1.3 | 0/? | Not started | — |
 | 31. Document Relationships | v1.3 | 2/2 | Complete    | 2026-04-14 |
 | 32. Document-First Navigation | v1.3 | 2/2 | Complete    | 2026-04-14 |
-| 33. Saved Searches & Smart Folders | v1.3 | 0/2 | Not started | — |
+| 33. Saved Searches & Smart Folders | v1.3 | 1/2 | In Progress|  |
