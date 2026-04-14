@@ -42,7 +42,7 @@ See `.planning/milestones/v1.2-ROADMAP.md` for full phase details.
 
 </details>
 
-### 🚧 v1.3 Document-Centric ECM
+### v1.3 Document-Centric ECM
 
 **Milestone Goal:** Reorient the system from workflow-centric to document-centric, matching Documentum's ECM platform model -- where documents are the primary object and workflows exist to route them through structured processes.
 
@@ -144,7 +144,10 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. User can save a search query with a name and retrieve it in a future session
   2. User can mark a saved search to appear as a smart folder in the folder tree, and clicking it displays the search results as if browsing a folder
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 33-01-PLAN.md — Backend: SavedSearch model, migration, service, router
+- [ ] 33-02-PLAN.md — Frontend: Save dialog, saved searches list, smart folder tree nodes
 **UI hint**: yes
 
 ## Progress
@@ -160,4 +163,4 @@ Plans:
 | 30. Full-Text Search & Content Extraction | v1.3 | 0/? | Not started | — |
 | 31. Document Relationships | v1.3 | 2/2 | Complete    | 2026-04-14 |
 | 32. Document-First Navigation | v1.3 | 2/2 | Complete    | 2026-04-14 |
-| 33. Saved Searches & Smart Folders | v1.3 | 0/? | Not started | — |
+| 33. Saved Searches & Smart Folders | v1.3 | 0/2 | Not started | — |
