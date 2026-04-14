@@ -26,6 +26,7 @@ const NAV_ITEMS: NavItem[] = [
   { icon: LayoutTemplate, label: "Templates", route: "/templates", adminOnly: false },
   { icon: Inbox, label: "Inbox", route: "/inbox", adminOnly: false },
   { icon: FileText, label: "Documents", route: "/documents", adminOnly: false },
+  { icon: Search, label: "Search", route: "/search", adminOnly: false },
   { icon: GitBranch, label: "Workflows", route: "/workflows", adminOnly: false },
   { icon: BarChart3, label: "Dashboard", route: "/dashboard", adminOnly: true },
   { icon: Search, label: "Query", route: "/query", adminOnly: true },

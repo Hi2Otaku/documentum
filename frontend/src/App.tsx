@@ -6,6 +6,7 @@ import { DashboardPage } from "./pages/DashboardPage";
 import { QueryPage } from "./pages/QueryPage";
 import { InboxPage } from "./pages/InboxPage";
 import { DocumentsPage } from "./pages/DocumentsPage";
+import { SearchPage } from "./pages/SearchPage";
 import { WorkflowsPage } from "./pages/WorkflowsPage";
 import { DocumentTypesPage } from "./pages/DocumentTypesPage";
 import { FoldersPage } from "./pages/FoldersPage";
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/templates/:id/edit" element={<DesignerPage />} />
           <Route path="/inbox" element={<InboxPage />} />
           <Route path="/documents" element={<DocumentsPage />} />
+          <Route path="/search" element={<SearchPage />} />
           <Route path="/workflows" element={<WorkflowsPage />} />
 
           {/* Admin-only routes */}
