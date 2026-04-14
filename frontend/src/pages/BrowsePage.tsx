@@ -1,0 +1,320 @@
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import {
+  FolderOpen,
+  PanelLeftClose,
+  PanelLeft,
+  File,
+  FileText,
+  FileSpreadsheet,
+  Image,
+} from "lucide-react";
+import { Button } from "../components/ui/button";
+import { Skeleton } from "../components/ui/skeleton";
+import { Badge } from "../components/ui/badge";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "../components/ui/table";
+import { FolderTree } from "../components/folders/FolderTree";
+import { FolderBreadcrumb } from "../components/folders/FolderBreadcrumb";
+import { DocumentDetailPanel } from "../components/documents/DocumentDetailPanel";
+import { LifecycleStateBadge } from "../components/documents/LifecycleStateBadge";
+import {
+  fetchFolderTree,
+  fetchFolder,
+  fetchFolderDocuments,
+  folderKeys,
+} from "../api/folders";
+import { useAuthStore } from "../stores/authStore";
+
+/** Minimal document shape returned by fetchFolderDocuments */
+interface FolderDocument {
+  id: string;
+  title: string;
+  content_type: string;
+  document_type_name: string | null;
+  lifecycle_state: string;
+  updated_at: string;
+}
+
+interface FolderDocumentsResponse {
+  data: FolderDocument[];
+  meta: {
+    total_pages: number;
+    page: number;
+    total: number;
+  };
+}
+
+function FileTypeIcon({ contentType }: { contentType: string }) {
+  if (contentType.startsWith("image/")) {
+    return <Image className="h-4 w-4 text-muted-foreground" />;
+  }
+  if (contentType === "application/pdf") {
+    return <FileText className="h-4 w-4 text-muted-foreground" />;
+  }
+  if (
+    contentType.includes("spreadsheet") ||
+    contentType.includes("excel") ||
+    contentType === "text/csv"
+  ) {
+    return <FileSpreadsheet className="h-4 w-4 text-muted-foreground" />;
+  }
+  return <File className="h-4 w-4 text-muted-foreground" />;
+}
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = Date.now();
+  const diffMs = now - date.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  const diffHour = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHour / 24);
+
+  if (diffMin < 1) return "just now";
+  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffHour < 24) return `${diffHour}h ago`;
+  if (diffDay < 30) return `${diffDay}d ago`;
+  return date.toLocaleDateString();
+}
+
+export function BrowsePage() {
+  const userId = useAuthStore((s) => s.userId) ?? "";
+
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(
+    null
+  );
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Folder tree query
+  const { data: tree = [], isLoading: treeLoading } = useQuery({
+    queryKey: folderKeys.tree(),
+    queryFn: fetchFolderTree,
+  });
+
+  // Selected folder detail (provides path for breadcrumb)
+  const { data: selectedFolder } = useQuery({
+    queryKey: folderKeys.detail(selectedFolderId ?? ""),
+    queryFn: () => fetchFolder(selectedFolderId!),
+    enabled: !!selectedFolderId,
+  });
+
+  // Folder documents
+  const { data: documentsData, isLoading: documentsLoading } = useQuery({
+    queryKey: [...folderKeys.documents(selectedFolderId ?? ""), currentPage],
+    queryFn: () =>
+      fetchFolderDocuments(selectedFolderId!, currentPage) as Promise<FolderDocumentsResponse>,
+    enabled: !!selectedFolderId,
+  });
+
+  const documents = documentsData?.data ?? [];
+  const totalPages = documentsData?.meta?.total_pages ?? 1;
+
+  function handleFolderSelect(id: string) {
+    setSelectedFolderId(id);
+    setSelectedDocumentId(null);
+    setCurrentPage(1);
+  }
+
+  function handleBreadcrumbNavigate(id: string) {
+    setSelectedFolderId(id);
+    setSelectedDocumentId(null);
+    setCurrentPage(1);
+  }
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Page header */}
+      <div className="flex items-center gap-2 px-6 py-4 border-b">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setSidebarCollapsed((prev) => !prev)}
+          title={sidebarCollapsed ? "Show folder tree" : "Hide folder tree"}
+        >
+          {sidebarCollapsed ? (
+            <PanelLeft className="h-4 w-4" />
+          ) : (
+            <PanelLeftClose className="h-4 w-4" />
+          )}
+        </Button>
+        <FolderOpen className="h-5 w-5 text-muted-foreground" />
+        <h1 className="text-lg font-semibold">Browse</h1>
+      </div>
+
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left: Collapsible folder tree sidebar */}
+        {!sidebarCollapsed && (
+          <div className="w-64 border-r overflow-y-auto shrink-0">
+            <div className="py-2">
+              {treeLoading ? (
+                <div className="px-4 space-y-2">
+                  <Skeleton className="h-5 w-full" />
+                  <Skeleton className="h-5 w-[80%]" />
+                  <Skeleton className="h-5 w-[70%]" />
+                  <Skeleton className="h-5 w-[60%]" />
+                </div>
+              ) : (
+                <FolderTree
+                  tree={tree}
+                  selectedId={selectedFolderId}
+                  onSelect={handleFolderSelect}
+                />
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Center: Document content area */}
+        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+          {/* Breadcrumb bar */}
+          {selectedFolder && (
+            <div className="px-4 py-2 border-b shrink-0">
+              <FolderBreadcrumb
+                path={selectedFolder.path}
+                onNavigate={handleBreadcrumbNavigate}
+              />
+            </div>
+          )}
+
+          {/* Document grid */}
+          {!selectedFolderId ? (
+            /* No folder selected — empty state */
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <FolderOpen className="h-12 w-12 text-muted-foreground mb-3" />
+              <h3 className="text-base font-medium">
+                Select a folder to browse documents
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Click a cabinet or folder in the tree to view its documents.
+              </p>
+            </div>
+          ) : documentsLoading ? (
+            /* Loading state */
+            <div className="p-4 space-y-3 flex-1">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
+            </div>
+          ) : documents.length === 0 ? (
+            /* Empty folder */
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <FolderOpen className="h-10 w-10 text-muted-foreground mb-3" />
+              <h3 className="text-base font-medium">No documents in this folder</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                This folder is empty. File documents here from the Documents page.
+              </p>
+            </div>
+          ) : (
+            /* Document table */
+            <div className="flex flex-col flex-1 overflow-hidden">
+              <div className="flex-1 overflow-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="h-10 bg-secondary">
+                      <TableHead className="w-10" />
+                      <TableHead>Title</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Lifecycle</TableHead>
+                      <TableHead>Modified</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {documents.map((doc) => (
+                      <TableRow
+                        key={doc.id}
+                        className={`cursor-pointer hover:bg-accent/50 ${
+                          doc.id === selectedDocumentId
+                            ? "bg-accent border-l-[3px] border-primary"
+                            : ""
+                        }`}
+                        onClick={() => setSelectedDocumentId(doc.id)}
+                      >
+                        <TableCell className="w-10 px-3">
+                          <FileTypeIcon contentType={doc.content_type} />
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-sm font-medium">
+                            {doc.title}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          {doc.document_type_name ? (
+                            <Badge variant="outline" className="text-xs">
+                              {doc.document_type_name}
+                            </Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">
+                              --
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <LifecycleStateBadge state={doc.lifecycle_state} />
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-xs text-muted-foreground">
+                            {formatDate(doc.updated_at)}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Pagination */}
+              <div className="h-12 flex items-center justify-between px-4 border-t shrink-0">
+                <span className="text-sm text-muted-foreground">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={currentPage === 1}
+                    onClick={() => {
+                      setCurrentPage((p) => p - 1);
+                      setSelectedDocumentId(null);
+                    }}
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={currentPage >= totalPages}
+                    onClick={() => {
+                      setCurrentPage((p) => p + 1);
+                      setSelectedDocumentId(null);
+                    }}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right: Document detail panel */}
+        {selectedDocumentId && (
+          <div className="w-[420px] border-l overflow-y-auto shrink-0">
+            <DocumentDetailPanel
+              documentId={selectedDocumentId}
+              currentUserId={userId}
+              onDocumentSelect={setSelectedDocumentId}
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
