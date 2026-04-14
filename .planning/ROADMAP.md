@@ -42,15 +42,14 @@ See `.planning/milestones/v1.2-ROADMAP.md` for full phase details.
 
 </details>
 
-### v1.3 Document-Centric ECM
+### 🚧 v1.3 Document-Centric ECM
 
 **Milestone Goal:** Reorient the system from workflow-centric to document-centric, matching Documentum's ECM platform model -- where documents are the primary object and workflows exist to route them through structured processes.
 
 - [ ] **Phase 27: Document Type System** — Custom document types with JSON Schema metadata validation and type inheritance
-- [x] **Phase 28: Cabinet/Folder Hierarchy** — Navigable cabinet/folder tree with document filing and folder CRUD
- (completed 2026-04-13)
-- [x] **Phase 29: Folder ACL Inheritance** — Folder-level permissions that propagate down to contained documents (completed 2026-04-14)
-- [x] **Phase 30: Full-Text Search & Content Extraction** — Text extraction pipeline and ranked search across document content and metadata (completed 2026-04-14)
+- [ ] **Phase 28: Cabinet/Folder Hierarchy** — Navigable cabinet/folder tree with document filing and folder CRUD
+- [ ] **Phase 29: Folder ACL Inheritance** — Folder-level permissions that propagate down to contained documents
+- [ ] **Phase 30: Full-Text Search & Content Extraction** — Text extraction pipeline and ranked search across document content and metadata
 - [ ] **Phase 31: Document Relationships** — Typed directional links between documents (supersedes, references, is-part-of)
 - [ ] **Phase 32: Document-First Navigation** — Browse UI with folder tree sidebar, content grid, and inline document detail
 - [ ] **Phase 33: Saved Searches & Smart Folders** — Named search queries that persist and appear as virtual folders in the tree
@@ -86,8 +85,8 @@ Plans:
 **Plans**: 3 plans
 Plans:
 - [x] 28-01-PLAN.md — Backend foundation: Folder model, migration, FolderService with CTE operations
-- [x] 28-02-PLAN.md — API layer: folders router, document API integration, test implementation
-- [x] 28-03-PLAN.md — Frontend: FolderTree, admin page, filing UI, navigation wiring
+- [ ] 28-02-PLAN.md — API layer: folders router, document API integration, test implementation
+- [ ] 28-03-PLAN.md — Frontend: FolderTree, admin page, filing UI, navigation wiring
 **UI hint**: yes
 
 ### Phase 29: Folder ACL Inheritance
@@ -98,12 +97,7 @@ Plans:
   1. User with read permission on a folder can see all documents filed in that folder (and its subfolders) without per-document ACL entries
   2. User without folder permission cannot see documents that rely solely on inherited folder ACL for access
   3. Direct document-level ACL entries override inherited folder permissions when both exist
-**Plans**: 3 plans
-Plans:
-- [x] 29-01-PLAN.md -- Backend foundation: FolderACL model, migration, check_permission extension, ACL-filtered listing, tests
-- [x] 29-02-PLAN.md -- API layer: folder ACL CRUD endpoints, filtered folder docs, access_source on document detail
-- [x] 29-03-PLAN.md -- Frontend: FolderPermissionsTab, AddPermissionDialog, AccessSourceBadge, FoldersPage tabs
-**UI hint**: yes
+**Plans**: TBD
 
 ### Phase 30: Full-Text Search & Content Extraction
 **Goal**: Users can search across document content and metadata with ranked results, powered by automatic text extraction from uploaded files
@@ -114,11 +108,7 @@ Plans:
   2. User can search by keyword and see ranked results with highlighted snippets showing where the match occurred
   3. User can narrow search results by folder, document type, or lifecycle state
   4. Extraction failures are logged and surfaced (not silent) -- the document remains accessible but is marked as not indexed
-**Plans**: 3 plans
-Plans:
-- [x] 30-01-PLAN.md — Backend foundation: model columns, migration, extraction task, search service
-- [x] 30-02-PLAN.md — API layer: search router, document upload extraction integration
-- [x] 30-03-PLAN.md — Frontend: SearchPage, search components, sidebar navigation
+**Plans**: TBD
 **UI hint**: yes
 
 ### Phase 31: Document Relationships
@@ -129,10 +119,7 @@ Plans:
   1. User can create a typed, directional relationship between two documents (e.g., "Document A supersedes Document B")
   2. User can view all relationships for a document in a dedicated panel within the document detail view
   3. User can click a relationship link to navigate directly to the related document
-**Plans**: 2 plans
-Plans:
-- [ ] 31-01-PLAN.md — Backend: model, enum, migration, service, router, integration tests
-- [ ] 31-02-PLAN.md — Frontend: API client, relationships panel, add dialog, detail panel integration
+**Plans**: TBD
 **UI hint**: yes
 
 ### Phase 32: Document-First Navigation
@@ -165,9 +152,9 @@ Plans:
 | 12–15. Full Frontend | v1.1 | 4/4 | Complete | 2026-04-06 |
 | 16–26. Advanced Engine | v1.2 | 26/26 | Complete | 2026-04-13 |
 | 27. Document Type System | v1.3 | 4/4 | Complete | 2026-04-13 |
-| 28. Cabinet/Folder Hierarchy | v1.3 | 3/3 | Complete    | 2026-04-13 |
-| 29. Folder ACL Inheritance | v1.3 | 3/3 | Complete    | 2026-04-14 |
-| 30. Full-Text Search & Content Extraction | v1.3 | 3/3 | Complete    | 2026-04-14 |
-| 31. Document Relationships | v1.3 | 0/2 | Not started | — |
+| 28. Cabinet/Folder Hierarchy | v1.3 | 1/3 | In Progress|  |
+| 29. Folder ACL Inheritance | v1.3 | 0/? | Not started | — |
+| 30. Full-Text Search & Content Extraction | v1.3 | 0/? | Not started | — |
+| 31. Document Relationships | v1.3 | 1/1 | Complete | 2026-04-14 |
 | 32. Document-First Navigation | v1.3 | 0/? | Not started | — |
 | 33. Saved Searches & Smart Folders | v1.3 | 0/? | Not started | — |

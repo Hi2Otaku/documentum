@@ -5,6 +5,7 @@ from app.models.audit import AuditLog
 from app.models.document_type import DocumentType
 from app.models.document import Document, DocumentVersion
 from app.models.folder import Folder, document_folders
+from app.models.document_relationship import DocumentRelationship, RelationshipType
 from app.models.acl import DocumentACL, LifecycleACLRule
 from app.models.execution_log import AutoActivityLog
 from app.models.metrics import MetricsSummary
@@ -55,6 +56,8 @@ __all__ = [
     "DocumentType",
     "Folder",
     "document_folders",
+    "DocumentRelationship",
+    "RelationshipType",
     "Document",
     "DocumentVersion",
     "LifecycleState",
