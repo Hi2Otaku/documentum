@@ -155,6 +155,6 @@ Plans:
 | 28. Cabinet/Folder Hierarchy | v1.3 | 1/3 | In Progress|  |
 | 29. Folder ACL Inheritance | v1.3 | 0/? | Not started | — |
 | 30. Full-Text Search & Content Extraction | v1.3 | 0/? | Not started | — |
-| 31. Document Relationships | v1.3 | 2/2 | Complete   | 2026-04-14 |
+| 31. Document Relationships | v1.3 | 2/2 | Complete    | 2026-04-14 |
 | 32. Document-First Navigation | v1.3 | 0/? | Not started | — |
 | 33. Saved Searches & Smart Folders | v1.3 | 0/? | Not started | — |
