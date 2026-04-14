@@ -5,11 +5,25 @@ optional folder/type/lifecycle filters, and ACL enforcement.
 """
 import uuid
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import case, func, literal, or_, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models.document import Document, DocumentVersion
+
+
+def _build_tsquery(query_text: str):
+    """Build a tsquery that supports prefix matching.
+
+    Splits the input into words and appends :* to each for prefix matching.
+    e.g. "par agr" -> "par:* & agr:*"
+    This means typing "par" will match "partnership".
+    """
+    words = query_text.strip().split()
+    if not words:
+        return func.to_tsquery("english", "''")
+    prefix_terms = " & ".join(f"{w}:*" for w in words)
+    return func.to_tsquery("english", prefix_terms)
 
 
 async def search_documents(
@@ -23,13 +37,18 @@ async def search_documents(
     user_id: str | None = None,
     is_superuser: bool = False,
 ) -> tuple[list[dict], int]:
-    """Search documents using PostgreSQL full-text search.
+    """Search documents using PostgreSQL full-text search with prefix matching.
 
-    Returns a tuple of (results list, total count). Each result dict contains
-    document fields plus rank and headline snippet.
+    Supports partial word matching: typing "par" finds "partnership".
+    Also falls back to ILIKE title match for short queries.
     """
-    ts_query = func.websearch_to_tsquery("english", query_text)
-    rank = func.ts_rank(Document.search_vector, ts_query).label("rank")
+    ts_query = _build_tsquery(query_text)
+    # Rank: use ts_rank when FTS matches, fallback score of 0.1 for ILIKE-only matches
+    ilike_pattern_rank = f"%{query_text}%"
+    rank = case(
+        (Document.search_vector.op("@@")(ts_query), func.ts_rank(Document.search_vector, ts_query)),
+        else_=literal(0.1),
+    ).label("rank")
 
     # Correlated subquery for latest version's fulltext_content
     latest_content_subq = (
@@ -51,9 +70,14 @@ async def search_documents(
         "StartSel=<mark>, StopSel=</mark>, MaxWords=35, MinWords=15, MaxFragments=3",
     ).label("headline")
 
-    # Base conditions
+    # Base conditions: FTS prefix match OR title/author ILIKE for substring matches
+    ilike_pattern = f"%{query_text}%"
     conditions = [
-        Document.search_vector.op("@@")(ts_query),
+        or_(
+            Document.search_vector.op("@@")(ts_query),
+            Document.title.ilike(ilike_pattern),
+            Document.author.ilike(ilike_pattern),
+        ),
         Document.is_deleted == False,  # noqa: E712
     ]
 
