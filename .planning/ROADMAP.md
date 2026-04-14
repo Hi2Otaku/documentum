@@ -129,7 +129,10 @@ Plans:
   1. User can create a typed, directional relationship between two documents (e.g., "Document A supersedes Document B")
   2. User can view all relationships for a document in a dedicated panel within the document detail view
   3. User can click a relationship link to navigate directly to the related document
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 31-01-PLAN.md — Backend: model, enum, migration, service, router, integration tests
+- [ ] 31-02-PLAN.md — Frontend: API client, relationships panel, add dialog, detail panel integration
 **UI hint**: yes
 
 ### Phase 32: Document-First Navigation
@@ -165,6 +168,6 @@ Plans:
 | 28. Cabinet/Folder Hierarchy | v1.3 | 3/3 | Complete    | 2026-04-13 |
 | 29. Folder ACL Inheritance | v1.3 | 3/3 | Complete    | 2026-04-14 |
 | 30. Full-Text Search & Content Extraction | v1.3 | 3/3 | Complete    | 2026-04-14 |
-| 31. Document Relationships | v1.3 | 0/? | Not started | — |
+| 31. Document Relationships | v1.3 | 0/2 | Not started | — |
 | 32. Document-First Navigation | v1.3 | 0/? | Not started | — |
 | 33. Saved Searches & Smart Folders | v1.3 | 0/? | Not started | — |
