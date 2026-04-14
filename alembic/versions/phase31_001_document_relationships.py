@@ -7,7 +7,6 @@ Create Date: 2026-04-14
 """
 from typing import Sequence, Union
 
-import sqlalchemy as sa
 from alembic import op
 
 
@@ -19,35 +18,34 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Create relationshiptype enum
-    relationshiptype = sa.Enum(
-        "supersedes", "references", "is_part_of", "related_to",
-        name="relationshiptype",
-    )
-    relationshiptype.create(op.get_bind(), checkfirst=True)
+    # Use raw DDL to avoid duplicate enum errors (same pattern as Phase 29)
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE relationshiptype AS ENUM ('supersedes', 'references', 'is_part_of', 'related_to');
+        EXCEPTION WHEN duplicate_object THEN NULL;
+        END $$;
+    """)
 
-    op.create_table(
-        "document_relationships",
-        sa.Column("id", sa.Uuid(), primary_key=True),
-        sa.Column("source_document_id", sa.Uuid(), sa.ForeignKey("documents.id"), nullable=False),
-        sa.Column("target_document_id", sa.Uuid(), sa.ForeignKey("documents.id"), nullable=False),
-        sa.Column("relationship_type", relationshiptype, nullable=False),
-        sa.Column("description", sa.Text(), nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
-        sa.Column("created_by", sa.String(255), nullable=True),
-        sa.Column("is_deleted", sa.Boolean(), nullable=False, server_default="false"),
-        sa.UniqueConstraint(
-            "source_document_id", "target_document_id", "relationship_type",
-            name="uq_document_relationship",
-        ),
-    )
-    op.create_index("ix_document_relationships_source", "document_relationships", ["source_document_id"])
-    op.create_index("ix_document_relationships_target", "document_relationships", ["target_document_id"])
+    op.execute("""
+        CREATE TABLE IF NOT EXISTS document_relationships (
+            id UUID PRIMARY KEY,
+            source_document_id UUID NOT NULL REFERENCES documents(id),
+            target_document_id UUID NOT NULL REFERENCES documents(id),
+            relationship_type relationshiptype NOT NULL,
+            description TEXT,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+            created_by VARCHAR(255),
+            is_deleted BOOLEAN NOT NULL DEFAULT false,
+            CONSTRAINT uq_document_relationship UNIQUE (source_document_id, target_document_id, relationship_type)
+        );
+    """)
+    op.execute("CREATE INDEX IF NOT EXISTS ix_document_relationships_source ON document_relationships (source_document_id);")
+    op.execute("CREATE INDEX IF NOT EXISTS ix_document_relationships_target ON document_relationships (target_document_id);")
 
 
 def downgrade() -> None:
-    op.drop_index("ix_document_relationships_target")
-    op.drop_index("ix_document_relationships_source")
-    op.drop_table("document_relationships")
-    sa.Enum(name="relationshiptype").drop(op.get_bind(), checkfirst=True)
+    op.execute("DROP INDEX IF EXISTS ix_document_relationships_target;")
+    op.execute("DROP INDEX IF EXISTS ix_document_relationships_source;")
+    op.execute("DROP TABLE IF EXISTS document_relationships;")
+    op.execute("DROP TYPE IF EXISTS relationshiptype;")

@@ -117,18 +117,19 @@ async def upload_document(
 
         # Initialize search_vector from metadata (Phase 30) — PostgreSQL only
         try:
-            from sqlalchemy import update as sa_update
-            from app.models.document import Document as DocModel
-            await db.execute(
-                sa_update(DocModel)
-                .where(DocModel.id == doc_id)
-                .values(
-                    search_vector=(
-                        func.setweight(func.to_tsvector('english', func.coalesce(title, '')), 'A')
-                        + func.setweight(func.to_tsvector('english', func.coalesce(author or '', '')), 'B')
+            async with db.begin_nested():
+                from sqlalchemy import update as sa_update
+                from app.models.document import Document as DocModel
+                await db.execute(
+                    sa_update(DocModel)
+                    .where(DocModel.id == doc_id)
+                    .values(
+                        search_vector=(
+                            func.setweight(func.to_tsvector('english', func.coalesce(title, '')), 'A')
+                            + func.setweight(func.to_tsvector('english', func.coalesce(author or '', '')), 'B')
+                        )
                     )
                 )
-            )
         except Exception as e:
             logger.debug("search_vector init skipped (non-fatal): %s", e)
 
@@ -538,18 +539,19 @@ async def checkin_document(
 
         # Update search_vector from updated metadata (Phase 30) — PostgreSQL only
         try:
-            from sqlalchemy import update as sa_update
-            from app.models.document import Document as DocModel
-            await db.execute(
-                sa_update(DocModel)
-                .where(DocModel.id == document_id)
-                .values(
-                    search_vector=(
-                        func.setweight(func.to_tsvector('english', func.coalesce(document.title, '')), 'A')
-                        + func.setweight(func.to_tsvector('english', func.coalesce(document.author or '', '')), 'B')
+            async with db.begin_nested():
+                from sqlalchemy import update as sa_update
+                from app.models.document import Document as DocModel
+                await db.execute(
+                    sa_update(DocModel)
+                    .where(DocModel.id == document_id)
+                    .values(
+                        search_vector=(
+                            func.setweight(func.to_tsvector('english', func.coalesce(document.title, '')), 'A')
+                            + func.setweight(func.to_tsvector('english', func.coalesce(document.author or '', '')), 'B')
+                        )
                     )
                 )
-            )
         except Exception as e:
             logger.debug("search_vector update skipped (non-fatal): %s", e)
 

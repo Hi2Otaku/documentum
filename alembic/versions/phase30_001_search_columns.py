@@ -21,13 +21,13 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.execute("ALTER TABLE documents ADD COLUMN search_vector tsvector")
+    op.execute("ALTER TABLE documents ADD COLUMN IF NOT EXISTS search_vector tsvector")
     op.execute(
-        "ALTER TABLE documents ADD COLUMN extraction_status varchar(20) NOT NULL DEFAULT 'pending'"
+        "ALTER TABLE documents ADD COLUMN IF NOT EXISTS extraction_status varchar(20) NOT NULL DEFAULT 'pending'"
     )
-    op.execute("ALTER TABLE document_versions ADD COLUMN fulltext_content text")
+    op.execute("ALTER TABLE document_versions ADD COLUMN IF NOT EXISTS fulltext_content text")
     op.execute(
-        "CREATE INDEX ix_documents_search_vector ON documents USING gin (search_vector)"
+        "CREATE INDEX IF NOT EXISTS ix_documents_search_vector ON documents USING gin (search_vector)"
     )
 
 

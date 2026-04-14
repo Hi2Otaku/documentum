@@ -19,7 +19,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     op.execute("""
-        CREATE TABLE saved_searches (
+        CREATE TABLE IF NOT EXISTS saved_searches (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
             name VARCHAR(255) NOT NULL,
             query TEXT NOT NULL,
@@ -34,10 +34,10 @@ def upgrade() -> None:
         )
     """)
     op.execute(
-        "CREATE INDEX ix_saved_searches_user_id ON saved_searches(user_id)"
+        "CREATE INDEX IF NOT EXISTS ix_saved_searches_user_id ON saved_searches(user_id)"
     )
     op.execute(
-        "CREATE INDEX ix_saved_searches_smart_folder "
+        "CREATE INDEX IF NOT EXISTS ix_saved_searches_smart_folder "
         "ON saved_searches(user_id, is_smart_folder) "
         "WHERE is_smart_folder = TRUE"
     )
