@@ -51,7 +51,7 @@ See `.planning/milestones/v1.2-ROADMAP.md` for full phase details.
 - [ ] **Phase 29: Folder ACL Inheritance** — Folder-level permissions that propagate down to contained documents
 - [ ] **Phase 30: Full-Text Search & Content Extraction** — Text extraction pipeline and ranked search across document content and metadata
 - [x] **Phase 31: Document Relationships** — Typed directional links between documents (supersedes, references, is-part-of) (completed 2026-04-14)
-- [ ] **Phase 32: Document-First Navigation** — Browse UI with folder tree sidebar, content grid, and inline document detail
+- [x] **Phase 32: Document-First Navigation** — Browse UI with folder tree sidebar, content grid, and inline document detail (completed 2026-04-14)
 - [ ] **Phase 33: Saved Searches & Smart Folders** — Named search queries that persist and appear as virtual folders in the tree
 
 ## Phase Details
@@ -134,7 +134,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 - [x] 32-01-PLAN.md — BrowsePage three-panel layout with folder tree, content grid, and detail panel
-- [ ] 32-02-PLAN.md — Route wiring and sidebar navigation update
+- [x] 32-02-PLAN.md — Route wiring and sidebar navigation update
 **UI hint**: yes
 
 ### Phase 33: Saved Searches & Smart Folders
@@ -159,5 +159,5 @@ Plans:
 | 29. Folder ACL Inheritance | v1.3 | 0/? | Not started | — |
 | 30. Full-Text Search & Content Extraction | v1.3 | 0/? | Not started | — |
 | 31. Document Relationships | v1.3 | 2/2 | Complete    | 2026-04-14 |
-| 32. Document-First Navigation | v1.3 | 1/2 | In Progress|  |
+| 32. Document-First Navigation | v1.3 | 2/2 | Complete   | 2026-04-14 |
 | 33. Saved Searches & Smart Folders | v1.3 | 0/? | Not started | — |
