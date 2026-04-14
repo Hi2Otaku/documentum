@@ -50,7 +50,7 @@ See `.planning/milestones/v1.2-ROADMAP.md` for full phase details.
 - [x] **Phase 28: Cabinet/Folder Hierarchy** — Navigable cabinet/folder tree with document filing and folder CRUD
  (completed 2026-04-13)
 - [x] **Phase 29: Folder ACL Inheritance** — Folder-level permissions that propagate down to contained documents (completed 2026-04-14)
-- [ ] **Phase 30: Full-Text Search & Content Extraction** — Text extraction pipeline and ranked search across document content and metadata
+- [x] **Phase 30: Full-Text Search & Content Extraction** — Text extraction pipeline and ranked search across document content and metadata (completed 2026-04-14)
 - [ ] **Phase 31: Document Relationships** — Typed directional links between documents (supersedes, references, is-part-of)
 - [ ] **Phase 32: Document-First Navigation** — Browse UI with folder tree sidebar, content grid, and inline document detail
 - [ ] **Phase 33: Saved Searches & Smart Folders** — Named search queries that persist and appear as virtual folders in the tree
@@ -116,9 +116,9 @@ Plans:
   4. Extraction failures are logged and surfaced (not silent) -- the document remains accessible but is marked as not indexed
 **Plans**: 3 plans
 Plans:
-- [ ] 30-01-PLAN.md — Backend foundation: model columns, migration, extraction task, search service
-- [ ] 30-02-PLAN.md — API layer: search router, document upload extraction integration
-- [ ] 30-03-PLAN.md — Frontend: SearchPage, search components, sidebar navigation
+- [x] 30-01-PLAN.md — Backend foundation: model columns, migration, extraction task, search service
+- [x] 30-02-PLAN.md — API layer: search router, document upload extraction integration
+- [x] 30-03-PLAN.md — Frontend: SearchPage, search components, sidebar navigation
 **UI hint**: yes
 
 ### Phase 31: Document Relationships
@@ -164,7 +164,7 @@ Plans:
 | 27. Document Type System | v1.3 | 4/4 | Complete | 2026-04-13 |
 | 28. Cabinet/Folder Hierarchy | v1.3 | 3/3 | Complete    | 2026-04-13 |
 | 29. Folder ACL Inheritance | v1.3 | 3/3 | Complete    | 2026-04-14 |
-| 30. Full-Text Search & Content Extraction | v1.3 | 0/3 | Planned | — |
+| 30. Full-Text Search & Content Extraction | v1.3 | 3/3 | Complete   | 2026-04-14 |
 | 31. Document Relationships | v1.3 | 0/? | Not started | — |
 | 32. Document-First Navigation | v1.3 | 0/? | Not started | — |
 | 33. Saved Searches & Smart Folders | v1.3 | 0/? | Not started | — |

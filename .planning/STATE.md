@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Document-Centric ECM
 status: executing
-stopped_at: Completed 30-03-PLAN.md (Search Page Frontend)
-last_updated: "2026-04-14T03:22:25.003Z"
+stopped_at: Completed 30-02-PLAN.md (Search API & Extraction Integration)
+last_updated: "2026-04-14T03:26:27.310Z"
 last_activity: 2026-04-14
 progress:
   total_phases: 7
-  completed_phases: 1
-  total_plans: 7
-  completed_plans: 7
+  completed_phases: 4
+  total_plans: 13
+  completed_plans: 13
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-13)
 ## Current Position
 
 Phase: 28 (cabinet-folder-hierarchy) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-14
 
@@ -56,6 +56,7 @@ Progress: [..........] 0% (v1.3: 0/7 phases)
 | Phase 27-document-type-system P02 | 5min | 2 tasks | 5 files |
 | Phase 27-document-type-system P03 | 3.5min | 2 tasks | 8 files |
 | Phase 30 P03 | 2.4min | 2 tasks | 7 files |
+| Phase 30 P02 | 2min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,7 @@ v1.3 architecture decisions (resolved during research):
 - [Phase 27-document-type-system]: Client-side JSON schema validation in dialog validates parse correctness and property count before API call
 - [Phase 27-document-type-system]: Parent type dropdown restricted to root types (parent_type_id === null) to prevent 3-level hierarchy in UI
 - [Phase 30]: D-11 to D-14 search UI decisions implemented: prominent input, filter sidebar, result cards with snippets and badges
+- [Phase 30]: Dict-based search result mapping in router layer matching actual service return type
 
 ### Pending Todos
 
@@ -84,6 +86,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-14T03:22:24.999Z
-Stopped at: Completed 30-03-PLAN.md (Search Page Frontend)
+Last session: 2026-04-14T03:26:27.297Z
+Stopped at: Completed 30-02-PLAN.md (Search API & Extraction Integration)
 Resume file: None
