@@ -1,5 +1,6 @@
 """Document relationships router — CRUD for typed links between documents."""
 
+import json
 import uuid
 
 from fastapi import APIRouter, Depends, status
@@ -75,11 +76,11 @@ async def create_relationship(
         entity_id=str(rel.id),
         action="create",
         user_id=str(current_user.id),
-        details={
+        details=json.dumps({
             "source_document_id": str(document_id),
             "target_document_id": str(data.target_document_id),
             "relationship_type": data.relationship_type,
-        },
+        }),
     )
 
     return EnvelopeResponse(data=_rel_response(rel))

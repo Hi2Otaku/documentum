@@ -115,26 +115,29 @@ async def upload_document(
         except Exception as e:
             logger.warning("Rendition request failed (non-fatal): %s", e)
 
-        # Initialize search_vector from metadata so document is immediately searchable (Phase 30)
-        from sqlalchemy import update as sa_update
-        from app.models.document import Document as DocModel
-        await db.execute(
-            sa_update(DocModel)
-            .where(DocModel.id == doc_id)
-            .values(
-                search_vector=(
-                    func.setweight(func.to_tsvector('english', func.coalesce(title, '')), 'A')
-                    + func.setweight(func.to_tsvector('english', func.coalesce(author or '', '')), 'B')
+        # Initialize search_vector from metadata (Phase 30) — PostgreSQL only
+        try:
+            from sqlalchemy import update as sa_update
+            from app.models.document import Document as DocModel
+            await db.execute(
+                sa_update(DocModel)
+                .where(DocModel.id == doc_id)
+                .values(
+                    search_vector=(
+                        func.setweight(func.to_tsvector('english', func.coalesce(title, '')), 'A')
+                        + func.setweight(func.to_tsvector('english', func.coalesce(author or '', '')), 'B')
+                    )
                 )
             )
-        )
+        except Exception as e:
+            logger.debug("search_vector init skipped (non-fatal): %s", e)
 
         # Trigger text extraction for full-text search (Phase 30)
-        from app.tasks.extraction import extract_document_text
         try:
+            from app.tasks.extraction import extract_document_text
             extract_document_text.delay(str(doc_id), str(version_id))
         except Exception as e:
-            logger.warning("Extraction task dispatch failed (non-fatal): %s", e)
+            logger.debug("Extraction task dispatch skipped (non-fatal): %s", e)
     except Exception:
         await delete_object(object_name)
         raise
@@ -533,26 +536,29 @@ async def checkin_document(
         except Exception as e:
             logger.warning("Rendition request failed on checkin (non-fatal): %s", e)
 
-        # Update search_vector from updated metadata after checkin (Phase 30)
-        from sqlalchemy import update as sa_update
-        from app.models.document import Document as DocModel
-        await db.execute(
-            sa_update(DocModel)
-            .where(DocModel.id == document_id)
-            .values(
-                search_vector=(
-                    func.setweight(func.to_tsvector('english', func.coalesce(document.title, '')), 'A')
-                    + func.setweight(func.to_tsvector('english', func.coalesce(document.author or '', '')), 'B')
+        # Update search_vector from updated metadata (Phase 30) — PostgreSQL only
+        try:
+            from sqlalchemy import update as sa_update
+            from app.models.document import Document as DocModel
+            await db.execute(
+                sa_update(DocModel)
+                .where(DocModel.id == document_id)
+                .values(
+                    search_vector=(
+                        func.setweight(func.to_tsvector('english', func.coalesce(document.title, '')), 'A')
+                        + func.setweight(func.to_tsvector('english', func.coalesce(document.author or '', '')), 'B')
+                    )
                 )
             )
-        )
+        except Exception as e:
+            logger.debug("search_vector update skipped (non-fatal): %s", e)
 
         # Trigger text extraction for full-text search (Phase 30)
-        from app.tasks.extraction import extract_document_text
         try:
+            from app.tasks.extraction import extract_document_text
             extract_document_text.delay(str(document.id), str(new_version.id))
         except Exception as e:
-            logger.warning("Extraction task dispatch failed (non-fatal): %s", e)
+            logger.debug("Extraction task dispatch skipped (non-fatal): %s", e)
     except Exception:
         await delete_object(object_name)
         raise

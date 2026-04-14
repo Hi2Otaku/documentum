@@ -14,6 +14,19 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.types import TypeDecorator
+
+
+class TSVECTORCompat(TypeDecorator):
+    """TSVECTOR that falls back to TEXT on non-PostgreSQL dialects (e.g. SQLite for tests)."""
+
+    impl = Text
+    cache_ok = True
+
+    def load_dialect_impl(self, dialect):
+        if dialect.name == "postgresql":
+            return dialect.type_descriptor(TSVECTOR())
+        return dialect.type_descriptor(Text())
 
 from app.models.base import BaseModel
 from app.models.enums import LifecycleState
@@ -49,7 +62,7 @@ class Document(BaseModel):
         nullable=True,
     )
 
-    search_vector: Mapped[str | None] = mapped_column(TSVECTOR, nullable=True)
+    search_vector: Mapped[str | None] = mapped_column(TSVECTORCompat, nullable=True)
     extraction_status: Mapped[str] = mapped_column(
         String(20), default="pending", nullable=False, server_default="pending"
     )
