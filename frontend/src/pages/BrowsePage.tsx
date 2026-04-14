@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
+  Archive,
   FolderOpen,
   PanelLeftClose,
   PanelLeft,
@@ -166,6 +167,18 @@ export function BrowsePage() {
     setCurrentPage(1);
   }
 
+  // Find child folders of selected folder from tree data
+  function findNode(nodes: typeof tree, id: string): typeof tree[0] | null {
+    for (const n of nodes) {
+      if (n.id === id) return n;
+      const found = findNode(n.children, id);
+      if (found) return found;
+    }
+    return null;
+  }
+  const selectedNode = selectedFolderId ? findNode(tree, selectedFolderId) : null;
+  const childFolders = selectedNode?.children ?? [];
+
   // Determine what to show in content area
   const showSmartFolder = !!selectedSmartFolderId && !!activeSmartFolder;
   const showFolder = !!selectedFolderId;
@@ -242,15 +255,49 @@ export function BrowsePage() {
 
           {/* Content rendering */}
           {showEmpty ? (
-            /* No folder or smart folder selected */
-            <div className="flex flex-col items-center justify-center h-full text-center">
-              <FolderOpen className="h-12 w-12 text-muted-foreground mb-3" />
-              <h3 className="text-base font-medium">
-                Select a folder to browse documents
-              </h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Click a cabinet or folder in the tree to view its documents.
-              </p>
+            /* Repository root — show cabinets and top-level folders */
+            <div className="flex flex-col flex-1 overflow-hidden">
+              <div className="px-4 py-2 border-b shrink-0">
+                <span className="text-sm font-medium text-muted-foreground">Repository</span>
+              </div>
+              {treeLoading ? (
+                <div className="p-4 space-y-3">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <Skeleton key={i} className="h-12 w-full" />
+                  ))}
+                </div>
+              ) : tree.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center">
+                  <FolderOpen className="h-12 w-12 text-muted-foreground mb-3" />
+                  <h3 className="text-base font-medium">No cabinets yet</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Create a cabinet from the Folders admin page to get started.
+                  </p>
+                </div>
+              ) : (
+                <div className="flex-1 overflow-auto p-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                    {tree.map((node) => (
+                      <button
+                        key={node.id}
+                        className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent hover:border-primary/30 transition-colors text-center group"
+                        onClick={() => handleFolderSelect(node.id)}
+                      >
+                        {node.is_cabinet ? (
+                          <Archive className="h-10 w-10 text-amber-500 group-hover:text-amber-600" />
+                        ) : (
+                          <FolderOpen className="h-10 w-10 text-blue-500 group-hover:text-blue-600" />
+                        )}
+                        <span className="text-sm font-medium truncate w-full">{node.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {node.document_count} doc{node.document_count !== 1 ? "s" : ""}
+                          {node.children.length > 0 && ` \u00B7 ${node.children.length} folder${node.children.length !== 1 ? "s" : ""}`}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ) : showSmartFolder ? (
             /* Smart folder results */
@@ -339,7 +386,7 @@ export function BrowsePage() {
                 <Skeleton key={i} className="h-12 w-full" />
               ))}
             </div>
-          ) : documents.length === 0 ? (
+          ) : documents.length === 0 && childFolders.length === 0 ? (
             /* Empty folder */
             <div className="flex flex-col items-center justify-center h-full text-center">
               <FolderOpen className="h-10 w-10 text-muted-foreground mb-3" />
@@ -349,9 +396,34 @@ export function BrowsePage() {
               </p>
             </div>
           ) : (
-            /* Document table */
+            /* Child folders + Document table */
             <div className="flex flex-col flex-1 overflow-hidden">
               <div className="flex-1 overflow-auto">
+                {/* Child folders */}
+                {childFolders.length > 0 && (
+                  <div className="p-4 pb-2">
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+                      {childFolders.map((child) => (
+                        <button
+                          key={child.id}
+                          className="flex flex-col items-center gap-1.5 p-3 rounded-lg border hover:bg-accent hover:border-primary/30 transition-colors text-center group"
+                          onClick={() => handleFolderSelect(child.id)}
+                        >
+                          <FolderOpen className="h-8 w-8 text-blue-500 group-hover:text-blue-600" />
+                          <span className="text-xs font-medium truncate w-full">{child.name}</span>
+                          <span className="text-[10px] text-muted-foreground">
+                            {child.document_count} doc{child.document_count !== 1 ? "s" : ""}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                    {documents.length > 0 && (
+                      <div className="border-t mt-3" />
+                    )}
+                  </div>
+                )}
+                {/* Documents */}
+                {documents.length > 0 && (
                 <Table>
                   <TableHeader>
                     <TableRow className="h-10 bg-secondary">
@@ -404,6 +476,7 @@ export function BrowsePage() {
                     ))}
                   </TableBody>
                 </Table>
+                )}
               </div>
 
               {/* Pagination */}
