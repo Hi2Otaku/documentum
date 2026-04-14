@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Document-Centric ECM
 status: executing
-stopped_at: Completed 29-02-PLAN.md (folder ACL API layer)
-last_updated: "2026-04-13T14:31:38.335Z"
-last_activity: 2026-04-13
+stopped_at: Completed 29-03-PLAN.md (Folder ACL Frontend)
+last_updated: "2026-04-14T01:45:19.398Z"
+last_activity: 2026-04-14
 progress:
   total_phases: 7
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 10
-  completed_plans: 9
+  completed_plans: 10
   percent: 0
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-04-13)
 ## Current Position
 
 Phase: 29 (folder-acl-inheritance) — EXECUTING
-Plan: 3 of 3
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-04-13
+Last activity: 2026-04-14
 
 Progress: [..........] 0% (v1.3: 0/7 phases)
 
@@ -58,6 +58,7 @@ Progress: [..........] 0% (v1.3: 0/7 phases)
 | Phase 28-cabinet-folder-hierarchy P03 | 60 | 3 tasks | 12 files |
 | Phase 29-folder-acl-inheritance P01 | 4min | 3 tasks | 7 files |
 | Phase 29-folder-acl-inheritance P02 | 10min | 2 tasks | 5 files |
+| Phase 29-folder-acl-inheritance P03 | 15 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,7 @@ v1.3 architecture decisions (resolved during research):
 - [Phase 29-folder-acl-inheritance]: Direct document ACL overrides folder ACL entirely — folder ACL only runs when no direct DocumentACL entries exist
 - [Phase 29-folder-acl-inheritance]: N+1 per-document check_permission for get_folder_documents acceptable with page_size cap; list_documents uses subquery descendant CTE
 - [Phase 29-folder-acl-inheritance]: Use model_copy(update=...) to extend DocumentResponse with access_source without breaking existing callers
+- [Phase 29-folder-acl-inheritance]: Use listUsers() from api/users.ts in AddPermissionDialog instead of inline fetch for proper auth and DRY; lowercase permission_level values to match backend enum; inline confirm-state pattern for ACL entry deletion
 
 ### Pending Todos
 
@@ -92,6 +94,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-13T14:31:38.332Z
-Stopped at: Completed 29-02-PLAN.md (folder ACL API layer)
+Last session: 2026-04-14T01:45:19.394Z
+Stopped at: Completed 29-03-PLAN.md (Folder ACL Frontend)
 Resume file: None

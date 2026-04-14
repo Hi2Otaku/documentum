@@ -49,7 +49,7 @@ See `.planning/milestones/v1.2-ROADMAP.md` for full phase details.
 - [ ] **Phase 27: Document Type System** — Custom document types with JSON Schema metadata validation and type inheritance
 - [x] **Phase 28: Cabinet/Folder Hierarchy** — Navigable cabinet/folder tree with document filing and folder CRUD
  (completed 2026-04-13)
-- [ ] **Phase 29: Folder ACL Inheritance** — Folder-level permissions that propagate down to contained documents
+- [x] **Phase 29: Folder ACL Inheritance** — Folder-level permissions that propagate down to contained documents (completed 2026-04-14)
 - [ ] **Phase 30: Full-Text Search & Content Extraction** — Text extraction pipeline and ranked search across document content and metadata
 - [ ] **Phase 31: Document Relationships** — Typed directional links between documents (supersedes, references, is-part-of)
 - [ ] **Phase 32: Document-First Navigation** — Browse UI with folder tree sidebar, content grid, and inline document detail
@@ -102,7 +102,7 @@ Plans:
 Plans:
 - [x] 29-01-PLAN.md -- Backend foundation: FolderACL model, migration, check_permission extension, ACL-filtered listing, tests
 - [x] 29-02-PLAN.md -- API layer: folder ACL CRUD endpoints, filtered folder docs, access_source on document detail
-- [ ] 29-03-PLAN.md -- Frontend: FolderPermissionsTab, AddPermissionDialog, AccessSourceBadge, FoldersPage tabs
+- [x] 29-03-PLAN.md -- Frontend: FolderPermissionsTab, AddPermissionDialog, AccessSourceBadge, FoldersPage tabs
 **UI hint**: yes
 
 ### Phase 30: Full-Text Search & Content Extraction
@@ -159,7 +159,7 @@ Plans:
 | 16–26. Advanced Engine | v1.2 | 26/26 | Complete | 2026-04-13 |
 | 27. Document Type System | v1.3 | 4/4 | Complete | 2026-04-13 |
 | 28. Cabinet/Folder Hierarchy | v1.3 | 3/3 | Complete    | 2026-04-13 |
-| 29. Folder ACL Inheritance | v1.3 | 2/3 | In Progress|  |
+| 29. Folder ACL Inheritance | v1.3 | 3/3 | Complete   | 2026-04-14 |
 | 30. Full-Text Search & Content Extraction | v1.3 | 0/? | Not started | — |
 | 31. Document Relationships | v1.3 | 0/? | Not started | — |
 | 32. Document-First Navigation | v1.3 | 0/? | Not started | — |
