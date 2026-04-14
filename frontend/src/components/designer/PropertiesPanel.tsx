@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useDesignerStore } from '../../stores/designerStore';
 import type { ActivityNodeData, FlowEdgeData } from '../../types/designer';
 import type { ProcessVariable } from '../../types/workflow';
@@ -322,7 +322,10 @@ function SubWorkflowConfig({
   const [mappingRows, setMappingRows] = useState<{ parentVar: string; childVar: string }[]>([]);
 
   useEffect(() => {
-    fetch('/api/templates?state=active')
+    const token = localStorage.getItem('token');
+    fetch('/api/v1/templates/?state=active', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
       .then((res) => (res.ok ? res.json() : { data: [] }))
       .then((json) => {
         const list = Array.isArray(json.data) ? json.data : Array.isArray(json) ? json : [];
