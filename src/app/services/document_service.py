@@ -115,21 +115,18 @@ async def upload_document(
         except Exception as e:
             logger.warning("Rendition request failed (non-fatal): %s", e)
 
-        # Initialize search_vector from metadata (Phase 30) — PostgreSQL only
+        # Initialize search_vector from metadata (Phase 30)
         try:
-            async with db.begin_nested():
-                from sqlalchemy import update as sa_update
-                from app.models.document import Document as DocModel
-                await db.execute(
-                    sa_update(DocModel)
-                    .where(DocModel.id == doc_id)
-                    .values(
-                        search_vector=(
-                            func.setweight(func.to_tsvector('english', func.coalesce(title, '')), 'A')
-                            + func.setweight(func.to_tsvector('english', func.coalesce(author or '', '')), 'B')
-                        )
-                    )
-                )
+            from sqlalchemy import text as sa_text
+            await db.execute(
+                sa_text(
+                    "UPDATE documents SET search_vector = "
+                    "setweight(to_tsvector('english', coalesce(:title, '')), 'A') || "
+                    "setweight(to_tsvector('english', coalesce(:author, '')), 'B') "
+                    "WHERE id = :doc_id"
+                ),
+                {"title": title, "author": author or "", "doc_id": str(doc_id)},
+            )
         except Exception as e:
             logger.debug("search_vector init skipped (non-fatal): %s", e)
 
@@ -537,21 +534,18 @@ async def checkin_document(
         except Exception as e:
             logger.warning("Rendition request failed on checkin (non-fatal): %s", e)
 
-        # Update search_vector from updated metadata (Phase 30) — PostgreSQL only
+        # Update search_vector from updated metadata (Phase 30)
         try:
-            async with db.begin_nested():
-                from sqlalchemy import update as sa_update
-                from app.models.document import Document as DocModel
-                await db.execute(
-                    sa_update(DocModel)
-                    .where(DocModel.id == document_id)
-                    .values(
-                        search_vector=(
-                            func.setweight(func.to_tsvector('english', func.coalesce(document.title, '')), 'A')
-                            + func.setweight(func.to_tsvector('english', func.coalesce(document.author or '', '')), 'B')
-                        )
-                    )
-                )
+            from sqlalchemy import text as sa_text
+            await db.execute(
+                sa_text(
+                    "UPDATE documents SET search_vector = "
+                    "setweight(to_tsvector('english', coalesce(:title, '')), 'A') || "
+                    "setweight(to_tsvector('english', coalesce(:author, '')), 'B') "
+                    "WHERE id = :doc_id"
+                ),
+                {"title": document.title, "author": document.author or "", "doc_id": str(document_id)},
+            )
         except Exception as e:
             logger.debug("search_vector update skipped (non-fatal): %s", e)
 
