@@ -219,14 +219,29 @@ function DesignerInner() {
     );
   }
 
+  const isInstalled = template.state === 'active';
+
   return (
     <div className="h-screen flex flex-col">
+      {isInstalled && (
+        <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 flex items-center justify-between">
+          <span className="text-sm text-amber-800">
+            This template is installed and read-only. Create a new template to make changes.
+          </span>
+          <Link
+            to="/workflows"
+            className="text-xs text-amber-700 underline hover:text-amber-900"
+          >
+            Back to Templates
+          </Link>
+        </div>
+      )}
       <Toolbar
         templateName={template.name}
-        onSave={save}
-        onValidateInstall={validateAndInstall}
-        saving={saving}
-        validating={validating}
+        onSave={isInstalled ? () => {} : save}
+        onValidateInstall={isInstalled ? () => {} : validateAndInstall}
+        saving={saving || isInstalled}
+        validating={validating || isInstalled}
       />
       <div className="flex flex-1 overflow-hidden">
         <NodePalette />
