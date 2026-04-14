@@ -6,7 +6,8 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, require_permission
+from app.models.enums import PermissionLevel
 from app.models.user import User
 from app.schemas.common import EnvelopeResponse
 from app.schemas.document_relationship import RelationshipCreate, RelationshipResponse
@@ -40,7 +41,7 @@ def _rel_response(rel) -> RelationshipResponse:
 async def list_relationships(
     document_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission(PermissionLevel.READ)),
 ):
     """List all relationships for a document (as source or target)."""
     rels = await relationship_service.list_relationships(db, document_id)
@@ -56,7 +57,7 @@ async def create_relationship(
     document_id: uuid.UUID,
     data: RelationshipCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission(PermissionLevel.WRITE)),
 ):
     """Create a typed directional relationship from this document to another."""
     rel = await relationship_service.create_relationship(
@@ -92,7 +93,7 @@ async def delete_relationship(
     document_id: uuid.UUID,
     relationship_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission(PermissionLevel.WRITE)),
 ):
     """Remove a relationship."""
     await relationship_service.delete_relationship(db, document_id, relationship_id)
