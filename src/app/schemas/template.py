@@ -58,6 +58,7 @@ class ActivityTemplateCreate(BaseModel):
     variable_mapping: dict[str, str] | None = None
     event_type_filter: str | None = None
     event_filter_config: dict | None = None
+    lifecycle_action: str | None = None
     expected_duration_hours: float | None = None
     escalation_action: str | None = None
     warning_threshold_hours: float | None = None
@@ -78,6 +79,7 @@ class ActivityTemplateUpdate(BaseModel):
     variable_mapping: dict[str, str] | None = None
     event_type_filter: str | None = None
     event_filter_config: dict | None = None
+    lifecycle_action: str | None = None
     expected_duration_hours: float | None = None
     escalation_action: str | None = None
     warning_threshold_hours: float | None = None
@@ -101,6 +103,7 @@ class ActivityTemplateResponse(BaseModel):
     variable_mapping: dict | None = None
     event_type_filter: str | None = None
     event_filter_config: dict | None = None
+    lifecycle_action: str | None = None
     expected_duration_hours: float | None = None
     escalation_action: str | None = None
     warning_threshold_hours: float | None = None

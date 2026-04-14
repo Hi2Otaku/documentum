@@ -455,16 +455,23 @@ async def _advance_from_activity(
             current_at_for_lifecycle = at
             break
 
-    if current_at_for_lifecycle and getattr(current_at_for_lifecycle, 'lifecycle_action', None):
+    lc_action = getattr(current_at_for_lifecycle, 'lifecycle_action', None) if current_at_for_lifecycle else None
+    logger.info(
+        "Lifecycle check: activity_template=%s, lifecycle_action=%r",
+        current_at_for_lifecycle.id if current_at_for_lifecycle else None,
+        lc_action,
+    )
+    if current_at_for_lifecycle and lc_action:
         try:
             from app.services import lifecycle_service
             await lifecycle_service.execute_lifecycle_action(
-                db, workflow, current_at_for_lifecycle.lifecycle_action, user_id
+                db, workflow, lc_action, user_id
             )
-        except Exception:
+            logger.info("Lifecycle action executed: %s", lc_action)
+        except Exception as e:
             logger.warning(
-                "Lifecycle action failed for activity %s, continuing advancement",
-                completed_activity.id,
+                "Lifecycle action failed for activity %s: %s, continuing advancement",
+                completed_activity.id, e,
             )
 
     # Build variable context for condition evaluation
