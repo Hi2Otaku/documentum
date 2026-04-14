@@ -42,14 +42,14 @@ See `.planning/milestones/v1.2-ROADMAP.md` for full phase details.
 
 </details>
 
-### 🚧 v1.3 Document-Centric ECM
+### v1.3 Document-Centric ECM
 
 **Milestone Goal:** Reorient the system from workflow-centric to document-centric, matching Documentum's ECM platform model -- where documents are the primary object and workflows exist to route them through structured processes.
 
 - [ ] **Phase 27: Document Type System** — Custom document types with JSON Schema metadata validation and type inheritance
 - [x] **Phase 28: Cabinet/Folder Hierarchy** — Navigable cabinet/folder tree with document filing and folder CRUD
  (completed 2026-04-13)
-- [x] **Phase 29: Folder ACL Inheritance** — Folder-level permissions that propagate down to contained documents (completed 2026-04-14)
+- [x] **Phase 29: Folder ACL Inheritance** — Folder-level permissions that propagate down to contained documents (completed 2026-04-14)
 - [ ] **Phase 30: Full-Text Search & Content Extraction** — Text extraction pipeline and ranked search across document content and metadata
 - [ ] **Phase 31: Document Relationships** — Typed directional links between documents (supersedes, references, is-part-of)
 - [ ] **Phase 32: Document-First Navigation** — Browse UI with folder tree sidebar, content grid, and inline document detail
@@ -114,7 +114,11 @@ Plans:
   2. User can search by keyword and see ranked results with highlighted snippets showing where the match occurred
   3. User can narrow search results by folder, document type, or lifecycle state
   4. Extraction failures are logged and surfaced (not silent) -- the document remains accessible but is marked as not indexed
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 30-01-PLAN.md — Backend foundation: model columns, migration, extraction task, search service
+- [ ] 30-02-PLAN.md — API layer: search router, document upload extraction integration
+- [ ] 30-03-PLAN.md — Frontend: SearchPage, search components, sidebar navigation
 **UI hint**: yes
 
 ### Phase 31: Document Relationships
@@ -160,7 +164,7 @@ Plans:
 | 27. Document Type System | v1.3 | 4/4 | Complete | 2026-04-13 |
 | 28. Cabinet/Folder Hierarchy | v1.3 | 3/3 | Complete    | 2026-04-13 |
 | 29. Folder ACL Inheritance | v1.3 | 3/3 | Complete    | 2026-04-14 |
-| 30. Full-Text Search & Content Extraction | v1.3 | 0/? | Not started | — |
+| 30. Full-Text Search & Content Extraction | v1.3 | 0/3 | Planned | — |
 | 31. Document Relationships | v1.3 | 0/? | Not started | — |
 | 32. Document-First Navigation | v1.3 | 0/? | Not started | — |
 | 33. Saved Searches & Smart Folders | v1.3 | 0/? | Not started | — |
