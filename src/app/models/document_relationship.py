@@ -34,7 +34,12 @@ class DocumentRelationship(BaseModel):
         Uuid(), ForeignKey("documents.id"), nullable=False, index=True
     )
     relationship_type: Mapped[str] = mapped_column(
-        Enum(RelationshipType, name="relationshiptype"), nullable=False
+        Enum(
+            RelationshipType,
+            name="relationshiptype",
+            values_callable=lambda e: [member.value for member in e],
+        ),
+        nullable=False,
     )
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
