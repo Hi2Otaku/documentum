@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { BookmarkPlus } from "lucide-react";
 import { SearchInput } from "../components/search/SearchInput";
 import { SearchResults } from "../components/search/SearchResults";
 import { SearchFilters, type SearchFilterValues } from "../components/search/SearchFilters";
+import { SaveSearchDialog } from "../components/search/SaveSearchDialog";
+import { SavedSearchesList } from "../components/search/SavedSearchesList";
 import { searchDocuments } from "../api/search";
 import { Button } from "../components/ui/button";
 
@@ -13,6 +16,7 @@ export function SearchPage() {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [filters, setFilters] = useState<SearchFilterValues>({});
   const [page, setPage] = useState(1);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
 
   // Debounce query
   useEffect(() => {
@@ -46,14 +50,39 @@ export function SearchPage() {
     setFilters(newFilters);
   }, []);
 
+  const handleLoadSearch = useCallback(
+    (savedQuery: string, savedFilters: SearchFilterValues) => {
+      setQuery(savedQuery);
+      setFilters(savedFilters);
+    },
+    [],
+  );
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Search Documents</h1>
-      <SearchInput value={query} onChange={setQuery} />
+
+      <div className="flex items-center gap-2">
+        <div className="flex-1">
+          <SearchInput value={query} onChange={setQuery} />
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="shrink-0"
+          disabled={!query.trim()}
+          onClick={() => setSaveDialogOpen(true)}
+          title="Save this search"
+        >
+          <BookmarkPlus className="h-4 w-4 mr-1.5" />
+          Save Search
+        </Button>
+      </div>
 
       <div className="mt-6 flex gap-6">
-        <aside className="w-64 shrink-0">
+        <aside className="w-64 shrink-0 space-y-6">
           <SearchFilters filters={filters} onFiltersChange={handleFiltersChange} />
+          <SavedSearchesList onLoadSearch={handleLoadSearch} />
         </aside>
         <main className="flex-1 min-w-0">
           {/* Result count */}
@@ -97,6 +126,14 @@ export function SearchPage() {
           )}
         </main>
       </div>
+
+      <SaveSearchDialog
+        open={saveDialogOpen}
+        onOpenChange={setSaveDialogOpen}
+        query={query}
+        filters={filters}
+        onSaved={() => {}}
+      />
     </div>
   );
 }
