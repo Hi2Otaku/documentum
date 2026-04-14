@@ -3,6 +3,78 @@ import { useDesignerStore } from '../../stores/designerStore';
 import type { ActivityNodeData, FlowEdgeData } from '../../types/designer';
 import type { ProcessVariable } from '../../types/workflow';
 
+// ---- User Picker (fetches users from API) ----
+function UserPicker({ nodeId, performerId }: { nodeId: string; performerId: string | null }) {
+  const updateNodeData = useDesignerStore((s) => s.updateNodeData);
+  const [users, setUsers] = useState<{ id: string; username: string }[]>([]);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    fetch('/api/v1/users/', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then((res) => (res.ok ? res.json() : { data: [] }))
+      .then((json) => {
+        const list = Array.isArray(json.data) ? json.data : [];
+        setUsers(list.map((u: { id: string; username: string }) => ({ id: u.id, username: u.username })));
+      })
+      .catch(() => setUsers([]));
+  }, []);
+
+  return (
+    <div>
+      <label className="text-sm font-medium" htmlFor="performer-user">User</label>
+      <select
+        id="performer-user"
+        className="mt-1 w-full rounded border px-3 py-2 text-sm"
+        value={performerId ?? ''}
+        onChange={(e) => updateNodeData(nodeId, { performerId: e.target.value || null })}
+      >
+        <option value="">Select user...</option>
+        {users.map((u) => (
+          <option key={u.id} value={u.id}>{u.username}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+// ---- Group Picker (fetches groups from API) ----
+function GroupPicker({ nodeId, performerId }: { nodeId: string; performerId: string | null }) {
+  const updateNodeData = useDesignerStore((s) => s.updateNodeData);
+  const [groups, setGroups] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    fetch('/api/v1/groups/', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then((res) => (res.ok ? res.json() : { data: [] }))
+      .then((json) => {
+        const list = Array.isArray(json.data) ? json.data : [];
+        setGroups(list.map((g: { id: string; name: string }) => ({ id: g.id, name: g.name })));
+      })
+      .catch(() => setGroups([]));
+  }, []);
+
+  return (
+    <div>
+      <label className="text-sm font-medium" htmlFor="performer-group">Group</label>
+      <select
+        id="performer-group"
+        className="mt-1 w-full rounded border px-3 py-2 text-sm"
+        value={performerId ?? ''}
+        onChange={(e) => updateNodeData(nodeId, { performerId: e.target.value || null })}
+      >
+        <option value="">Select group...</option>
+        {groups.map((g) => (
+          <option key={g.id} value={g.id}>{g.name}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 // ---- Node Properties ----
 function NodeProperties({
   nodeId,
@@ -108,40 +180,18 @@ function NodeProperties({
 
           {/* User picker */}
           {data.performerType === 'user' && (
-            <div>
-              <label className="text-sm font-medium" htmlFor="performer-user">
-                User
-              </label>
-              <input
-                id="performer-user"
-                type="text"
-                className="mt-1 w-full rounded border px-3 py-2 text-sm"
-                placeholder="User ID"
-                value={data.performerId ?? ''}
-                onChange={(e) =>
-                  updateNodeData(nodeId, { performerId: e.target.value || null })
-                }
-              />
-            </div>
+            <UserPicker
+              nodeId={nodeId}
+              performerId={data.performerId ?? null}
+            />
           )}
 
           {/* Group picker */}
           {data.performerType === 'group' && (
-            <div>
-              <label className="text-sm font-medium" htmlFor="performer-group">
-                Group
-              </label>
-              <input
-                id="performer-group"
-                type="text"
-                className="mt-1 w-full rounded border px-3 py-2 text-sm"
-                placeholder="Group ID"
-                value={data.performerId ?? ''}
-                onChange={(e) =>
-                  updateNodeData(nodeId, { performerId: e.target.value || null })
-                }
-              />
-            </div>
+            <GroupPicker
+              nodeId={nodeId}
+              performerId={data.performerId ?? null}
+            />
           )}
 
           {/* Sequential performer list */}
