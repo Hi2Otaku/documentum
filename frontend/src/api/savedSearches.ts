@@ -49,7 +49,7 @@ export const savedSearchKeys = {
 // --- API functions ---
 
 export async function fetchSavedSearches(): Promise<SavedSearch[]> {
-  const res = await fetch("/api/v1/saved-searches", {
+  const res = await fetch("/api/v1/saved-searches/", {
     headers: {
       "Content-Type": "application/json",
       ...authHeaders(),
@@ -65,7 +65,7 @@ export async function fetchSavedSearches(): Promise<SavedSearch[]> {
 }
 
 export async function fetchSmartFolders(): Promise<SavedSearch[]> {
-  const res = await fetch("/api/v1/saved-searches?smart_folders_only=true", {
+  const res = await fetch("/api/v1/saved-searches/?smart_folders_only=true", {
     headers: {
       "Content-Type": "application/json",
       ...authHeaders(),
@@ -83,7 +83,7 @@ export async function fetchSmartFolders(): Promise<SavedSearch[]> {
 export async function createSavedSearch(
   data: SavedSearchCreate,
 ): Promise<SavedSearch> {
-  const res = await fetch("/api/v1/saved-searches", {
+  const res = await fetch("/api/v1/saved-searches/", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

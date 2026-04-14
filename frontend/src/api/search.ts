@@ -61,7 +61,7 @@ export async function searchDocuments(
   params: SearchParams,
 ): Promise<SearchResponse> {
   const url = buildUrl(
-    "/api/v1/search",
+    "/api/v1/search/",
     params as Record<string, string | number | undefined | null>,
   );
   const res = await fetch(url, {
