@@ -2,9 +2,18 @@
 
 ## What This Is
 
-A Python-based clone of OpenText Documentum's ECM and Workflow Management system, with a full web UI. Three milestones shipped: a complete Petri-net workflow engine (v1.0), a full React frontend (v1.1), and an advanced engine layer adding timers, sub-workflows, event-driven activities, notifications, renditions, virtual documents, retention, and digital signatures (v1.2).
+A Python-based clone of OpenText Documentum's ECM and Workflow Management system, with a full web UI. Four milestones shipped: a complete Petri-net workflow engine (v1.0), a full React frontend (v1.1), an advanced engine layer with timers, sub-workflows, event-driven activities, notifications, renditions, virtual documents, retention, and digital signatures (v1.2), and a document-centric ECM platform with folders, types, search, relationships, and document-first navigation (v1.3).
 
-The next milestone (v1.3) reorients the system from **workflow-centric** to **document-centric** — matching Documentum's ECM platform model where documents are the primary object and workflows exist to route them.
+## Current State (v1.3 shipped 2026-04-14)
+
+The system is now a full document-centric ECM platform. Key capabilities added in v1.3:
+- **Document Types** — Custom types with JSON Schema metadata validation and inheritance
+- **Cabinet/Folder Hierarchy** — Navigable tree with filing, move, copy, rename
+- **Folder ACL Inheritance** — Folder permissions flow down to documents automatically
+- **Full-Text Search** — PostgreSQL FTS with content extraction, prefix/substring matching, highlighted snippets
+- **Document Relationships** — Typed directional links (supersedes, references, related_to)
+- **Document-First Browse** — Three-panel layout: folder tree + content grid + detail panel
+- **Saved Searches & Smart Folders** — Persistent queries displayed as virtual folder nodes
 
 ## Core Value
 
