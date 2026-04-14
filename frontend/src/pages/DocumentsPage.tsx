@@ -154,6 +154,7 @@ export function DocumentsPage() {
               <DocumentDetailPanel
                 documentId={selectedDocumentId}
                 currentUserId={userId}
+                onDocumentSelect={setSelectedDocumentId}
               />
             </div>
           </div>

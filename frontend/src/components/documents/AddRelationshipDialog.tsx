@@ -64,7 +64,7 @@ export function AddRelationshipDialog({
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: relationshipKeys.forDocument(sourceDocumentId),
+        queryKey: relationshipKeys.list(sourceDocumentId),
       });
       resetAndClose();
     },

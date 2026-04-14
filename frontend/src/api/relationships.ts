@@ -71,9 +71,12 @@ export interface CreateRelationshipRequest {
 // --- Query keys ---
 
 export const relationshipKeys = {
-  all: ["relationships"] as const,
+  all: ["document-relationships"] as const,
+  list: (documentId: string) =>
+    [...relationshipKeys.all, documentId] as const,
+  /** @deprecated Use `list` instead */
   forDocument: (documentId: string) =>
-    ["relationships", documentId] as const,
+    relationshipKeys.list(documentId),
 };
 
 // --- API functions ---

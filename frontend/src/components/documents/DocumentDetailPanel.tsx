@@ -26,11 +26,13 @@ import { RelationshipPanel } from "./RelationshipPanel";
 interface DocumentDetailPanelProps {
   documentId: string | null;
   currentUserId: string;
+  onDocumentSelect?: (documentId: string) => void;
 }
 
 export function DocumentDetailPanel({
   documentId,
   currentUserId,
+  onDocumentSelect,
 }: DocumentDetailPanelProps) {
   const { data: document, isLoading } = useQuery({
     queryKey: ["documents", documentId],
@@ -280,8 +282,9 @@ export function DocumentDetailPanel({
       <RelationshipPanel
         documentId={documentId}
         onNavigate={(docId) => {
-          // Trigger a re-render with the new document by updating URL or query
-          queryClient.invalidateQueries({ queryKey: ["documents", docId] });
+          if (onDocumentSelect) {
+            onDocumentSelect(docId);
+          }
         }}
       />
 
