@@ -8,6 +8,7 @@ import { InboxPage } from "./pages/InboxPage";
 import { DocumentsPage } from "./pages/DocumentsPage";
 import { SearchPage } from "./pages/SearchPage";
 import { WorkflowsPage } from "./pages/WorkflowsPage";
+import { BrowsePage } from "./pages/BrowsePage";
 import { DocumentTypesPage } from "./pages/DocumentTypesPage";
 import { FoldersPage } from "./pages/FoldersPage";
 import { ProtectedRoute } from "./components/layout/ProtectedRoute";
@@ -20,12 +21,13 @@ export default function App() {
       {/* Public route */}
       <Route path="/login" element={<LoginPage />} />
 
-      {/* Redirect root to inbox */}
-      <Route path="/" element={<Navigate to="/inbox" replace />} />
+      {/* Redirect root to browse */}
+      <Route path="/" element={<Navigate to="/browse" replace />} />
 
       {/* Protected routes */}
       <Route element={<ProtectedRoute />}>
         <Route element={<AppShell />}>
+          <Route path="/browse" element={<BrowsePage />} />
           <Route path="/templates" element={<TemplateListPage />} />
           <Route path="/templates/:id/edit" element={<DesignerPage />} />
           <Route path="/inbox" element={<InboxPage />} />
@@ -44,7 +46,7 @@ export default function App() {
       </Route>
 
       {/* Catch-all */}
-      <Route path="*" element={<Navigate to="/inbox" replace />} />
+      <Route path="*" element={<Navigate to="/browse" replace />} />
     </Routes>
   );
 }
