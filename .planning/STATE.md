@@ -4,7 +4,7 @@ milestone: v1.3
 milestone_name: Document-Centric ECM
 status: executing
 stopped_at: Completed 29-03-PLAN.md (Folder ACL Frontend)
-last_updated: "2026-04-14T01:45:19.398Z"
+last_updated: "2026-04-14T02:51:36.095Z"
 last_activity: 2026-04-14
 progress:
   total_phases: 7
@@ -25,8 +25,8 @@ See: .planning/PROJECT.md (updated 2026-04-13)
 
 ## Current Position
 
-Phase: 29 (folder-acl-inheritance) — EXECUTING
-Plan: 2 of 3
+Phase: 30
+Plan: Not started
 Status: Ready to execute
 Last activity: 2026-04-14
 
