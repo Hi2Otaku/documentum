@@ -39,10 +39,10 @@ Milestone: v1.3 Document-Centric ECM
 
 ### Document Navigation
 
-- [ ] **NAV-01**: User can access a `/browse` route as the document-first entry point with a collapsible folder tree sidebar
-- [ ] **NAV-02**: User can expand/collapse the folder tree to navigate cabinets, folders, and subfolders; each node shows document count
-- [ ] **NAV-03**: User can click a document in the folder listing to open its detail panel inline without leaving the browse view
-- [ ] **NAV-04**: User sees a breadcrumb showing the full cabinet > folder > subfolder path and can click any segment to navigate up
+- [x] **NAV-01**: User can access a `/browse` route as the document-first entry point with a collapsible folder tree sidebar
+- [x] **NAV-02**: User can expand/collapse the folder tree to navigate cabinets, folders, and subfolders; each node shows document count
+- [x] **NAV-03**: User can click a document in the folder listing to open its detail panel inline without leaving the browse view
+- [x] **NAV-04**: User sees a breadcrumb showing the full cabinet > folder > subfolder path and can click any segment to navigate up
 
 ---
 
@@ -90,7 +90,7 @@ Milestone: v1.3 Document-Centric ECM
 | REL-01 | Phase 31 | Complete |
 | REL-02 | Phase 31 | Complete |
 | REL-03 | Phase 31 | Complete |
-| NAV-01 | Phase 32 | Pending |
-| NAV-02 | Phase 32 | Pending |
-| NAV-03 | Phase 32 | Pending |
-| NAV-04 | Phase 32 | Pending |
+| NAV-01 | Phase 32 | Complete |
+| NAV-02 | Phase 32 | Complete |
+| NAV-03 | Phase 32 | Complete |
+| NAV-04 | Phase 32 | Complete |

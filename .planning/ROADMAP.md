@@ -133,7 +133,7 @@ Plans:
   4. User sees a clickable breadcrumb showing the full cabinet > folder > subfolder path and can navigate up by clicking any segment
 **Plans**: 2 plans
 Plans:
-- [ ] 32-01-PLAN.md — BrowsePage three-panel layout with folder tree, content grid, and detail panel
+- [x] 32-01-PLAN.md — BrowsePage three-panel layout with folder tree, content grid, and detail panel
 - [ ] 32-02-PLAN.md — Route wiring and sidebar navigation update
 **UI hint**: yes
 
@@ -159,5 +159,5 @@ Plans:
 | 29. Folder ACL Inheritance | v1.3 | 0/? | Not started | — |
 | 30. Full-Text Search & Content Extraction | v1.3 | 0/? | Not started | — |
 | 31. Document Relationships | v1.3 | 2/2 | Complete    | 2026-04-14 |
-| 32. Document-First Navigation | v1.3 | 0/2 | Not started | — |
+| 32. Document-First Navigation | v1.3 | 1/2 | In Progress|  |
 | 33. Saved Searches & Smart Folders | v1.3 | 0/? | Not started | — |
