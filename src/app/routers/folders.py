@@ -249,6 +249,27 @@ async def get_folder_documents(
     )
 
 
+async def _resolve_principal_names(db: AsyncSession, entries: list) -> dict[str, str]:
+    """Batch-resolve principal IDs to display names."""
+    from app.models.user import User as UserModel, Group
+    user_ids = [e.principal_id for e in entries if e.principal_type == "user"]
+    group_ids = [e.principal_id for e in entries if e.principal_type == "group"]
+    names: dict[str, str] = {}
+    if user_ids:
+        result = await db.execute(
+            select(UserModel.id, UserModel.username).where(UserModel.id.in_(user_ids))
+        )
+        for uid, uname in result.all():
+            names[str(uid)] = uname
+    if group_ids:
+        result = await db.execute(
+            select(Group.id, Group.name).where(Group.id.in_(group_ids))
+        )
+        for gid, gname in result.all():
+            names[str(gid)] = gname
+    return names
+
+
 @router.get(
     "/{folder_id}/acl",
     response_model=EnvelopeResponse[list[FolderACLEntryResponse]],
@@ -266,7 +287,13 @@ async def list_folder_acl(
         if not has_admin:
             raise HTTPException(status_code=403, detail="Insufficient permissions: requires ADMIN on folder")
     entries = await acl_service.get_folder_acls(db, folder_id)
-    return EnvelopeResponse(data=[FolderACLEntryResponse.model_validate(e) for e in entries])
+    principal_names = await _resolve_principal_names(db, entries)
+    result = []
+    for e in entries:
+        resp = FolderACLEntryResponse.model_validate(e)
+        resp.principal_name = principal_names.get(str(e.principal_id))
+        result.append(resp)
+    return EnvelopeResponse(data=result)
 
 
 @router.post(
@@ -292,7 +319,10 @@ async def add_folder_acl(
         principal_type=request.principal_type, permission_level=request.permission_level,
         user_id=str(current_user.id),
     )
-    return EnvelopeResponse(data=FolderACLEntryResponse.model_validate(entry))
+    principal_names = await _resolve_principal_names(db, [entry])
+    resp = FolderACLEntryResponse.model_validate(entry)
+    resp.principal_name = principal_names.get(str(entry.principal_id))
+    return EnvelopeResponse(data=resp)
 
 
 @router.delete(

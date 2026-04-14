@@ -273,8 +273,8 @@ async def list_documents(
             *base_conditions,
             or_(
                 Document.id.in_(acl_doc_ids),                                                          # Has direct ACL for user
-                and_(Document.id.notin_(docs_with_acl), Document.id.notin_(docs_in_acl_folders)),      # No direct ACL AND not in any folder with ACL = open
-                and_(Document.id.notin_(docs_with_acl), Document.id.in_(folder_acl_doc_ids)),          # No direct ACL AND folder ACL grants access
+                Document.id.in_(folder_acl_doc_ids),                                                   # Folder ACL grants access (regardless of direct ACL)
+                and_(Document.id.notin_(docs_with_acl), Document.id.notin_(docs_in_acl_folders)),      # No ACL anywhere = open access
                 Document.id.in_(wf_doc_ids),                                                           # Workflow participant
             ),
         )

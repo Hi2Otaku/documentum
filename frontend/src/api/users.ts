@@ -16,7 +16,7 @@ export interface UserSummary {
  * List all users for principal selection dropdowns.
  */
 export async function listUsers(): Promise<UserSummary[]> {
-  const res = await fetch(BASE, {
+  const res = await fetch(`${BASE}/`, {
     headers: { "Content-Type": "application/json", ...authHeaders() },
   });
   if (res.status === 401) handle401();

@@ -40,6 +40,7 @@ class FolderACLEntryResponse(BaseModel):
     id: uuid.UUID
     folder_id: uuid.UUID
     principal_id: uuid.UUID
+    principal_name: str | None = None
     principal_type: str
     permission_level: str
     created_at: datetime

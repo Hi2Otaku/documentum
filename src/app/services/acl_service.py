@@ -181,88 +181,20 @@ async def check_permission(
 ) -> bool:
     """Check if a user has sufficient permission on a document.
 
-    Checks both direct user ACL entries and group-based entries.
-    If NO ACL entries exist for the document at all, checks folder ACL inheritance.
-    If no folder ACL entries exist either, returns True (backward compat: no ACL = open access).
+    Priority order:
+    1. Direct user/group ACL on the document
+    2. Folder ACL inheritance (walks ancestor chain)
+    3. Workflow participant fallback (READ only)
+    4. Open access (no ACL entries at all → backward compat)
     """
     if is_superuser:
         return True
 
-    # Check if any ACL entries exist for this document
-    count_result = await db.execute(
-        select(func.count()).select_from(DocumentACL).where(
-            DocumentACL.document_id == document_id,
-            DocumentACL.is_deleted == False,  # noqa: E712
-        )
-    )
-    total_entries = count_result.scalar()
-    if total_entries == 0:
-        # No direct ACL entries — check folder ACL inheritance
-        from app.models.folder import document_folders
-        from app.models.acl import FolderACL
+    from app.models.folder import document_folders
+    from app.models.acl import FolderACL
+    from app.models.user import user_groups
 
-        # Get all folders this document is filed in
-        folder_result = await db.execute(
-            select(document_folders.c.folder_id).where(
-                document_folders.c.document_id == document_id
-            )
-        )
-        doc_folder_ids = [row[0] for row in folder_result.all()]
-
-        if not doc_folder_ids:
-            return True  # Not filed in any folder, no direct ACL -> open access
-
-        # Use shared helper to get all ancestor folder IDs
-        all_ancestor_ids = await _get_ancestor_folder_ids(db, doc_folder_ids)
-
-        # Check if ANY FolderACL entries exist on any ancestor folder
-        from sqlalchemy import func as sa_func
-        acl_count_result = await db.execute(
-            select(sa_func.count()).select_from(FolderACL).where(
-                FolderACL.folder_id.in_(all_ancestor_ids),
-                FolderACL.is_deleted == False,  # noqa: E712
-            )
-        )
-        total_folder_acl_entries = acl_count_result.scalar()
-
-        if total_folder_acl_entries == 0:
-            return True  # No folder ACL entries anywhere in chain -> open access (backward compat)
-
-        # Folder ACL entries exist — check user access
-        # Check direct user entries
-        user_acl_result = await db.execute(
-            select(FolderACL).where(
-                FolderACL.folder_id.in_(all_ancestor_ids),
-                FolderACL.principal_id == user_id,
-                FolderACL.principal_type == "user",
-                FolderACL.is_deleted == False,  # noqa: E712
-            )
-        )
-        for entry in user_acl_result.scalars().all():
-            if has_sufficient_permission(PermissionLevel(entry.permission_level), required_level):
-                return True
-
-        # Check group entries
-        from app.models.user import user_groups as ug_table
-        group_result = await db.execute(select(ug_table.c.group_id).where(ug_table.c.user_id == user_id))
-        group_ids = [row[0] for row in group_result.fetchall()]
-
-        if group_ids:
-            group_acl_result = await db.execute(
-                select(FolderACL).where(
-                    FolderACL.folder_id.in_(all_ancestor_ids),
-                    FolderACL.principal_type == "group",
-                    FolderACL.principal_id.in_(group_ids),
-                    FolderACL.is_deleted == False,  # noqa: E712
-                )
-            )
-            for entry in group_acl_result.scalars().all():
-                if has_sufficient_permission(PermissionLevel(entry.permission_level), required_level):
-                    return True
-
-        return False  # Folder ACL entries exist but user has no access
-
-    # Check direct user ACL entries
+    # --- 1. Check direct document ACL entries for this user ---
     result = await db.execute(
         select(DocumentACL).where(
             DocumentACL.document_id == document_id,
@@ -271,16 +203,11 @@ async def check_permission(
             DocumentACL.is_deleted == False,  # noqa: E712
         )
     )
-    user_entries = result.scalars().all()
-
-    for entry in user_entries:
-        granted = PermissionLevel(entry.permission_level)
-        if has_sufficient_permission(granted, required_level):
+    for entry in result.scalars().all():
+        if has_sufficient_permission(PermissionLevel(entry.permission_level), required_level):
             return True
 
-    # Check group-based ACL entries
-    # Lazy import to avoid circular dependency
-    from app.models.user import user_groups
+    # Check group-based document ACL entries
     group_result = await db.execute(
         select(user_groups.c.group_id).where(user_groups.c.user_id == user_id)
     )
@@ -295,15 +222,49 @@ async def check_permission(
                 DocumentACL.is_deleted == False,  # noqa: E712
             )
         )
-        group_entries = group_acl_result.scalars().all()
-
-        for entry in group_entries:
-            granted = PermissionLevel(entry.permission_level)
-            if has_sufficient_permission(granted, required_level):
+        for entry in group_acl_result.scalars().all():
+            if has_sufficient_permission(PermissionLevel(entry.permission_level), required_level):
                 return True
 
-    # Workflow participant fallback: only if user has an ACTIVE work item
-    # (available or acquired) on a workflow with this document attached
+    # --- 2. Folder ACL inheritance ---
+    folder_result = await db.execute(
+        select(document_folders.c.folder_id).where(
+            document_folders.c.document_id == document_id
+        )
+    )
+    doc_folder_ids = [row[0] for row in folder_result.all()]
+
+    if doc_folder_ids:
+        all_ancestor_ids = await _get_ancestor_folder_ids(db, doc_folder_ids)
+
+        # Check user entries on ancestor folders
+        user_facl_result = await db.execute(
+            select(FolderACL).where(
+                FolderACL.folder_id.in_(all_ancestor_ids),
+                FolderACL.principal_id == user_id,
+                FolderACL.principal_type == "user",
+                FolderACL.is_deleted == False,  # noqa: E712
+            )
+        )
+        for entry in user_facl_result.scalars().all():
+            if has_sufficient_permission(PermissionLevel(entry.permission_level), required_level):
+                return True
+
+        # Check group entries on ancestor folders
+        if group_ids:
+            group_facl_result = await db.execute(
+                select(FolderACL).where(
+                    FolderACL.folder_id.in_(all_ancestor_ids),
+                    FolderACL.principal_type == "group",
+                    FolderACL.principal_id.in_(group_ids),
+                    FolderACL.is_deleted == False,  # noqa: E712
+                )
+            )
+            for entry in group_facl_result.scalars().all():
+                if has_sufficient_permission(PermissionLevel(entry.permission_level), required_level):
+                    return True
+
+    # --- 3. Workflow participant fallback (READ only) ---
     if required_level == PermissionLevel.READ:
         from app.models.workflow import WorkItem, WorkflowPackage, ActivityInstance
         from app.models.enums import WorkItemState
@@ -321,6 +282,31 @@ async def check_permission(
         )
         if participant_result.scalar() > 0:
             return True
+
+    # --- 4. Open access fallback ---
+    # If NO ACL entries exist anywhere (no direct doc ACL, no folder ACL), allow access
+    # for backward compatibility (no ACL = open access).
+    count_result = await db.execute(
+        select(func.count()).select_from(DocumentACL).where(
+            DocumentACL.document_id == document_id,
+            DocumentACL.is_deleted == False,  # noqa: E712
+        )
+    )
+    has_direct_acl = count_result.scalar() > 0
+
+    has_folder_acl = False
+    if doc_folder_ids:
+        from sqlalchemy import func as sa_func
+        facl_count = await db.execute(
+            select(sa_func.count()).select_from(FolderACL).where(
+                FolderACL.folder_id.in_(all_ancestor_ids),
+                FolderACL.is_deleted == False,  # noqa: E712
+            )
+        )
+        has_folder_acl = facl_count.scalar() > 0
+
+    if not has_direct_acl and not has_folder_acl:
+        return True  # No ACL anywhere → open access
 
     return False
 
@@ -461,22 +447,40 @@ async def get_access_source(
     if is_superuser:
         return {"access_source": "direct", "access_source_folder_name": None}
 
-    # Check if document has direct ACL entries
-    count_result = await db.execute(
+    # Check if this user has a direct ACL entry on the document
+    from app.models.folder import document_folders, Folder
+    from app.models.acl import FolderACL
+    from app.models.user import user_groups
+
+    user_direct = await db.execute(
         select(func.count()).select_from(DocumentACL).where(
             DocumentACL.document_id == document_id,
+            DocumentACL.principal_id == user_id,
+            DocumentACL.principal_type == "user",
             DocumentACL.is_deleted == False,  # noqa: E712
         )
     )
-    total_direct = count_result.scalar()
-
-    if total_direct > 0:
+    if user_direct.scalar() > 0:
         return {"access_source": "direct", "access_source_folder_name": None}
 
-    # No direct ACL — check folder ACL
-    from app.models.folder import document_folders, Folder
-    from app.models.acl import FolderACL
+    # Check group-based direct ACL
+    group_result = await db.execute(
+        select(user_groups.c.group_id).where(user_groups.c.user_id == user_id)
+    )
+    group_ids = [row[0] for row in group_result.fetchall()]
+    if group_ids:
+        group_direct = await db.execute(
+            select(func.count()).select_from(DocumentACL).where(
+                DocumentACL.document_id == document_id,
+                DocumentACL.principal_type == "group",
+                DocumentACL.principal_id.in_(group_ids),
+                DocumentACL.is_deleted == False,  # noqa: E712
+            )
+        )
+        if group_direct.scalar() > 0:
+            return {"access_source": "direct", "access_source_folder_name": None}
 
+    # Check folder ACL inheritance
     folder_result = await db.execute(
         select(document_folders.c.folder_id).where(
             document_folders.c.document_id == document_id
@@ -484,67 +488,43 @@ async def get_access_source(
     )
     doc_folder_ids = [row[0] for row in folder_result.all()]
 
-    if not doc_folder_ids:
-        return {"access_source": "open", "access_source_folder_name": None}
+    if doc_folder_ids:
+        all_ancestor_ids = await _get_ancestor_folder_ids(db, doc_folder_ids)
 
-    # Use shared helper instead of rebuilding CTE
-    all_ancestor_ids = await _get_ancestor_folder_ids(db, doc_folder_ids)
-
-    # Check if any FolderACL entries exist on any ancestor
-    acl_count_result = await db.execute(
-        select(func.count()).select_from(FolderACL).where(
-            FolderACL.folder_id.in_(all_ancestor_ids),
-            FolderACL.is_deleted == False,  # noqa: E712
-        )
-    )
-    total_folder_acl = acl_count_result.scalar()
-
-    if total_folder_acl == 0:
-        return {"access_source": "open", "access_source_folder_name": None}
-
-    # Folder ACL exists — find which folder grants access to this user
-    # Check user entries first
-    user_acl_result = await db.execute(
-        select(FolderACL.folder_id).where(
-            FolderACL.folder_id.in_(all_ancestor_ids),
-            FolderACL.principal_id == user_id,
-            FolderACL.principal_type == "user",
-            FolderACL.is_deleted == False,  # noqa: E712
-        ).limit(1)
-    )
-    user_acl_folder = user_acl_result.scalar_one_or_none()
-
-    if user_acl_folder:
-        # Get the folder name
-        folder_name_result = await db.execute(
-            select(Folder.name).where(Folder.id == user_acl_folder)
-        )
-        folder_name = folder_name_result.scalar_one_or_none()
-        return {"access_source": "folder_inherited", "access_source_folder_name": folder_name}
-
-    # Check group entries
-    from app.models.user import user_groups
-    group_result = await db.execute(
-        select(user_groups.c.group_id).where(user_groups.c.user_id == user_id)
-    )
-    group_ids = [row[0] for row in group_result.fetchall()]
-
-    if group_ids:
-        group_acl_result = await db.execute(
+        # Check user entries on ancestor folders
+        user_acl_result = await db.execute(
             select(FolderACL.folder_id).where(
                 FolderACL.folder_id.in_(all_ancestor_ids),
-                FolderACL.principal_type == "group",
-                FolderACL.principal_id.in_(group_ids),
+                FolderACL.principal_id == user_id,
+                FolderACL.principal_type == "user",
                 FolderACL.is_deleted == False,  # noqa: E712
             ).limit(1)
         )
-        group_acl_folder = group_acl_result.scalar_one_or_none()
-        if group_acl_folder:
+        user_acl_folder = user_acl_result.scalar_one_or_none()
+        if user_acl_folder:
             folder_name_result = await db.execute(
-                select(Folder.name).where(Folder.id == group_acl_folder)
+                select(Folder.name).where(Folder.id == user_acl_folder)
             )
             folder_name = folder_name_result.scalar_one_or_none()
             return {"access_source": "folder_inherited", "access_source_folder_name": folder_name}
+
+        # Check group entries on ancestor folders
+        if group_ids:
+            group_acl_result = await db.execute(
+                select(FolderACL.folder_id).where(
+                    FolderACL.folder_id.in_(all_ancestor_ids),
+                    FolderACL.principal_type == "group",
+                    FolderACL.principal_id.in_(group_ids),
+                    FolderACL.is_deleted == False,  # noqa: E712
+                ).limit(1)
+            )
+            group_acl_folder = group_acl_result.scalar_one_or_none()
+            if group_acl_folder:
+                folder_name_result = await db.execute(
+                    select(Folder.name).where(Folder.id == group_acl_folder)
+                )
+                folder_name = folder_name_result.scalar_one_or_none()
+                return {"access_source": "folder_inherited", "access_source_folder_name": folder_name}
 
     return {"access_source": "open", "access_source_folder_name": None}
 

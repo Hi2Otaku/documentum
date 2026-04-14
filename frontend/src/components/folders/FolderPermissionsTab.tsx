@@ -74,7 +74,7 @@ export function FolderPermissionsTab({ folderId }: FolderPermissionsTabProps) {
                 <User className="h-4 w-4 text-muted-foreground shrink-0" />
               )}
               <span className="text-sm truncate flex-1" title={entry.principal_id}>
-                {entry.principal_id.slice(0, 8)}...
+                {entry.principal_name ?? entry.principal_id.slice(0, 8) + "..."}
               </span>
               <Badge variant="outline" className="text-xs">
                 {entry.principal_type === "group" ? "Group" : "User"}

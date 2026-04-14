@@ -78,6 +78,7 @@ export interface FolderACLEntry {
   id: string;
   folder_id: string;
   principal_id: string;
+  principal_name: string | null;
   principal_type: string;
   permission_level: string;
   created_at: string;
