@@ -25,8 +25,8 @@ Milestone: v1.3 Document-Centric ECM
 
 ### Full-Text Search
 
-- [ ] **SRCH-01**: System automatically extracts and indexes text from PDF and Word documents via a background Celery worker; extraction failures are logged and do not block document save
-- [ ] **SRCH-02**: User can search documents by content (full-text body) and metadata fields (title, description, type-specific fields) with ranked results
+- [x] **SRCH-01**: System automatically extracts and indexes text from PDF and Word documents via a background Celery worker; extraction failures are logged and do not block document save
+- [x] **SRCH-02**: User can search documents by content (full-text body) and metadata fields (title, description, type-specific fields) with ranked results
 - [ ] **SRCH-03**: User can scope a search to a specific folder, document type, or lifecycle state
 - [ ] **SRCH-04**: User can save a named search query and retrieve it in future sessions
 - [ ] **SRCH-05**: User can display a saved search as a smart folder in the folder tree
@@ -82,8 +82,8 @@ Milestone: v1.3 Document-Centric ECM
 | FOLD-03 | Phase 28 | Complete |
 | FOLD-04 | Phase 28 | Complete |
 | FOLD-05 | Phase 29 | Pending |
-| SRCH-01 | Phase 30 | Pending |
-| SRCH-02 | Phase 30 | Pending |
+| SRCH-01 | Phase 30 | Complete |
+| SRCH-02 | Phase 30 | Complete |
 | SRCH-03 | Phase 30 | Pending |
 | SRCH-04 | Phase 33 | Pending |
 | SRCH-05 | Phase 33 | Pending |
