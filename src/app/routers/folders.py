@@ -110,8 +110,10 @@ async def get_folder_tree(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> EnvelopeResponse[list[FolderTreeNode]]:
-    """Return the full folder/cabinet hierarchy as a nested tree."""
-    tree = await folder_service.get_folder_tree(db)
+    """Return the folder/cabinet hierarchy, filtered by ACL for non-superusers."""
+    tree = await folder_service.get_folder_tree(
+        db, user_id=current_user.id, is_superuser=current_user.is_superuser
+    )
     # Validate into FolderTreeNode Pydantic models (supports recursive children)
     nodes = [FolderTreeNode.model_validate(node) for node in tree]
     return EnvelopeResponse(data=nodes)

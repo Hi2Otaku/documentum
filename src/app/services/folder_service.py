@@ -167,14 +167,20 @@ async def get_folder(db: AsyncSession, folder_id: uuid.UUID) -> dict:
     }
 
 
-async def get_folder_tree(db: AsyncSession) -> list[dict]:
-    """Return the full folder hierarchy as a nested tree of dicts.
+async def get_folder_tree(
+    db: AsyncSession,
+    user_id: uuid.UUID | None = None,
+    is_superuser: bool = False,
+) -> list[dict]:
+    """Return the folder hierarchy as a nested tree of dicts.
 
-    Builds the tree in Python using a single flat query + a count query.
+    For superusers: returns all folders.
+    For regular users: returns only folders where the user has ACL access
+    (directly or via ancestor), plus folders with no ACL entries in the chain (open access).
     """
     # All non-deleted folders
     folders_result = await db.execute(
-        select(Folder).where(Folder.is_deleted == False).order_by(Folder.name)
+        select(Folder).where(Folder.is_deleted == False).order_by(Folder.name)  # noqa: E712
     )
     all_folders = folders_result.scalars().all()
 
@@ -189,9 +195,84 @@ async def get_folder_tree(db: AsyncSession) -> list[dict]:
         row.folder_id: row.cnt for row in counts_result.all()
     }
 
+    # ACL filtering for non-superusers
+    visible_folder_ids: set[uuid.UUID] | None = None
+    if user_id and not is_superuser:
+        from app.models.acl import FolderACL
+        from app.models.user import user_groups
+
+        # Get user's group IDs
+        group_result = await db.execute(
+            select(user_groups.c.group_id).where(user_groups.c.user_id == user_id)
+        )
+        group_ids = [row[0] for row in group_result.fetchall()]
+
+        # Find all folder IDs that have ANY ACL entry
+        acl_folder_result = await db.execute(
+            select(FolderACL.folder_id).where(
+                FolderACL.is_deleted == False  # noqa: E712
+            ).distinct()
+        )
+        folders_with_acl = {row[0] for row in acl_folder_result.all()}
+
+        # Find folders where this user has access (direct user or group)
+        user_acl_result = await db.execute(
+            select(FolderACL.folder_id).where(
+                FolderACL.principal_id == user_id,
+                FolderACL.principal_type == "user",
+                FolderACL.is_deleted == False,  # noqa: E712
+            )
+        )
+        user_acl_folders = {row[0] for row in user_acl_result.all()}
+
+        group_acl_folders: set[uuid.UUID] = set()
+        if group_ids:
+            group_acl_result = await db.execute(
+                select(FolderACL.folder_id).where(
+                    FolderACL.principal_id.in_(group_ids),
+                    FolderACL.principal_type == "group",
+                    FolderACL.is_deleted == False,  # noqa: E712
+                )
+            )
+            group_acl_folders = {row[0] for row in group_acl_result.all()}
+
+        accessible_acl_folders = user_acl_folders | group_acl_folders
+
+        # Build set of visible folders:
+        # - Folders with no ACL anywhere in their ancestor chain (open access)
+        # - Folders where user has ACL access
+        # - Ancestors of accessible folders (so the tree path is visible)
+        all_folder_map = {f.id: f for f in all_folders}
+        visible_folder_ids = set()
+
+        for f in all_folders:
+            # Check if this folder or any ancestor has ACL entries
+            has_acl_in_chain = False
+            user_has_access = False
+            current = f
+            while current:
+                if current.id in folders_with_acl:
+                    has_acl_in_chain = True
+                if current.id in accessible_acl_folders:
+                    user_has_access = True
+                current = all_folder_map.get(current.parent_id) if current.parent_id else None
+
+            if not has_acl_in_chain:
+                # No ACL in chain → open access
+                visible_folder_ids.add(f.id)
+            elif user_has_access:
+                # User has access → visible, plus add all ancestors for tree path
+                visible_folder_ids.add(f.id)
+                current = f
+                while current and current.parent_id:
+                    visible_folder_ids.add(current.parent_id)
+                    current = all_folder_map.get(current.parent_id)
+
     # Build tree in Python
     by_id: dict[uuid.UUID, dict] = {}
     for f in all_folders:
+        if visible_folder_ids is not None and f.id not in visible_folder_ids:
+            continue
         by_id[f.id] = {
             "id": str(f.id),
             "name": f.name,
@@ -202,10 +283,14 @@ async def get_folder_tree(db: AsyncSession) -> list[dict]:
         }
 
     roots: list[dict] = []
-    for f in all_folders:
-        node = by_id[f.id]
-        if f.parent_id is not None and f.parent_id in by_id:
-            by_id[f.parent_id]["children"].append(node)
+    for fid, node in by_id.items():
+        parent_id_str = node["parent_id"]
+        if parent_id_str is not None:
+            parent_uuid = uuid.UUID(parent_id_str)
+            if parent_uuid in by_id:
+                by_id[parent_uuid]["children"].append(node)
+            else:
+                roots.append(node)
         else:
             roots.append(node)
 
