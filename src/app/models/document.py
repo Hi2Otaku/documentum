@@ -12,6 +12,7 @@ from sqlalchemy import (
     UniqueConstraint,
     Uuid,
 )
+from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import BaseModel
@@ -46,6 +47,11 @@ class Document(BaseModel):
         Enum(LifecycleState, name="lifecyclestate"),
         default=LifecycleState.DRAFT,
         nullable=True,
+    )
+
+    search_vector: Mapped[str | None] = mapped_column(TSVECTOR, nullable=True)
+    extraction_status: Mapped[str] = mapped_column(
+        String(20), default="pending", nullable=False, server_default="pending"
     )
 
     document_type_id: Mapped[uuid.UUID | None] = mapped_column(
@@ -85,6 +91,7 @@ class DocumentVersion(BaseModel):
     )
     comment: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_signed: Mapped[bool] = mapped_column(default=False, nullable=False)
+    fulltext_content: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     document: Mapped["Document"] = relationship(back_populates="versions")
     signatures: Mapped[list["DocumentSignature"]] = relationship(  # noqa: F821

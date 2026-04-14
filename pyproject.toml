@@ -19,6 +19,8 @@ dependencies = [
     "minio",
     "cryptography",
     "jsonschema>=4.26,<5",
+    "pdfplumber==0.11.9",
+    "python-docx>=1.1,<2",
 ]
 
 [project.optional-dependencies]
