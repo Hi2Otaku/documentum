@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Document-Centric ECM
 status: executing
-stopped_at: Completed 29-03-PLAN.md (Folder ACL Frontend)
-last_updated: "2026-04-14T02:51:36.095Z"
+stopped_at: Completed 30-01-PLAN.md (Search Backend Foundation)
+last_updated: "2026-04-14T03:16:15.352Z"
 last_activity: 2026-04-14
 progress:
   total_phases: 7
-  completed_phases: 3
-  total_plans: 10
-  completed_plans: 10
+  completed_phases: 1
+  total_plans: 7
+  completed_plans: 7
   percent: 0
 ---
 
@@ -21,12 +21,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-13)
 
 **Core value:** Any workflow or document management use case described in the Documentum specification can be modeled and executed end-to-end.
-**Current focus:** Phase 29 — folder-acl-inheritance
+**Current focus:** Phase 28 — cabinet-folder-hierarchy
 
 ## Current Position
 
-Phase: 30
-Plan: Not started
+Phase: 28 (cabinet-folder-hierarchy) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
 Last activity: 2026-04-14
 
@@ -55,10 +55,7 @@ Progress: [..........] 0% (v1.3: 0/7 phases)
 | Phase 27-document-type-system P01 | 12 | 2 tasks | 9 files |
 | Phase 27-document-type-system P02 | 5min | 2 tasks | 5 files |
 | Phase 27-document-type-system P03 | 3.5min | 2 tasks | 8 files |
-| Phase 28-cabinet-folder-hierarchy P03 | 60 | 3 tasks | 12 files |
-| Phase 29-folder-acl-inheritance P01 | 4min | 3 tasks | 7 files |
-| Phase 29-folder-acl-inheritance P02 | 10min | 2 tasks | 5 files |
-| Phase 29-folder-acl-inheritance P03 | 15 | 2 tasks | 6 files |
+| Phase 30 P01 | 4min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -75,14 +72,7 @@ v1.3 architecture decisions (resolved during research):
 - [Phase 27-document-type-system]: Place validate_metadata in router before service call to keep upload_document service pure and reusable
 - [Phase 27-document-type-system]: Client-side JSON schema validation in dialog validates parse correctness and property count before API call
 - [Phase 27-document-type-system]: Parent type dropdown restricted to root types (parent_type_id === null) to prevent 3-level hierarchy in UI
-- [Phase 28-cabinet-folder-hierarchy]: FolderPickerDialog is reusable for both Move and file-document flows, avoiding UI duplication
-- [Phase 28-cabinet-folder-hierarchy]: deleteFolder and unfileDocument use raw fetch (not apiMutate) consistent with deleteDocumentType pattern
-- [Phase 28-cabinet-folder-hierarchy]: folder_ids on DocumentResponse is optional for backward compatibility
-- [Phase 29-folder-acl-inheritance]: _get_ancestor_folder_ids() extracted as shared CTE helper for reuse by check_permission and future get_access_source
-- [Phase 29-folder-acl-inheritance]: Direct document ACL overrides folder ACL entirely — folder ACL only runs when no direct DocumentACL entries exist
-- [Phase 29-folder-acl-inheritance]: N+1 per-document check_permission for get_folder_documents acceptable with page_size cap; list_documents uses subquery descendant CTE
-- [Phase 29-folder-acl-inheritance]: Use model_copy(update=...) to extend DocumentResponse with access_source without breaking existing callers
-- [Phase 29-folder-acl-inheritance]: Use listUsers() from api/users.ts in AddPermissionDialog instead of inline fetch for proper auth and DRY; lowercase permission_level values to match backend enum; inline confirm-state pattern for ACL entry deletion
+- [Phase 30]: Weighted tsvector A/B/C for title/author/content; websearch_to_tsquery for natural query syntax; raw DDL migrations
 
 ### Pending Todos
 
@@ -94,6 +84,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-14T01:45:19.394Z
-Stopped at: Completed 29-03-PLAN.md (Folder ACL Frontend)
+Last session: 2026-04-14T03:16:15.349Z
+Stopped at: Completed 30-01-PLAN.md (Search Backend Foundation)
 Resume file: None
