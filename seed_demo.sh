@@ -107,7 +107,7 @@ echo "Created relationship: contract references financials"
 
 echo "=== Starting Workflow ==="
 WF_ID=$(curl -s "$BASE/workflows" -X POST -H "$AUTH" -H "Content-Type: application/json" \
-  -d "{\"template_id\":\"$TMPL_ID\",\"name\":\"Acme Partnership Approval\",\"description\":\"Review and approve the Acme Corp partnership agreement\"}" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
+  -d "{\"template_id\":\"$TMPL_ID\",\"name\":\"Acme Partnership Approval\",\"description\":\"Review and approve the Acme Corp partnership agreement\",\"document_ids\":[\"$DOC1_ID\"]}" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
 echo "workflow=$WF_ID"
 
 echo ""
