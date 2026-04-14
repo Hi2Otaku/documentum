@@ -1,13 +1,21 @@
 import { useState } from "react";
-import { ChevronRight, Archive, Folder as FolderIcon, MoreHorizontal } from "lucide-react";
+import { ChevronRight, Archive, Folder as FolderIcon, MoreHorizontal, Search } from "lucide-react";
 import { cn } from "../../lib/utils";
 import type { FolderTreeNode } from "../../api/folders";
+
+export interface SmartFolderNode {
+  id: string;
+  name: string;
+}
 
 interface FolderTreeProps {
   tree: FolderTreeNode[];
   selectedId: string | null;
   onSelect: (id: string) => void;
   onContextAction?: (action: string, node: FolderTreeNode) => void;
+  smartFolders?: SmartFolderNode[];
+  selectedSmartFolderId?: string | null;
+  onSmartFolderSelect?: (id: string) => void;
 }
 
 interface FolderTreeNodeItemProps {
@@ -156,8 +164,11 @@ export function FolderTree({
   selectedId,
   onSelect,
   onContextAction,
+  smartFolders,
+  selectedSmartFolderId,
+  onSmartFolderSelect,
 }: FolderTreeProps) {
-  if (tree.length === 0) {
+  if (tree.length === 0 && (!smartFolders || smartFolders.length === 0)) {
     return (
       <p className="text-sm text-muted-foreground px-4 py-2">
         No cabinets yet. Click "New Cabinet" to create one.
@@ -177,6 +188,35 @@ export function FolderTree({
           onContextAction={onContextAction}
         />
       ))}
+
+      {/* Smart folder nodes */}
+      {smartFolders && smartFolders.length > 0 && (
+        <>
+          <div className="mx-3 my-2 border-t" />
+          <p className="px-3 pb-1 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+            Smart Folders
+          </p>
+          {smartFolders.map((sf) => {
+            const isSelected = selectedSmartFolderId === sf.id;
+            return (
+              <div
+                key={sf.id}
+                className={cn(
+                  "flex items-center gap-1 py-1 pr-1 rounded cursor-pointer hover:bg-accent hover:text-accent-foreground",
+                  isSelected && "bg-accent text-accent-foreground",
+                )}
+                style={{ paddingLeft: 8 }}
+                onClick={() => onSmartFolderSelect?.(sf.id)}
+              >
+                {/* Spacer matching chevron width */}
+                <span className="h-4 w-4 flex-shrink-0" />
+                <Search className="h-4 w-4 flex-shrink-0 text-violet-500" />
+                <span className="flex-1 text-sm truncate">{sf.name}</span>
+              </div>
+            );
+          })}
+        </>
+      )}
     </div>
   );
 }

@@ -8,6 +8,7 @@ import {
   FileText,
   FileSpreadsheet,
   Image,
+  Search,
 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
@@ -30,6 +31,8 @@ import {
   fetchFolderDocuments,
   folderKeys,
 } from "../api/folders";
+import { fetchSmartFolders, savedSearchKeys } from "../api/savedSearches";
+import { searchDocuments } from "../api/search";
 import { useAuthStore } from "../stores/authStore";
 
 /** Minimal document shape returned by fetchFolderDocuments */
@@ -87,6 +90,7 @@ export function BrowsePage() {
   const userId = useAuthStore((s) => s.userId) ?? "";
 
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
+  const [selectedSmartFolderId, setSelectedSmartFolderId] = useState<string | null>(null);
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(
     null
   );
@@ -97,6 +101,12 @@ export function BrowsePage() {
   const { data: tree = [], isLoading: treeLoading } = useQuery({
     queryKey: folderKeys.tree(),
     queryFn: fetchFolderTree,
+  });
+
+  // Smart folders query
+  const { data: smartFolders = [] } = useQuery({
+    queryKey: savedSearchKeys.smartFolders(),
+    queryFn: fetchSmartFolders,
   });
 
   // Selected folder detail (provides path for breadcrumb)
@@ -114,20 +124,52 @@ export function BrowsePage() {
     enabled: !!selectedFolderId,
   });
 
+  // Find the selected smart folder object
+  const activeSmartFolder = smartFolders.find((sf) => sf.id === selectedSmartFolderId);
+
+  // Smart folder search results
+  const { data: smartFolderResults, isLoading: smartFolderLoading } = useQuery({
+    queryKey: ["smart-folder-results", selectedSmartFolderId],
+    queryFn: () =>
+      searchDocuments({
+        q: activeSmartFolder!.query,
+        folder_id: activeSmartFolder!.filters?.folder_id,
+        document_type_id: activeSmartFolder!.filters?.document_type_id,
+        lifecycle_state: activeSmartFolder!.filters?.lifecycle_state,
+        page: 1,
+        page_size: 50,
+      }),
+    enabled: !!selectedSmartFolderId && !!activeSmartFolder,
+  });
+
   const documents = documentsData?.data ?? [];
   const totalPages = documentsData?.meta?.total_pages ?? 1;
 
   function handleFolderSelect(id: string) {
     setSelectedFolderId(id);
+    setSelectedSmartFolderId(null);
+    setSelectedDocumentId(null);
+    setCurrentPage(1);
+  }
+
+  function handleSmartFolderSelect(id: string) {
+    setSelectedSmartFolderId(id);
+    setSelectedFolderId(null);
     setSelectedDocumentId(null);
     setCurrentPage(1);
   }
 
   function handleBreadcrumbNavigate(id: string) {
     setSelectedFolderId(id);
+    setSelectedSmartFolderId(null);
     setSelectedDocumentId(null);
     setCurrentPage(1);
   }
+
+  // Determine what to show in content area
+  const showSmartFolder = !!selectedSmartFolderId && !!activeSmartFolder;
+  const showFolder = !!selectedFolderId;
+  const showEmpty = !showSmartFolder && !showFolder;
 
   return (
     <div className="flex flex-col h-full">
@@ -166,6 +208,12 @@ export function BrowsePage() {
                   tree={tree}
                   selectedId={selectedFolderId}
                   onSelect={handleFolderSelect}
+                  smartFolders={smartFolders.map((sf) => ({
+                    id: sf.id,
+                    name: sf.name,
+                  }))}
+                  selectedSmartFolderId={selectedSmartFolderId}
+                  onSmartFolderSelect={handleSmartFolderSelect}
                 />
               )}
             </div>
@@ -174,8 +222,8 @@ export function BrowsePage() {
 
         {/* Center: Document content area */}
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-          {/* Breadcrumb bar */}
-          {selectedFolder && (
+          {/* Breadcrumb bar or Smart Folder header */}
+          {showFolder && selectedFolder && (
             <div className="px-4 py-2 border-b shrink-0">
               <FolderBreadcrumb
                 path={selectedFolder.path}
@@ -183,10 +231,18 @@ export function BrowsePage() {
               />
             </div>
           )}
+          {showSmartFolder && (
+            <div className="px-4 py-2 border-b shrink-0 flex items-center gap-2">
+              <Search className="h-4 w-4 text-violet-500" />
+              <span className="text-sm font-medium">
+                Smart Folder: {activeSmartFolder.name}
+              </span>
+            </div>
+          )}
 
-          {/* Document grid */}
-          {!selectedFolderId ? (
-            /* No folder selected — empty state */
+          {/* Content rendering */}
+          {showEmpty ? (
+            /* No folder or smart folder selected */
             <div className="flex flex-col items-center justify-center h-full text-center">
               <FolderOpen className="h-12 w-12 text-muted-foreground mb-3" />
               <h3 className="text-base font-medium">
@@ -196,6 +252,86 @@ export function BrowsePage() {
                 Click a cabinet or folder in the tree to view its documents.
               </p>
             </div>
+          ) : showSmartFolder ? (
+            /* Smart folder results */
+            smartFolderLoading ? (
+              <div className="p-4 space-y-3 flex-1">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <Skeleton key={i} className="h-12 w-full" />
+                ))}
+              </div>
+            ) : !smartFolderResults?.data?.length ? (
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <Search className="h-10 w-10 text-muted-foreground mb-3" />
+                <h3 className="text-base font-medium">No results</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  This smart folder's search returned no documents.
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col flex-1 overflow-hidden">
+                <div className="flex-1 overflow-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="h-10 bg-secondary">
+                        <TableHead className="w-10" />
+                        <TableHead>Title</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Lifecycle</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {smartFolderResults.data.map((doc) => (
+                        <TableRow
+                          key={doc.id}
+                          className={`cursor-pointer hover:bg-accent/50 ${
+                            doc.id === selectedDocumentId
+                              ? "bg-accent border-l-[3px] border-primary"
+                              : ""
+                          }`}
+                          onClick={() => setSelectedDocumentId(doc.id)}
+                        >
+                          <TableCell className="w-10 px-3">
+                            <FileTypeIcon contentType={doc.content_type} />
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-sm font-medium">
+                              {doc.title}
+                            </span>
+                            {doc.headline && (
+                              <p
+                                className="text-xs text-muted-foreground mt-0.5 line-clamp-1"
+                                dangerouslySetInnerHTML={{ __html: doc.headline }}
+                              />
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {doc.document_type_name ? (
+                              <Badge variant="outline" className="text-xs">
+                                {doc.document_type_name}
+                              </Badge>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">
+                                --
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <LifecycleStateBadge state={doc.lifecycle_state ?? "draft"} />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="h-10 flex items-center px-4 border-t shrink-0">
+                  <span className="text-sm text-muted-foreground">
+                    {smartFolderResults.data.length} result
+                    {smartFolderResults.data.length !== 1 ? "s" : ""}
+                  </span>
+                </div>
+              </div>
+            )
           ) : documentsLoading ? (
             /* Loading state */
             <div className="p-4 space-y-3 flex-1">
