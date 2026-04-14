@@ -20,6 +20,7 @@ import {
   type FolderTreeNode,
 } from "../../api/folders";
 import { FolderPickerDialog } from "../folders/FolderPickerDialog";
+import { RelationshipPanel } from "./RelationshipPanel";
 
 interface DocumentDetailPanelProps {
   documentId: string | null;
@@ -268,6 +269,16 @@ export function DocumentDetailPanel({
           </p>
         )}
       </div>
+
+      {/* Section 8 - Relationships */}
+      <Separator />
+      <RelationshipPanel
+        documentId={documentId}
+        onNavigate={(docId) => {
+          // Trigger a re-render with the new document by updating URL or query
+          queryClient.invalidateQueries({ queryKey: ["documents", docId] });
+        }}
+      />
 
       <FolderPickerDialog
         open={folderPickerOpen}
