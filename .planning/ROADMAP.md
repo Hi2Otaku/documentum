@@ -52,7 +52,7 @@ See `.planning/milestones/v1.2-ROADMAP.md` for full phase details.
 - [ ] **Phase 30: Full-Text Search & Content Extraction** — Text extraction pipeline and ranked search across document content and metadata
 - [x] **Phase 31: Document Relationships** — Typed directional links between documents (supersedes, references, is-part-of) (completed 2026-04-14)
 - [x] **Phase 32: Document-First Navigation** — Browse UI with folder tree sidebar, content grid, and inline document detail (completed 2026-04-14)
-- [ ] **Phase 33: Saved Searches & Smart Folders** — Named search queries that persist and appear as virtual folders in the tree
+- [x] **Phase 33: Saved Searches & Smart Folders** — Named search queries that persist and appear as virtual folders in the tree (completed 2026-04-14)
 
 ## Phase Details
 
@@ -147,7 +147,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 - [x] 33-01-PLAN.md — Backend: SavedSearch model, migration, service, router
-- [ ] 33-02-PLAN.md — Frontend: Save dialog, saved searches list, smart folder tree nodes
+- [x] 33-02-PLAN.md — Frontend: Save dialog, saved searches list, smart folder tree nodes
 **UI hint**: yes
 
 ## Progress
@@ -163,4 +163,4 @@ Plans:
 | 30. Full-Text Search & Content Extraction | v1.3 | 0/? | Not started | — |
 | 31. Document Relationships | v1.3 | 2/2 | Complete    | 2026-04-14 |
 | 32. Document-First Navigation | v1.3 | 2/2 | Complete    | 2026-04-14 |
-| 33. Saved Searches & Smart Folders | v1.3 | 1/2 | In Progress|  |
+| 33. Saved Searches & Smart Folders | v1.3 | 2/2 | Complete   | 2026-04-14 |

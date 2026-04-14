@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Document-Centric ECM
-status: executing
-stopped_at: Completed 33-01-PLAN.md (Saved Searches Backend)
-last_updated: "2026-04-14T04:19:24.796Z"
+status: verifying
+stopped_at: Completed 33-02-PLAN.md (Saved Searches Frontend)
+last_updated: "2026-04-14T04:24:12.585Z"
 last_activity: 2026-04-14
 progress:
   total_phases: 7
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 19
-  completed_plans: 18
+  completed_plans: 19
   percent: 0
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-13)
 
 Phase: 33 (saved-searches-smart-folders) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-14
 
 Progress: [..........] 0% (v1.3: 0/7 phases)
@@ -61,6 +61,7 @@ Progress: [..........] 0% (v1.3: 0/7 phases)
 | Phase 32 P01 | 1min | 1 tasks | 1 files |
 | Phase 32 P02 | 1min | 2 tasks | 2 files |
 | Phase 33-saved-searches-smart-folders P01 | 2min | 2 tasks | 7 files |
+| Phase 33-saved-searches-smart-folders P02 | 3min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,7 @@ v1.3 architecture decisions (resolved during research):
 - [Phase 32]: Inline document table in BrowsePage without @tanstack/react-table for simpler browse-only view
 - [Phase 32]: FolderTree icon for Browse nav item (FolderOpen already used by admin Folders)
 - [Phase 33-saved-searches-smart-folders]: Raw DDL migration matching phase31 pattern; partial index on (user_id, is_smart_folder) for smart folder queries
+- [Phase 33-saved-searches-smart-folders]: Smart folder nodes use violet Search icon and mutually exclusive selection with real folders
 
 ### Pending Todos
 
@@ -94,6 +96,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-14T04:19:24.792Z
-Stopped at: Completed 33-01-PLAN.md (Saved Searches Backend)
+Last session: 2026-04-14T04:24:12.581Z
+Stopped at: Completed 33-02-PLAN.md (Saved Searches Frontend)
 Resume file: None
