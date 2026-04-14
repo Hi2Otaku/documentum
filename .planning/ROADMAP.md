@@ -50,7 +50,7 @@ See `.planning/milestones/v1.2-ROADMAP.md` for full phase details.
 - [ ] **Phase 28: Cabinet/Folder Hierarchy** — Navigable cabinet/folder tree with document filing and folder CRUD
 - [ ] **Phase 29: Folder ACL Inheritance** — Folder-level permissions that propagate down to contained documents
 - [ ] **Phase 30: Full-Text Search & Content Extraction** — Text extraction pipeline and ranked search across document content and metadata
-- [ ] **Phase 31: Document Relationships** — Typed directional links between documents (supersedes, references, is-part-of)
+- [x] **Phase 31: Document Relationships** — Typed directional links between documents (supersedes, references, is-part-of) (completed 2026-04-14)
 - [ ] **Phase 32: Document-First Navigation** — Browse UI with folder tree sidebar, content grid, and inline document detail
 - [ ] **Phase 33: Saved Searches & Smart Folders** — Named search queries that persist and appear as virtual folders in the tree
 
@@ -155,6 +155,6 @@ Plans:
 | 28. Cabinet/Folder Hierarchy | v1.3 | 1/3 | In Progress|  |
 | 29. Folder ACL Inheritance | v1.3 | 0/? | Not started | — |
 | 30. Full-Text Search & Content Extraction | v1.3 | 0/? | Not started | — |
-| 31. Document Relationships | v1.3 | 1/1 | Complete | 2026-04-14 |
+| 31. Document Relationships | v1.3 | 2/2 | Complete   | 2026-04-14 |
 | 32. Document-First Navigation | v1.3 | 0/? | Not started | — |
 | 33. Saved Searches & Smart Folders | v1.3 | 0/? | Not started | — |
