@@ -14,6 +14,7 @@ export interface ActivityNodeData extends Record<string, unknown> {
   methodName?: string | null;
   routingType?: string | null;
   performerList?: string[] | null;
+  lifecycleAction?: string | null;
   apiId?: string;
   /** Backend ID -- undefined for newly created nodes not yet saved */
   backendId?: string;

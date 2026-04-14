@@ -44,6 +44,7 @@ function activitiesToNodes(
       methodName: a.method_name,
       routingType: a.routing_type,
       performerList: a.performer_list,
+      lifecycleAction: a.lifecycle_action ?? null,
       expectedDurationHours: a.expected_duration_hours,
       escalationAction: a.escalation_action,
       warningThresholdHours: a.warning_threshold_hours,

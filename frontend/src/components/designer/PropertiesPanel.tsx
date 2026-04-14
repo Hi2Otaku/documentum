@@ -154,6 +154,33 @@ function NodeProperties({
         </div>
       )}
 
+      {/* Lifecycle Action */}
+      {(data.activityType === 'manual' || data.activityType === 'auto') && (
+        <div>
+          <label className="text-sm font-medium" htmlFor="lifecycle-action">
+            Lifecycle Action
+          </label>
+          <select
+            id="lifecycle-action"
+            className="mt-1 w-full rounded border px-3 py-2 text-sm"
+            value={data.lifecycleAction ?? ''}
+            onChange={(e) =>
+              updateNodeData(nodeId, {
+                lifecycleAction: e.target.value || null,
+              })
+            }
+          >
+            <option value="">None</option>
+            <option value="transition_to:review">Transition to Review</option>
+            <option value="transition_to:approved">Transition to Approved</option>
+            <option value="transition_to:archived">Transition to Archived</option>
+          </select>
+          <p className="mt-1 text-xs text-muted-foreground">
+            When this activity completes, attached documents transition to the selected lifecycle state.
+          </p>
+        </div>
+      )}
+
       {/* Trigger type (when 2+ incoming edges) */}
       {incomingEdgeCount >= 2 && (
         <div>
