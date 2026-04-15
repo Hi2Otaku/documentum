@@ -76,6 +76,23 @@ async def list_providers(
     )
 
 
+@router.get("/providers/public", response_model=EnvelopeResponse[list[dict]])
+async def list_enabled_providers(
+    db: AsyncSession = Depends(get_db),
+):
+    """List enabled identity providers (public -- for login page SSO buttons).
+
+    Returns minimal info: id, name, provider_type. No config or sensitive data.
+    """
+    providers = await identity_service.list_providers(db)
+    enabled = [
+        {"id": str(p.id), "name": p.name, "provider_type": p.provider_type}
+        for p in providers
+        if p.is_enabled
+    ]
+    return EnvelopeResponse(data=enabled)
+
+
 @router.get("/providers/{provider_id}", response_model=EnvelopeResponse[IdentityProviderResponse])
 async def get_provider(
     provider_id: uuid.UUID,

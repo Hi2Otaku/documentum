@@ -18,6 +18,7 @@ import { AppShell } from "./components/layout/AppShell";
 import { AdminRoute } from "./components/layout/AdminRoute";
 import { NotificationPreferencesPage } from "./pages/NotificationPreferencesPage";
 import { AuditVerificationPage } from "./pages/AuditVerificationPage";
+import { SSOSettingsPage } from "./pages/SSOSettingsPage";
 
 export default function App() {
   return (
@@ -49,6 +50,7 @@ export default function App() {
             <Route path="/admin/retention" element={<RetentionPage />} />
             <Route path="/admin/queues" element={<QueueAdminPage />} />
             <Route path="/admin/audit-verification" element={<AuditVerificationPage />} />
+            <Route path="/admin/sso" element={<SSOSettingsPage />} />
           </Route>
         </Route>
       </Route>

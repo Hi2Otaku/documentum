@@ -12,6 +12,7 @@ import {
   Bell,
   Shield,
   ShieldCheck,
+  KeyRound,
   ListChecks,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -41,6 +42,7 @@ const NAV_ITEMS: NavItem[] = [
   { icon: FolderOpen, label: "Folders", route: "/admin/folders", adminOnly: true },
   { icon: Shield, label: "Retention", route: "/admin/retention", adminOnly: true },
   { icon: ListChecks, label: "Queues", route: "/admin/queues", adminOnly: true },
+  { icon: KeyRound, label: "SSO Settings", route: "/admin/sso", adminOnly: true },
   { icon: ShieldCheck, label: "Audit Integrity", route: "/admin/audit-verification", adminOnly: true },
 ];
 
