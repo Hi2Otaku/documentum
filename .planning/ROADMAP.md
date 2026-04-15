@@ -269,7 +269,7 @@ Note: Phase 43 (CMIS) depends on Phase 36 (SSO) but is sequenced after Phase 42 
 | 36. Identity & SSO | v1.4 | 3/3 | Complete    | 2026-04-15 |
 | 37. Error Handling & Compensation | v1.4 | 1/3 | Complete    | 2026-04-15 |
 | 38. Workflow Versioning | v1.4 | 2/2 | Complete    | 2026-04-15 |
-| 39. Advanced Join Semantics | v1.4 | 2/2 | Complete   | 2026-04-15 |
+| 39. Advanced Join Semantics | v1.4 | 2/2 | Complete    | 2026-04-15 |
 | 40. Bulk Operations | v1.4 | 0/? | Not started | - |
 | 41. Import/Export | v1.4 | 0/? | Not started | - |
 | 42. System Monitoring | v1.4 | 0/? | Not started | - |
