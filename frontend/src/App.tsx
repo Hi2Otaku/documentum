@@ -17,6 +17,7 @@ import { ProtectedRoute } from "./components/layout/ProtectedRoute";
 import { AppShell } from "./components/layout/AppShell";
 import { AdminRoute } from "./components/layout/AdminRoute";
 import { NotificationPreferencesPage } from "./pages/NotificationPreferencesPage";
+import { AuditVerificationPage } from "./pages/AuditVerificationPage";
 
 export default function App() {
   return (
@@ -47,6 +48,7 @@ export default function App() {
             <Route path="/admin/folders" element={<FoldersPage />} />
             <Route path="/admin/retention" element={<RetentionPage />} />
             <Route path="/admin/queues" element={<QueueAdminPage />} />
+            <Route path="/admin/audit-verification" element={<AuditVerificationPage />} />
           </Route>
         </Route>
       </Route>
