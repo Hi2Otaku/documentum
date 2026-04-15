@@ -150,7 +150,11 @@ Plans:
   1. Admin can install a new version of a template while instances of the previous version continue running without interruption
   2. Starting a new workflow always uses the latest installed version; existing running instances reference their original immutable template snapshot
   3. Admin can view which template version each running workflow instance is using from the workflow operations UI
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 38-01-PLAN.md -- Backend: template_family_id migration, family-based install/start, version API
+- [ ] 38-02-PLAN.md -- Frontend: version column in workflow table, version badge in designer & template list
 **UI hint**: yes
 
 ### Phase 39: Advanced Join Semantics
@@ -161,7 +165,11 @@ Plans:
   1. Template designer can configure an N-of-M join that activates when a specified number of incoming flows complete (not necessarily all)
   2. Template designer can configure a cancelling join that cancels remaining branches when the join fires, and a timeout join that fires after a configured duration even if not all branches have completed
   3. Concurrent token arrivals at a join never produce duplicate activations or lost tokens (verified by concurrent execution tests with row-level locking)
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 38-01-PLAN.md — Backend: template_family_id migration, family-based install/start, version API
+- [ ] 38-02-PLAN.md — Frontend: version column in workflow table, version badge in designer & template list
 **UI hint**: yes
 
 ### Phase 40: Bulk Operations
@@ -173,7 +181,11 @@ Plans:
   2. User can select multiple documents and batch delete with a confirmation dialog
   3. Bulk operations execute as background jobs with a progress indicator showing completion percentage and partial failure details
   4. User can view bulk job history showing success/failure counts for past operations
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 38-01-PLAN.md — Backend: template_family_id migration, family-based install/start, version API
+- [ ] 38-02-PLAN.md — Frontend: version column in workflow table, version badge in designer & template list
 **UI hint**: yes
 
 ### Phase 41: Import/Export
@@ -185,7 +197,11 @@ Plans:
   2. Admin can export entire folder trees preserving hierarchy, ACLs, and document relationships in the package
   3. Admin can import a ZIP package that recreates documents with metadata and files them into the correct folders
   4. Import detects conflicts (duplicate names, missing references) and applies a configurable strategy (skip, overwrite, or rename)
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 38-01-PLAN.md — Backend: template_family_id migration, family-based install/start, version API
+- [ ] 38-02-PLAN.md — Frontend: version column in workflow table, version badge in designer & template list
 **UI hint**: yes
 
 ### Phase 42: System Monitoring & Health
@@ -197,7 +213,11 @@ Plans:
   2. Admin can view queue depths, active task counts, and worker utilization metrics on the dashboard
   3. System exposes a Prometheus-compatible /metrics endpoint that external monitoring tools can scrape
   4. Admin receives alerts (in-app notification) when health checks fail or configurable thresholds are exceeded
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 38-01-PLAN.md — Backend: template_family_id migration, family-based install/start, version API
+- [ ] 38-02-PLAN.md — Frontend: version column in workflow table, version badge in designer & template list
 **UI hint**: yes
 
 ### Phase 43: CMIS Standard API
@@ -210,7 +230,11 @@ Plans:
   3. CMIS-QL queries are accepted and mapped to the existing search infrastructure, returning correct results
   4. All CMIS endpoints enforce existing ACL permissions and support both local and SSO-backed authentication
   5. At least one standard CMIS client (CMIS Workbench or LibreOffice) can connect and perform basic CRUD operations
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 38-01-PLAN.md — Backend: template_family_id migration, family-based install/start, version API
+- [ ] 38-02-PLAN.md — Frontend: version column in workflow table, version badge in designer & template list
 
 ### Phase 44: Process Analytics & Mining
 **Goal**: Admins can discover actual execution patterns, identify bottlenecks, and analyze cycle times from workflow execution data
@@ -221,7 +245,11 @@ Plans:
   2. Admin can view cycle time breakdowns per activity and per template, identifying where time is spent
   3. Admin can identify bottleneck activities through frequency and duration analysis visualizations
   4. Analytics data refreshes from execution logs via background processing without impacting live workflow performance
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 38-01-PLAN.md — Backend: template_family_id migration, family-based install/start, version API
+- [ ] 38-02-PLAN.md — Frontend: version column in workflow table, version badge in designer & template list
 **UI hint**: yes
 
 ## Progress
@@ -240,7 +268,7 @@ Note: Phase 43 (CMIS) depends on Phase 36 (SSO) but is sequenced after Phase 42 
 | 35. Tamper-Proof Audit | v1.4 | 2/2 | Complete    | 2026-04-15 |
 | 36. Identity & SSO | v1.4 | 3/3 | Complete    | 2026-04-15 |
 | 37. Error Handling & Compensation | v1.4 | 1/3 | Complete    | 2026-04-15 |
-| 38. Workflow Versioning | v1.4 | 0/? | Not started | - |
+| 38. Workflow Versioning | v1.4 | 0/2 | Planning    | - |
 | 39. Advanced Join Semantics | v1.4 | 0/? | Not started | - |
 | 40. Bulk Operations | v1.4 | 0/? | Not started | - |
 | 41. Import/Export | v1.4 | 0/? | Not started | - |
