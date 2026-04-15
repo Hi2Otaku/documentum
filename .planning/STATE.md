@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 34-01-PLAN.md (Lifecycle Filter & Document ACL UI)
-last_updated: "2026-04-15T04:44:01.087Z"
+stopped_at: Completed 34-02-PLAN.md (Retention & Queue Admin Pages)
+last_updated: "2026-04-15T04:44:53.310Z"
 last_activity: 2026-04-14
 progress:
   total_phases: 34
   completed_phases: 33
-  total_plans: 100
+  total_plans: 96
   completed_plans: 97
   percent: 0
 ---
@@ -62,7 +62,7 @@ Progress: [..........] 0% (v1.3: 0/7 phases)
 | Phase 32 P02 | 1min | 2 tasks | 2 files |
 | Phase 33-saved-searches-smart-folders P01 | 2min | 2 tasks | 7 files |
 | Phase 33-saved-searches-smart-folders P02 | 3min | 2 tasks | 6 files |
-| Phase 34-frontend-gap-closure P01 | 2.5min | 2 tasks | 6 files |
+| Phase 34 P02 | 3min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -86,7 +86,7 @@ v1.3 architecture decisions (resolved during research):
 - [Phase 32]: FolderTree icon for Browse nav item (FolderOpen already used by admin Folders)
 - [Phase 33-saved-searches-smart-folders]: Raw DDL migration matching phase31 pattern; partial index on (user_id, is_smart_folder) for smart folder queries
 - [Phase 33-saved-searches-smart-folders]: Smart folder nodes use violet Search icon and mutually exclusive selection with real folders
-- [Phase 34-frontend-gap-closure]: Used listUsers API for user principal dropdown; group selection uses manual UUID input
+- [Phase 34]: Inline dialog components for retention/queue pages; expandable table row for queue member management
 
 ### Pending Todos
 
@@ -98,6 +98,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-15T04:44:01.082Z
-Stopped at: Completed 34-01-PLAN.md (Lifecycle Filter & Document ACL UI)
+Last session: 2026-04-15T04:44:53.303Z
+Stopped at: Completed 34-02-PLAN.md (Retention & Queue Admin Pages)
 Resume file: None

@@ -9,6 +9,8 @@ import {
   Tags,
   FolderOpen,
   FolderTree,
+  Shield,
+  ListChecks,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useAuthStore } from "../../stores/authStore";
@@ -34,6 +36,8 @@ const NAV_ITEMS: NavItem[] = [
   { icon: Search, label: "Query", route: "/query", adminOnly: true },
   { icon: Tags, label: "Types", route: "/admin/types", adminOnly: true },
   { icon: FolderOpen, label: "Folders", route: "/admin/folders", adminOnly: true },
+  { icon: Shield, label: "Retention", route: "/admin/retention", adminOnly: true },
+  { icon: ListChecks, label: "Queues", route: "/admin/queues", adminOnly: true },
 ];
 
 interface SidebarNavProps {
