@@ -60,7 +60,7 @@ See `.planning/milestones/v1.3-ROADMAP.md` for full phase details.
 - [x] **Phase 35: Tamper-Proof Audit Trail** - Cryptographic hash chaining for audit log integrity (completed 2026-04-15)
 - [x] **Phase 36: Identity & SSO** - LDAP/SAML/OAuth2 authentication with JIT provisioning and service tokens (completed 2026-04-15)
 - [x] **Phase 37: Workflow Error Handling & Compensation** - Declarative exception handlers and rollback activities (completed 2026-04-15)
-- [ ] **Phase 38: Workflow Versioning** - Concurrent active template versions with immutable installed snapshots
+- [x] **Phase 38: Workflow Versioning** - Concurrent active template versions with immutable installed snapshots (completed 2026-04-15)
 - [ ] **Phase 39: Advanced Join Semantics** - N-of-M, cancelling, timeout joins with race-condition-free locking
 - [ ] **Phase 40: Bulk Operations** - Mass update, delete, reclassify with background job tracking
 - [ ] **Phase 41: Import/Export** - ZIP package export/import with hierarchy preservation and conflict resolution
@@ -154,7 +154,7 @@ Plans:
 
 Plans:
 - [x] 38-01-PLAN.md -- Backend: template_family_id migration, family-based install/start, version API
-- [ ] 38-02-PLAN.md -- Frontend: version column in workflow table, version badge in designer & template list
+- [x] 38-02-PLAN.md -- Frontend: version column in workflow table, version badge in designer & template list
 **UI hint**: yes
 
 ### Phase 39: Advanced Join Semantics
@@ -168,7 +168,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 38-01-PLAN.md � Backend: template_family_id migration, family-based install/start, version API
+- [x] 38-01-PLAN.md � Backend: template_family_id migration, family-based install/start, version API
 - [ ] 38-02-PLAN.md � Frontend: version column in workflow table, version badge in designer & template list
 **UI hint**: yes
 
@@ -268,7 +268,7 @@ Note: Phase 43 (CMIS) depends on Phase 36 (SSO) but is sequenced after Phase 42 
 | 35. Tamper-Proof Audit | v1.4 | 2/2 | Complete    | 2026-04-15 |
 | 36. Identity & SSO | v1.4 | 3/3 | Complete    | 2026-04-15 |
 | 37. Error Handling & Compensation | v1.4 | 1/3 | Complete    | 2026-04-15 |
-| 38. Workflow Versioning | v1.4 | 1/2 | In Progress|  |
+| 38. Workflow Versioning | v1.4 | 2/2 | Complete   | 2026-04-15 |
 | 39. Advanced Join Semantics | v1.4 | 0/? | Not started | - |
 | 40. Bulk Operations | v1.4 | 0/? | Not started | - |
 | 41. Import/Export | v1.4 | 0/? | Not started | - |
