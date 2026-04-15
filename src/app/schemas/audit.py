@@ -19,3 +19,19 @@ class AuditLogResponse(BaseModel):
     chain_sequence: int | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class AuditBreak(BaseModel):
+    chain_sequence: int
+    record_id: str
+    type: str  # "content_tampered" | "chain_broken" | "sequence_gap"
+    details: str
+
+
+class AuditVerifyResponse(BaseModel):
+    status: str  # "pass" | "fail"
+    total_records: int
+    chained_records: int
+    pending_records: int
+    breaks: list[AuditBreak]
+    verified_at: datetime

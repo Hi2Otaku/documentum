@@ -1,7 +1,9 @@
 """Audit trail query endpoints."""
+import hashlib
+import json
 import math
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, select
@@ -11,7 +13,7 @@ from app.core.database import get_db
 from app.core.dependencies import get_current_active_admin
 from app.models.audit import AuditLog
 from app.models.user import User
-from app.schemas.audit import AuditLogResponse
+from app.schemas.audit import AuditBreak, AuditLogResponse, AuditVerifyResponse
 from app.schemas.common import EnvelopeResponse, PaginationMeta
 
 router = APIRouter(prefix="/audit", tags=["audit"])
@@ -63,4 +65,102 @@ async def query_audit(
             total_count=total_count,
             total_pages=math.ceil(total_count / limit) if limit > 0 else 0,
         ),
+    )
+
+
+@router.post("/verify", response_model=AuditVerifyResponse)
+async def verify_integrity(
+    limit: int = Query(100000, ge=1, le=1000000),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_admin),
+):
+    """Verify audit trail integrity by recomputing hash chain. Admin only."""
+    # Count total records
+    total_result = await db.execute(select(func.count()).select_from(AuditLog))
+    total_records = total_result.scalar_one()
+
+    # Count pending records (chain_hash is NULL)
+    pending_result = await db.execute(
+        select(func.count()).select_from(AuditLog).where(AuditLog.chain_hash.is_(None))
+    )
+    pending_records = pending_result.scalar_one()
+
+    # Fetch chained records ordered by chain_sequence
+    chained_query = (
+        select(AuditLog)
+        .where(AuditLog.chain_sequence.isnot(None))
+        .order_by(AuditLog.chain_sequence.asc())
+        .limit(limit)
+    )
+    result = await db.execute(chained_query)
+    chained_records = list(result.scalars().all())
+
+    breaks: list[AuditBreak] = []
+    previous_chain_hash = "GENESIS"
+    expected_sequence = 1 if chained_records else 0
+
+    for record in chained_records:
+        # Check sequence gap
+        if record.chain_sequence != expected_sequence:
+            breaks.append(
+                AuditBreak(
+                    chain_sequence=record.chain_sequence,
+                    record_id=str(record.id),
+                    type="sequence_gap",
+                    details=f"Expected sequence {expected_sequence}, found {record.chain_sequence}",
+                )
+            )
+            expected_sequence = record.chain_sequence
+
+        # Recompute content_hash
+        canonical_data = {
+            "id": str(record.id),
+            "timestamp": record.timestamp.isoformat() if record.timestamp else None,
+            "entity_type": record.entity_type,
+            "entity_id": record.entity_id,
+            "action": record.action,
+            "user_id": record.user_id,
+            "before_state": record.before_state,
+            "after_state": record.after_state,
+            "details": record.details,
+        }
+        canonical_json = json.dumps(canonical_data, sort_keys=True, default=str)
+        recomputed_content_hash = hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()
+
+        if recomputed_content_hash != record.content_hash:
+            breaks.append(
+                AuditBreak(
+                    chain_sequence=record.chain_sequence,
+                    record_id=str(record.id),
+                    type="content_tampered",
+                    details=f"Stored content_hash {record.content_hash} != recomputed {recomputed_content_hash}",
+                )
+            )
+
+        # Recompute chain_hash
+        chain_input = f"{recomputed_content_hash}:{previous_chain_hash}"
+        recomputed_chain_hash = hashlib.sha256(chain_input.encode("utf-8")).hexdigest()
+
+        if recomputed_chain_hash != record.chain_hash:
+            breaks.append(
+                AuditBreak(
+                    chain_sequence=record.chain_sequence,
+                    record_id=str(record.id),
+                    type="chain_broken",
+                    details=f"Stored chain_hash {record.chain_hash} != recomputed {recomputed_chain_hash}",
+                )
+            )
+
+        # Use the STORED chain_hash as previous for next iteration
+        # (so one tampered record doesn't cascade false positives)
+        previous_chain_hash = record.chain_hash
+        expected_sequence += 1
+
+    return AuditVerifyResponse(
+        status="fail" if breaks else "pass",
+        total_records=total_records,
+        chained_records=len(chained_records),
+        pending_records=pending_records,
+        breaks=breaks,
+        verified_at=datetime.now(timezone.utc),
     )
