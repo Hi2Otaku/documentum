@@ -78,9 +78,9 @@ Requirements for Enterprise Completeness milestone. Each maps to roadmap phases.
 
 - [x] **CMIS-01**: System exposes CMIS 1.1 Browser Binding endpoints for document CRUD operations
 - [x] **CMIS-02**: System exposes CMIS 1.1 Browser Binding endpoints for folder/navigation operations
-- [ ] **CMIS-03**: System supports CMIS-QL queries mapped to existing search infrastructure
+- [x] **CMIS-03**: System supports CMIS-QL queries mapped to existing search infrastructure
 - [x] **CMIS-04**: CMIS endpoints respect existing ACL enforcement and authentication
-- [ ] **CMIS-05**: CMIS clients (CMIS Workbench, LibreOffice) can connect and perform basic operations
+- [x] **CMIS-05**: CMIS clients (CMIS Workbench, LibreOffice) can connect and perform basic operations
 
 ### Process Analytics
 
@@ -151,9 +151,9 @@ Requirements for Enterprise Completeness milestone. Each maps to roadmap phases.
 | MON-04 | Phase 42 | Complete |
 | CMIS-01 | Phase 43 | Complete |
 | CMIS-02 | Phase 43 | Complete |
-| CMIS-03 | Phase 43 | Pending |
+| CMIS-03 | Phase 43 | Complete |
 | CMIS-04 | Phase 43 | Complete |
-| CMIS-05 | Phase 43 | Pending |
+| CMIS-05 | Phase 43 | Complete |
 | ANLYT-01 | Phase 44 | Pending |
 | ANLYT-02 | Phase 44 | Pending |
 | ANLYT-03 | Phase 44 | Pending |

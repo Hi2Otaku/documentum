@@ -65,7 +65,7 @@ See `.planning/milestones/v1.3-ROADMAP.md` for full phase details.
 - [x] **Phase 40: Bulk Operations** - Mass update, delete, reclassify with background job tracking (completed 2026-04-15)
 - [x] **Phase 41: Import/Export** - ZIP package export/import with hierarchy preservation and conflict resolution (completed 2026-04-15)
 - [x] **Phase 42: System Monitoring & Health** - Deep health checks, queue metrics, Prometheus endpoint, alerting (completed 2026-04-15)
-- [ ] **Phase 43: CMIS Standard API** - OASIS CMIS 1.1 Browser Binding for content interoperability
+- [x] **Phase 43: CMIS Standard API** - OASIS CMIS 1.1 Browser Binding for content interoperability (completed 2026-04-15)
 - [ ] **Phase 44: Process Analytics & Mining** - Execution path discovery, cycle time analysis, bottleneck identification
 
 ## Phase Details
@@ -234,7 +234,7 @@ Plans:
 
 Plans:
 - [x] 43-01-PLAN.md — CMIS service layer, schemas, Browser Binding router (document CRUD + folder navigation)
-- [ ] 43-02-PLAN.md — CMIS-QL query parser/executor + end-to-end smoke test
+- [x] 43-02-PLAN.md — CMIS-QL query parser/executor + end-to-end smoke test
 
 ### Phase 44: Process Analytics & Mining
 **Goal**: Admins can discover actual execution patterns, identify bottlenecks, and analyze cycle times from workflow execution data
@@ -273,5 +273,5 @@ Note: Phase 43 (CMIS) depends on Phase 36 (SSO) but is sequenced after Phase 42 
 | 40. Bulk Operations | v1.4 | 2/2 | Complete    | 2026-04-15 |
 | 41. Import/Export | v1.4 | 2/2 | Complete    | 2026-04-15 |
 | 42. System Monitoring | v1.4 | 2/2 | Complete    | 2026-04-15 |
-| 43. CMIS Standard API | v1.4 | 1/2 | In Progress|  |
+| 43. CMIS Standard API | v1.4 | 2/2 | Complete   | 2026-04-15 |
 | 44. Process Analytics | v1.4 | 0/? | Not started | - |
