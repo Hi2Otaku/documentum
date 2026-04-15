@@ -58,6 +58,58 @@ export interface WorkQueueDetailResponse extends WorkQueueResponse {
   members: QueueMemberResponse[];
 }
 
+// --- Mutation helpers ---
+
+async function apiMutate<T>(
+  url: string,
+  method: "POST" | "PUT" | "PATCH",
+  body?: unknown,
+): Promise<T> {
+  const res = await fetch(url, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(),
+    },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  if (res.status === 401) handle401();
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`API error ${res.status}: ${text}`);
+  }
+  return res.json() as Promise<T>;
+}
+
+async function apiDelete(url: string): Promise<void> {
+  const res = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(),
+    },
+  });
+  if (res.status === 401) handle401();
+  if (!res.ok && res.status !== 204) {
+    const text = await res.text();
+    throw new Error(`API error ${res.status}: ${text}`);
+  }
+}
+
+// --- Create / Update types ---
+
+export interface WorkQueueCreate {
+  name: string;
+  description?: string;
+  is_active?: boolean;
+}
+
+export interface WorkQueueUpdate {
+  name?: string;
+  description?: string;
+  is_active?: boolean;
+}
+
 // --- API functions ---
 
 export async function fetchQueues(
@@ -74,4 +126,47 @@ export async function fetchQueueDetail(
     `/api/v1/queues/${id}`,
   );
   return res.data;
+}
+
+export async function createQueue(
+  data: WorkQueueCreate,
+): Promise<WorkQueueResponse> {
+  const res = await apiMutate<{ data: WorkQueueResponse }>(
+    "/api/v1/queues",
+    "POST",
+    data,
+  );
+  return res.data;
+}
+
+export async function updateQueue(
+  id: string,
+  data: WorkQueueUpdate,
+): Promise<WorkQueueResponse> {
+  const res = await apiMutate<{ data: WorkQueueResponse }>(
+    `/api/v1/queues/${id}`,
+    "PUT",
+    data,
+  );
+  return res.data;
+}
+
+export async function deleteQueue(id: string): Promise<void> {
+  await apiDelete(`/api/v1/queues/${id}`);
+}
+
+export async function addQueueMember(
+  queueId: string,
+  userId: string,
+): Promise<void> {
+  await apiMutate<unknown>(`/api/v1/queues/${queueId}/members`, "POST", {
+    user_id: userId,
+  });
+}
+
+export async function removeQueueMember(
+  queueId: string,
+  userId: string,
+): Promise<void> {
+  await apiDelete(`/api/v1/queues/${queueId}/members/${userId}`);
 }
