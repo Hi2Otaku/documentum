@@ -49,10 +49,10 @@ Requirements for Enterprise Completeness milestone. Each maps to roadmap phases.
 
 ### Bulk Operations
 
-- [ ] **BULK-01**: User can select multiple documents and apply batch update (metadata, lifecycle state, ACL)
-- [ ] **BULK-02**: User can select multiple documents and batch delete with confirmation
-- [ ] **BULK-03**: Bulk operations run as background jobs with progress tracking and partial failure reporting
-- [ ] **BULK-04**: User can view bulk job history with success/failure counts
+- [x] **BULK-01**: User can select multiple documents and apply batch update (metadata, lifecycle state, ACL)
+- [x] **BULK-02**: User can select multiple documents and batch delete with confirmation
+- [x] **BULK-03**: Bulk operations run as background jobs with progress tracking and partial failure reporting
+- [x] **BULK-04**: User can view bulk job history with success/failure counts
 
 ### Import/Export
 
@@ -137,10 +137,10 @@ Requirements for Enterprise Completeness milestone. Each maps to roadmap phases.
 | JOIN-02 | Phase 39 | Complete |
 | JOIN-03 | Phase 39 | Complete |
 | JOIN-04 | Phase 39 | Complete |
-| BULK-01 | Phase 40 | Pending |
-| BULK-02 | Phase 40 | Pending |
-| BULK-03 | Phase 40 | Pending |
-| BULK-04 | Phase 40 | Pending |
+| BULK-01 | Phase 40 | Complete |
+| BULK-02 | Phase 40 | Complete |
+| BULK-03 | Phase 40 | Complete |
+| BULK-04 | Phase 40 | Complete |
 | IOEX-01 | Phase 41 | Pending |
 | IOEX-02 | Phase 41 | Pending |
 | IOEX-03 | Phase 41 | Pending |
