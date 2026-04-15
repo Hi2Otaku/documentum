@@ -317,3 +317,67 @@ export function thumbnailUrl(
 ): string {
   return renditionDownloadUrl(documentId, versionId, renditionId);
 }
+
+// --- Signature types and API functions ---
+
+export interface SignatureResponse {
+  id: string;
+  version_id: string;
+  signer_id: string;
+  signer_cn: string;
+  signed_at: string;
+  content_hash: string;
+  algorithm: string;
+  reason: string | null;
+  is_valid: boolean;
+  created_at: string;
+}
+
+export interface SignatureVerifyResponse {
+  signature_id: string;
+  is_valid: boolean;
+  signer_cn: string;
+  signed_at: string;
+  content_hash_match: boolean;
+  detail: string;
+}
+
+export interface SignDocumentRequest {
+  certificate_pem: string;
+  private_key_pem: string;
+  reason?: string;
+}
+
+export async function fetchSignatures(
+  documentId: string,
+  versionId: string,
+): Promise<SignatureResponse[]> {
+  const res = await apiFetch<{ data: SignatureResponse[] }>(
+    `/api/v1/documents/${documentId}/versions/${versionId}/signatures`,
+  );
+  return res.data;
+}
+
+export async function signDocumentVersion(
+  documentId: string,
+  versionId: string,
+  data: SignDocumentRequest,
+): Promise<SignatureResponse> {
+  const res = await apiMutate<{ data: SignatureResponse }>(
+    `/api/v1/documents/${documentId}/versions/${versionId}/signatures`,
+    "POST",
+    data,
+  );
+  return res.data;
+}
+
+export async function verifySignature(
+  documentId: string,
+  versionId: string,
+  signatureId: string,
+): Promise<SignatureVerifyResponse> {
+  const res = await apiFetch<{ data: SignatureVerifyResponse }>(
+    `/api/v1/documents/${documentId}/versions/${versionId}/signatures/${signatureId}/verify`,
+  );
+  return res.data;
+}
