@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
+import sqlalchemy as sa
 from sqlalchemy import DateTime, Index, JSON, String, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -28,6 +29,11 @@ class AuditLog(Base):
     before_state: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     after_state: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     details: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    # Tamper-proof hash chain columns (filled async by Celery worker)
+    content_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    chain_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    chain_sequence: Mapped[int | None] = mapped_column(sa.BigInteger, nullable=True, index=True)
 
     __table_args__ = (
         Index("ix_audit_log_entity", "entity_type", "entity_id"),

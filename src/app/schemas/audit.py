@@ -14,5 +14,8 @@ class AuditLogResponse(BaseModel):
     before_state: dict | None
     after_state: dict | None
     details: str | None
+    content_hash: str | None = None
+    chain_hash: str | None = None
+    chain_sequence: int | None = None
 
     model_config = ConfigDict(from_attributes=True)
