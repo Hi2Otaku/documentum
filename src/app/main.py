@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select
 
 from app.core.config import settings
-from app.routers import aliases, audit, auth, bulk, dashboard, document_types, documents, events, folders, groups, health, identity, inbox, lifecycle, notifications, query, queues, relationships, renditions, retention, roles, saved_searches, search, signatures, templates, users, virtual_documents, workflows
+from app.routers import aliases, audit, auth, bulk, dashboard, document_types, documents, events, folders, groups, health, identity, import_export, inbox, lifecycle, notifications, query, queues, relationships, renditions, retention, roles, saved_searches, search, signatures, templates, users, virtual_documents, workflows
 
 logger = logging.getLogger(__name__)
 
@@ -105,6 +105,7 @@ def create_app() -> FastAPI:
     application.include_router(saved_searches.router, prefix=settings.api_v1_prefix)
     application.include_router(identity.router, prefix=settings.api_v1_prefix)
     application.include_router(bulk.router, prefix=settings.api_v1_prefix)
+    application.include_router(import_export.router, prefix=settings.api_v1_prefix)
 
     return application
 
