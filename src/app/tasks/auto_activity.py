@@ -280,7 +280,15 @@ async def _execute_async(task, activity_instance_id: str, workflow_instance_id: 
                     ai_reload = await err_session.get(ActivityInstance, ai_id)
                     if ai_reload:
                         ai_reload.state = ActivityState.ERROR
+                        ai_reload.error_message = "Task exceeded soft time limit of 60 seconds"
+                        ai_reload.error_details = {"type": "timeout", "attempt": attempt_number}
                     await err_session.commit()
+                    # Try to activate error handler
+                    await _try_activate_error_handler(
+                        session_factory, ai_id, wf_id,
+                        "Task exceeded soft time limit of 60 seconds",
+                        {"type": "timeout", "attempt": attempt_number},
+                    )
                 else:
                     await err_session.commit()
                     backoff = 10 * (3 ** (attempt_number - 1))
@@ -308,12 +316,24 @@ async def _execute_async(task, activity_instance_id: str, workflow_instance_id: 
                     ai_reload = await err_session.get(ActivityInstance, ai_id)
                     if ai_reload:
                         ai_reload.state = ActivityState.ERROR
+                        ai_reload.error_message = str(e)
+                        ai_reload.error_details = {
+                            "type": "exception",
+                            "traceback": traceback.format_exc(),
+                            "attempt": attempt_number,
+                        }
                     await err_session.commit()
                     logger.error(
                         "Auto activity %s failed after %d attempts: %s",
                         ai_id,
                         attempt_number,
                         str(e),
+                    )
+                    # Try to activate error handler
+                    await _try_activate_error_handler(
+                        session_factory, ai_id, wf_id,
+                        str(e),
+                        {"type": "exception", "traceback": traceback.format_exc(), "attempt": attempt_number},
                     )
                 else:
                     await err_session.commit()
@@ -333,7 +353,88 @@ async def _execute_async(task, activity_instance_id: str, workflow_instance_id: 
                             ai_reload2 = await max_session.get(ActivityInstance, ai_id)
                             if ai_reload2:
                                 ai_reload2.state = ActivityState.ERROR
+                                ai_reload2.error_message = str(e)
+                                ai_reload2.error_details = {"type": "max_retries", "attempt": attempt_number}
                             await max_session.commit()
                         logger.error(
                             "Auto activity %s max retries exceeded", ai_id
                         )
+                        # Try to activate error handler
+                        await _try_activate_error_handler(
+                            session_factory, ai_id, wf_id,
+                            str(e),
+                            {"type": "max_retries", "attempt": attempt_number},
+                        )
+
+
+async def _try_activate_error_handler(
+    session_factory,
+    activity_instance_id: uuid.UUID,
+    workflow_instance_id: uuid.UUID,
+    error_msg: str,
+    error_details_dict: dict | None = None,
+) -> None:
+    """Check if the failed activity has an error handler and activate it."""
+    from sqlalchemy import select
+    from sqlalchemy.orm import selectinload
+
+    from app.models.workflow import (
+        ActivityInstance,
+        ActivityTemplate,
+        ProcessTemplate,
+        WorkflowInstance,
+    )
+
+    try:
+        async with session_factory() as session:
+            # Load activity instance
+            ai = await session.get(ActivityInstance, activity_instance_id)
+            if ai is None:
+                return
+
+            # Check if the template has an error handler
+            at = await session.get(ActivityTemplate, ai.activity_template_id)
+            if at is None or not at.error_handler_activity_id:
+                return
+
+            # Load workflow and template for handle_activity_error
+            wf = await session.get(WorkflowInstance, workflow_instance_id)
+            if wf is None:
+                return
+
+            template_result = await session.execute(
+                select(ProcessTemplate)
+                .options(selectinload(ProcessTemplate.activity_templates))
+                .where(ProcessTemplate.id == wf.process_template_id)
+            )
+            template = template_result.scalar_one()
+
+            # Build template_to_instance mapping
+            ai_result = await session.execute(
+                select(ActivityInstance).where(
+                    ActivityInstance.workflow_instance_id == workflow_instance_id
+                )
+            )
+            all_instances = list(ai_result.scalars().all())
+            template_to_instance = {
+                inst.activity_template_id: inst for inst in all_instances
+            }
+
+            from app.services.engine_service import handle_activity_error
+
+            handled = await handle_activity_error(
+                session, wf, ai, template, template_to_instance,
+                "system", error_msg, error_details_dict,
+            )
+            if handled:
+                logger.info(
+                    "Error handler activated for auto activity %s",
+                    activity_instance_id,
+                )
+            await session.commit()
+    except Exception as handler_err:
+        logger.error(
+            "Failed to activate error handler for activity %s: %s",
+            activity_instance_id,
+            handler_err,
+        )

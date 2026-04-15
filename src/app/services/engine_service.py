@@ -61,6 +61,7 @@ ACTIVITY_TRANSITIONS: set[tuple[ActivityState, ActivityState]] = {
     (ActivityState.PAUSED, ActivityState.ACTIVE),
     (ActivityState.ERROR, ActivityState.ACTIVE),
     (ActivityState.COMPLETE, ActivityState.ACTIVE),  # Reject flow reactivation (D-04)
+    (ActivityState.COMPLETE, ActivityState.DORMANT),  # Compensation reset
 }
 
 WORK_ITEM_TRANSITIONS: set[tuple[WorkItemState, WorkItemState]] = {
@@ -447,6 +448,15 @@ async def _advance_from_activity(
     completed_activity.completed_at = now
     if completed_activity.started_at is None:
         completed_activity.started_at = now
+
+    # Assign completed_order for compensation ordering
+    max_order_result = await db.execute(
+        select(func.max(ActivityInstance.completed_order)).where(
+            ActivityInstance.workflow_instance_id == workflow.id
+        )
+    )
+    max_order = max_order_result.scalar() or 0
+    completed_activity.completed_order = max_order + 1
 
     # Lifecycle action hook (Phase 7) — per D-11: fires after completion, before advancing
     current_at_for_lifecycle = None
@@ -1283,6 +1293,248 @@ async def get_variable(
     return variable
 
 
+# ---------------------------------------------------------------------------
+# Section 9: Error handler and compensation (Phase 37)
+# ---------------------------------------------------------------------------
+
+
+async def handle_activity_error(
+    db: AsyncSession,
+    workflow: WorkflowInstance,
+    activity_instance: ActivityInstance,
+    template: ProcessTemplate,
+    template_to_instance: dict[uuid.UUID, ActivityInstance],
+    user_id: str,
+    error_msg: str,
+    error_details_dict: dict | None = None,
+) -> bool:
+    """Handle an activity failure by activating its error handler if one exists.
+
+    Sets the activity to ERROR state with error info, then checks for an
+    error_handler_activity_id on the template. If found, activates the handler
+    activity. Returns True if the error was handled, False if unhandled.
+    """
+    # Set error state on the failed activity
+    if activity_instance.state != ActivityState.ERROR:
+        _enforce_activity_transition(activity_instance.state, ActivityState.ERROR)
+        activity_instance.state = ActivityState.ERROR
+    activity_instance.error_message = error_msg
+    activity_instance.error_details = error_details_dict
+
+    # Find the activity template for this instance
+    activity_template_map: dict[uuid.UUID, ActivityTemplate] = {
+        at.id: at for at in template.activity_templates if not at.is_deleted
+    }
+    at = activity_template_map.get(activity_instance.activity_template_id)
+
+    if at and at.error_handler_activity_id:
+        # Find the handler activity instance
+        handler_ai = template_to_instance.get(at.error_handler_activity_id)
+        if handler_ai is None:
+            logger.warning(
+                "Error handler activity instance not found for template %s",
+                at.error_handler_activity_id,
+            )
+            return False
+
+        # Activate the handler
+        if handler_ai.state == ActivityState.DORMANT:
+            handler_ai.state = ActivityState.ACTIVE
+            handler_ai.started_at = datetime.now(timezone.utc)
+
+            # If handler is MANUAL, create work items for its performers
+            handler_at = activity_template_map.get(at.error_handler_activity_id)
+            if handler_at and handler_at.activity_type == ActivityType.MANUAL:
+                performers = await resolve_performers(
+                    db, handler_at.performer_type, handler_at.performer_id, workflow
+                )
+                if not performers:
+                    performers = [None]
+                for perf_id in performers:
+                    work_item = WorkItem(
+                        activity_instance_id=handler_ai.id,
+                        performer_id=perf_id,
+                        state=WorkItemState.AVAILABLE,
+                        created_by=user_id,
+                        due_date=_compute_due_date(handler_at),
+                    )
+                    db.add(work_item)
+            # AUTO handlers left ACTIVE for Workflow Agent pickup
+
+        logger.info(
+            "Error handler activated for activity %s (handler: %s)",
+            activity_instance.id,
+            handler_ai.id,
+        )
+        await db.flush()
+        return True
+
+    # No error handler defined
+    return False
+
+
+async def execute_compensation(
+    db: AsyncSession,
+    workflow_id: uuid.UUID,
+    user_id: str,
+) -> WorkflowInstance:
+    """Execute compensation activities in reverse completion order.
+
+    Finds all COMPLETE activity instances whose templates have a
+    compensation_activity_id, sorts by completed_order DESC, and
+    activates each compensation activity in sequence.
+    """
+    # Load workflow
+    wf_result = await db.execute(
+        select(WorkflowInstance)
+        .options(
+            selectinload(WorkflowInstance.activity_instances),
+        )
+        .where(
+            WorkflowInstance.id == workflow_id,
+            WorkflowInstance.is_deleted == False,  # noqa: E712
+        )
+    )
+    workflow = wf_result.scalar_one_or_none()
+    if workflow is None:
+        raise ValueError("Workflow not found")
+
+    # Load process template with activity templates
+    template_result = await db.execute(
+        select(ProcessTemplate)
+        .options(selectinload(ProcessTemplate.activity_templates))
+        .where(ProcessTemplate.id == workflow.process_template_id)
+    )
+    template = template_result.scalar_one()
+
+    activity_template_map: dict[uuid.UUID, ActivityTemplate] = {
+        at.id: at for at in template.activity_templates if not at.is_deleted
+    }
+
+    # Build template_to_instance mapping
+    ai_result = await db.execute(
+        select(ActivityInstance).where(
+            ActivityInstance.workflow_instance_id == workflow_id
+        )
+    )
+    all_instances = list(ai_result.scalars().all())
+    template_to_instance: dict[uuid.UUID, ActivityInstance] = {
+        ai.activity_template_id: ai for ai in all_instances
+    }
+
+    # Find completed activities with compensation handlers, sorted reverse
+    compensatable = []
+    for ai in all_instances:
+        if ai.state != ActivityState.COMPLETE:
+            continue
+        at = activity_template_map.get(ai.activity_template_id)
+        if at and at.compensation_activity_id:
+            compensatable.append((ai, at))
+
+    # Sort by completed_order descending (most recently completed first)
+    compensatable.sort(
+        key=lambda pair: pair[0].completed_order or 0,
+        reverse=True,
+    )
+
+    if not compensatable:
+        logger.info("No compensatable activities found for workflow %s", workflow_id)
+        return workflow
+
+    # Activate compensation activities in reverse order
+    for activity_instance, activity_template in compensatable:
+        comp_at = activity_template_map.get(activity_template.compensation_activity_id)
+        if comp_at is None:
+            logger.warning(
+                "Compensation template %s not found",
+                activity_template.compensation_activity_id,
+            )
+            continue
+
+        # Find or identify the compensation activity instance
+        comp_ai = template_to_instance.get(activity_template.compensation_activity_id)
+        if comp_ai is None:
+            # Create a new instance for the compensation activity
+            comp_ai = ActivityInstance(
+                workflow_instance_id=workflow_id,
+                activity_template_id=activity_template.compensation_activity_id,
+                state=ActivityState.DORMANT,
+                created_by=user_id,
+            )
+            db.add(comp_ai)
+            await db.flush()
+            template_to_instance[activity_template.compensation_activity_id] = comp_ai
+
+        # Activate the compensation activity
+        if comp_ai.state == ActivityState.DORMANT:
+            comp_ai.state = ActivityState.ACTIVE
+            comp_ai.started_at = datetime.now(timezone.utc)
+
+            if comp_at.activity_type == ActivityType.MANUAL:
+                performers = await resolve_performers(
+                    db, comp_at.performer_type, comp_at.performer_id, workflow
+                )
+                if not performers:
+                    performers = [None]
+                for perf_id in performers:
+                    work_item = WorkItem(
+                        activity_instance_id=comp_ai.id,
+                        performer_id=perf_id,
+                        state=WorkItemState.AVAILABLE,
+                        created_by=user_id,
+                        due_date=_compute_due_date(comp_at),
+                    )
+                    db.add(work_item)
+            # AUTO compensation activities left ACTIVE for Workflow Agent
+
+    # Set workflow to HALTED -- operator must resume or terminate
+    if workflow.state == WorkflowState.RUNNING:
+        _enforce_workflow_transition(workflow.state, WorkflowState.HALTED)
+        workflow.state = WorkflowState.HALTED
+
+    await db.flush()
+
+    # Audit
+    await create_audit_record(
+        db,
+        entity_type="workflow_instance",
+        entity_id=str(workflow_id),
+        action="compensation_started",
+        user_id=user_id,
+        after_state={
+            "compensatable_count": len(compensatable),
+            "activity_ids": [str(ai.id) for ai, _ in compensatable],
+        },
+    )
+
+    return workflow
+
+
+async def trigger_compensation(
+    db: AsyncSession,
+    workflow_id: uuid.UUID,
+    user_id: str,
+) -> WorkflowInstance:
+    """Trigger compensation for a workflow (callable from API endpoints).
+
+    Validates the workflow is in RUNNING or FAILED state before executing
+    compensation logic.
+    """
+    wf_result = await db.execute(
+        select(WorkflowInstance).where(
+            WorkflowInstance.id == workflow_id,
+            WorkflowInstance.is_deleted == False,  # noqa: E712
+        )
+    )
+    workflow = wf_result.scalar_one_or_none()
+    if workflow is None:
+        raise ValueError("Workflow not found")
+    if workflow.state not in (WorkflowState.RUNNING, WorkflowState.FAILED):
+        raise ValueError(
+            f"Cannot trigger compensation: workflow is {workflow.state.value}"
+        )
+
+    return await execute_compensation(db, workflow_id, user_id)
 async def update_variable(
     db: AsyncSession,
     workflow_id: uuid.UUID,
