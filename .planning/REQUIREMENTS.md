@@ -42,10 +42,10 @@ Requirements for Enterprise Completeness milestone. Each maps to roadmap phases.
 
 ### Advanced Join Semantics
 
-- [ ] **JOIN-01**: Template designer can configure N-of-M joins (activate when N of M incoming flows complete)
-- [ ] **JOIN-02**: Template designer can configure cancelling joins (remaining branches cancelled when join fires)
-- [ ] **JOIN-03**: Template designer can configure timeout joins (join fires after duration even if not all branches complete)
-- [ ] **JOIN-04**: Engine handles concurrent token arrivals at joins without race conditions (row-level locking)
+- [x] **JOIN-01**: Template designer can configure N-of-M joins (activate when N of M incoming flows complete)
+- [x] **JOIN-02**: Template designer can configure cancelling joins (remaining branches cancelled when join fires)
+- [x] **JOIN-03**: Template designer can configure timeout joins (join fires after duration even if not all branches complete)
+- [x] **JOIN-04**: Engine handles concurrent token arrivals at joins without race conditions (row-level locking)
 
 ### Bulk Operations
 
@@ -133,10 +133,10 @@ Requirements for Enterprise Completeness milestone. Each maps to roadmap phases.
 | WFVER-01 | Phase 38 | Complete |
 | WFVER-02 | Phase 38 | Complete |
 | WFVER-03 | Phase 38 | Complete |
-| JOIN-01 | Phase 39 | Pending |
-| JOIN-02 | Phase 39 | Pending |
-| JOIN-03 | Phase 39 | Pending |
-| JOIN-04 | Phase 39 | Pending |
+| JOIN-01 | Phase 39 | Complete |
+| JOIN-02 | Phase 39 | Complete |
+| JOIN-03 | Phase 39 | Complete |
+| JOIN-04 | Phase 39 | Complete |
 | BULK-01 | Phase 40 | Pending |
 | BULK-02 | Phase 40 | Pending |
 | BULK-03 | Phase 40 | Pending |

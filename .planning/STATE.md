@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Enterprise Completeness
-status: verifying
-stopped_at: Completed 38-02-PLAN.md (Frontend Version Display)
-last_updated: "2026-04-15T05:59:39.133Z"
+status: executing
+stopped_at: Completed 39-01-PLAN.md (Advanced Join Semantics)
+last_updated: "2026-04-15T06:12:21.329Z"
 last_activity: 2026-04-15
 progress:
   total_phases: 11
   completed_phases: 5
-  total_plans: 14
-  completed_plans: 14
+  total_plans: 16
+  completed_plans: 15
   percent: 0
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-13)
 
 **Core value:** Any workflow or document management use case described in the Documentum specification can be modeled and executed end-to-end.
-**Current focus:** Phase 38 — workflow-versioning
+**Current focus:** Phase 39 — advanced-join-semantics
 
 ## Current Position
 
-Phase: 39
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 39 (advanced-join-semantics) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
 Last activity: 2026-04-15
 
 Progress: [..........] 0% (v1.3: 0/7 phases)
@@ -65,6 +65,7 @@ Progress: [..........] 0% (v1.3: 0/7 phases)
 | Phase 37-workflow-error-handling-compensation P03 | 1.5min | 1 tasks | 4 files |
 | Phase 38-workflow-versioning P01 | 3min | 2 tasks | 8 files |
 | Phase 38-workflow-versioning P02 | 1.3min | 2 tasks | 7 files |
+| Phase 39-advanced-join-semantics P01 | 6min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,8 @@ v1.3 architecture decisions (resolved during research):
 - [Phase 38-workflow-versioning]: Family-based deprecation checks for running instances before uninstalling old version
 - [Phase 38-workflow-versioning]: start_workflow resolves to latest installed version in family when requested template is not installed
 - [Phase 38-workflow-versioning]: Version badge in Toolbar component via prop; 70px narrow version column in workflow table
+- [Phase 39-advanced-join-semantics]: FOR UPDATE locking on token count query with SQLite fallback for tests
+- [Phase 39-advanced-join-semantics]: Cancelling join defaults threshold to 1; timeout join uses AND_JOIN logic with Celery beat force-fire
 
 ### Pending Todos
 
@@ -102,6 +105,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-15T05:59:17.146Z
-Stopped at: Completed 38-02-PLAN.md (Frontend Version Display)
+Last session: 2026-04-15T06:12:21.325Z
+Stopped at: Completed 39-01-PLAN.md (Advanced Join Semantics)
 Resume file: None
