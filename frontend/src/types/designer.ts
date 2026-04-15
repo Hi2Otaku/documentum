@@ -18,6 +18,10 @@ export interface ActivityNodeData extends Record<string, unknown> {
   errorHandlerActivityId?: string | null;
   compensationActivityId?: string | null;
   apiId?: string;
+  /** Error handler activity to execute if this activity fails */
+  errorHandlerActivityId?: string | null;
+  /** Compensation activity to undo this activity's work */
+  compensationActivityId?: string | null;
   /** Backend ID -- undefined for newly created nodes not yet saved */
   backendId?: string;
 }

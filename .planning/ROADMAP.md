@@ -138,7 +138,7 @@ Plans:
 Plans:
 - [x] 37-01-PLAN.md — DB migration + models + engine error handler & compensation logic
 - [ ] 37-02-PLAN.md — Operator UI: error details, retry/skip, compensation trigger
-- [ ] 37-03-PLAN.md — Designer UI: error handler & compensation activity selection
+- [x] 37-03-PLAN.md — Designer UI: error handler & compensation activity selection
 
 **UI hint**: yes
 

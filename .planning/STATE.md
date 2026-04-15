@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.4
-milestone_name: Enterprise Completeness
-status: executing
-stopped_at: Completed 37-01-PLAN.md
-last_updated: "2026-04-15T05:43:14.493Z"
-last_activity: 2026-04-15
+milestone: v1.3
+milestone_name: Document-Centric ECM
+status: verifying
+stopped_at: Completed 37-03-PLAN.md (Designer Error Handler & Compensation UI)
+last_updated: "2026-04-14T04:26:55.345Z"
+last_activity: 2026-04-14
 progress:
-  total_phases: 11
-  completed_phases: 3
-  total_plans: 12
-  completed_plans: 10
+  total_phases: 7
+  completed_phases: 7
+  total_plans: 19
+  completed_plans: 19
   percent: 0
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-13)
 
 **Core value:** Any workflow or document management use case described in the Documentum specification can be modeled and executed end-to-end.
-**Current focus:** Phase 37 — workflow-error-handling-compensation
+**Current focus:** Phase 33 — saved-searches-smart-folders
 
 ## Current Position
 
-Phase: 37 (workflow-error-handling-compensation) — EXECUTING
-Plan: 2 of 3
-Status: Ready to execute
-Last activity: 2026-04-15
+Phase: 33
+Plan: Not started
+Status: Phase complete — ready for verification
+Last activity: 2026-04-14
 
 Progress: [..........] 0% (v1.3: 0/7 phases)
 
@@ -62,13 +62,7 @@ Progress: [..........] 0% (v1.3: 0/7 phases)
 | Phase 32 P02 | 1min | 2 tasks | 2 files |
 | Phase 33-saved-searches-smart-folders P01 | 2min | 2 tasks | 7 files |
 | Phase 33-saved-searches-smart-folders P02 | 3min | 2 tasks | 6 files |
-| Phase 34 P04 | 4min | 2 tasks | 9 files |
-| Phase 35 P01 | 3min | 2 tasks | 6 files |
-| Phase 35 P02 | 2min | 2 tasks | 5 files |
-| Phase 36-identity-sso P01 | 2min | 2 tasks | 8 files |
-| Phase 36-identity-sso P02 | 4min | 2 tasks | 5 files |
-| Phase 36-identity-sso P03 | 3min | 2 tasks | 6 files |
-| Phase 37 P01 | 3min | 2 tasks | 8 files |
+| Phase 37-workflow-error-handling-compensation P03 | 1.5min | 1 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -92,15 +86,6 @@ v1.3 architecture decisions (resolved during research):
 - [Phase 32]: FolderTree icon for Browse nav item (FolderOpen already used by admin Folders)
 - [Phase 33-saved-searches-smart-folders]: Raw DDL migration matching phase31 pattern; partial index on (user_id, is_smart_folder) for smart folder queries
 - [Phase 33-saved-searches-smart-folders]: Smart folder nodes use violet Search icon and mutually exclusive selection with real folders
-- [Phase 34]: Notification preference defaults to enabled when no DB row exists; create_notification returns None for disabled types
-- [Phase 35]: GENESIS seed for first chain_hash; SELECT FOR UPDATE for monotonic sequence; canonical JSON with sort_keys for deterministic hashing
-- [Phase 35]: Used stored chain_hash as previous to avoid cascading false positives from single tampered record
-- [Phase 36-identity-sso]: Strategy pattern for auth backends with ordered iteration (LocalAuth first, ServiceToken second)
-- [Phase 36-identity-sso]: SHA-256 hashing for service tokens with svc_ prefix to distinguish from JWTs
-- [Phase 36-identity-sso]: Optional SSO library imports with graceful degradation (HTTP 501); OIDC PKCE with S256; JIT provisioning auto-creates missing groups
-- [Phase 36-identity-sso]: KeyRound icon for SSO nav; LDAP excluded from login SSO buttons; PKCE code_verifier in sessionStorage; public /providers/public before parameterized route
-- [Phase 37]: Self-referential FKs on activity_templates for error handler and compensation links
-- [Phase 37]: Compensation halts workflow (HALTED state) requiring operator resume or terminate
 
 ### Pending Todos
 
@@ -112,6 +97,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-15T05:43:14.486Z
-Stopped at: Completed 37-01-PLAN.md
+Last session: 2026-04-14T04:24:12.581Z
+Stopped at: Completed 37-03-PLAN.md (Designer Error Handler & Compensation UI)
 Resume file: None

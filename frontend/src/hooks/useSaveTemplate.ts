@@ -110,6 +110,8 @@ export function useSaveTemplate(templateId: string, initialData?: ProcessTemplat
           expected_duration_hours: data.expectedDurationHours ?? null,
           escalation_action: data.escalationAction ?? null,
           warning_threshold_hours: data.warningThresholdHours ?? null,
+          error_handler_activity_id: null,
+          compensation_activity_id: null,
         });
         newIdMap.set(node.id, result.id);
         // Update node in store with backendId
@@ -138,6 +140,32 @@ export function useSaveTemplate(templateId: string, initialData?: ProcessTemplat
             expected_duration_hours: data.expectedDurationHours ?? null,
             escalation_action: data.escalationAction ?? null,
             warning_threshold_hours: data.warningThresholdHours ?? null,
+            error_handler_activity_id: null,
+            compensation_activity_id: null,
+          });
+        }
+      }
+
+      // --- Second pass: resolve error handler and compensation activity IDs ---
+      // These are self-referential FKs that require all activities to exist first
+      const allCurrentNodes = useDesignerStore.getState().nodes;
+      for (const node of allCurrentNodes) {
+        const data = node.data as ActivityNodeData;
+        const ehId = data.errorHandlerActivityId;
+        const compId = data.compensationActivityId;
+        if (!ehId && !compId) continue;
+
+        const backendId = data.backendId ?? newIdMap.get(node.id);
+        if (!backendId) continue;
+
+        // Resolve frontend node IDs to backend IDs
+        const resolvedEh = ehId ? (newIdMap.get(ehId) ?? (allCurrentNodes.find((n) => n.id === ehId)?.data as ActivityNodeData)?.backendId ?? null) : null;
+        const resolvedComp = compId ? (newIdMap.get(compId) ?? (allCurrentNodes.find((n) => n.id === compId)?.data as ActivityNodeData)?.backendId ?? null) : null;
+
+        if (resolvedEh || resolvedComp) {
+          await updateActivity(templateId, backendId, {
+            error_handler_activity_id: resolvedEh,
+            compensation_activity_id: resolvedComp,
           });
         }
       }
