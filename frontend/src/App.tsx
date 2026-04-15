@@ -20,6 +20,7 @@ import { NotificationPreferencesPage } from "./pages/NotificationPreferencesPage
 import { AuditVerificationPage } from "./pages/AuditVerificationPage";
 import { SSOSettingsPage } from "./pages/SSOSettingsPage";
 import { BulkJobsPage } from "./pages/BulkJobsPage";
+import ImportExportPage from "./pages/ImportExportPage";
 
 export default function App() {
   return (
@@ -53,6 +54,7 @@ export default function App() {
             <Route path="/admin/queues" element={<QueueAdminPage />} />
             <Route path="/admin/audit-verification" element={<AuditVerificationPage />} />
             <Route path="/admin/sso" element={<SSOSettingsPage />} />
+            <Route path="/admin/import-export" element={<ImportExportPage />} />
           </Route>
         </Route>
       </Route>

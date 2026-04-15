@@ -10,6 +10,7 @@ import {
   FileSpreadsheet,
   Image,
   Search,
+  Package,
 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
@@ -38,6 +39,7 @@ import {
 import { fetchSmartFolders, savedSearchKeys } from "../api/savedSearches";
 import { searchDocuments } from "../api/search";
 import { useAuthStore } from "../stores/authStore";
+import { ExportDialog } from "../components/browse/ExportDialog";
 
 /** Minimal document shape returned by fetchFolderDocuments */
 interface FolderDocument {
@@ -102,6 +104,7 @@ export function BrowsePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedDocIds, setSelectedDocIds] = useState<Set<string>>(new Set());
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
 
   // Folder tree query
   const { data: tree = [], isLoading: treeLoading } = useQuery({
@@ -209,6 +212,16 @@ export function BrowsePage() {
         </Button>
         <FolderOpen className="h-5 w-5 text-muted-foreground" />
         <h1 className="text-lg font-semibold">Browse</h1>
+        <div className="flex-1" />
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={selectedDocIds.size === 0 && !selectedFolderId}
+          onClick={() => setExportOpen(true)}
+        >
+          <Package className="h-4 w-4 mr-1" />
+          Export
+        </Button>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
@@ -578,6 +591,14 @@ export function BrowsePage() {
         jobId={activeJobId}
         open={!!activeJobId}
         onClose={() => setActiveJobId(null)}
+      />
+
+      {/* Export dialog */}
+      <ExportDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        selectedDocumentIds={Array.from(selectedDocIds)}
+        selectedFolderIds={selectedFolderId ? [selectedFolderId] : []}
       />
     </div>
   );
