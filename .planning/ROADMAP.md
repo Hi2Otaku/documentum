@@ -153,7 +153,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 38-01-PLAN.md -- Backend: template_family_id migration, family-based install/start, version API
+- [x] 38-01-PLAN.md -- Backend: template_family_id migration, family-based install/start, version API
 - [ ] 38-02-PLAN.md -- Frontend: version column in workflow table, version badge in designer & template list
 **UI hint**: yes
 
@@ -168,8 +168,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 38-01-PLAN.md — Backend: template_family_id migration, family-based install/start, version API
-- [ ] 38-02-PLAN.md — Frontend: version column in workflow table, version badge in designer & template list
+- [ ] 38-01-PLAN.md ï¿½ Backend: template_family_id migration, family-based install/start, version API
+- [ ] 38-02-PLAN.md ï¿½ Frontend: version column in workflow table, version badge in designer & template list
 **UI hint**: yes
 
 ### Phase 40: Bulk Operations
@@ -184,8 +184,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 38-01-PLAN.md — Backend: template_family_id migration, family-based install/start, version API
-- [ ] 38-02-PLAN.md — Frontend: version column in workflow table, version badge in designer & template list
+- [ ] 38-01-PLAN.md ï¿½ Backend: template_family_id migration, family-based install/start, version API
+- [ ] 38-02-PLAN.md ï¿½ Frontend: version column in workflow table, version badge in designer & template list
 **UI hint**: yes
 
 ### Phase 41: Import/Export
@@ -200,8 +200,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 38-01-PLAN.md — Backend: template_family_id migration, family-based install/start, version API
-- [ ] 38-02-PLAN.md — Frontend: version column in workflow table, version badge in designer & template list
+- [ ] 38-01-PLAN.md ï¿½ Backend: template_family_id migration, family-based install/start, version API
+- [ ] 38-02-PLAN.md ï¿½ Frontend: version column in workflow table, version badge in designer & template list
 **UI hint**: yes
 
 ### Phase 42: System Monitoring & Health
@@ -216,8 +216,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 38-01-PLAN.md — Backend: template_family_id migration, family-based install/start, version API
-- [ ] 38-02-PLAN.md — Frontend: version column in workflow table, version badge in designer & template list
+- [ ] 38-01-PLAN.md ï¿½ Backend: template_family_id migration, family-based install/start, version API
+- [ ] 38-02-PLAN.md ï¿½ Frontend: version column in workflow table, version badge in designer & template list
 **UI hint**: yes
 
 ### Phase 43: CMIS Standard API
@@ -233,8 +233,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 38-01-PLAN.md — Backend: template_family_id migration, family-based install/start, version API
-- [ ] 38-02-PLAN.md — Frontend: version column in workflow table, version badge in designer & template list
+- [ ] 38-01-PLAN.md ï¿½ Backend: template_family_id migration, family-based install/start, version API
+- [ ] 38-02-PLAN.md ï¿½ Frontend: version column in workflow table, version badge in designer & template list
 
 ### Phase 44: Process Analytics & Mining
 **Goal**: Admins can discover actual execution patterns, identify bottlenecks, and analyze cycle times from workflow execution data
@@ -248,8 +248,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 38-01-PLAN.md — Backend: template_family_id migration, family-based install/start, version API
-- [ ] 38-02-PLAN.md — Frontend: version column in workflow table, version badge in designer & template list
+- [ ] 38-01-PLAN.md ï¿½ Backend: template_family_id migration, family-based install/start, version API
+- [ ] 38-02-PLAN.md ï¿½ Frontend: version column in workflow table, version badge in designer & template list
 **UI hint**: yes
 
 ## Progress
@@ -268,7 +268,7 @@ Note: Phase 43 (CMIS) depends on Phase 36 (SSO) but is sequenced after Phase 42 
 | 35. Tamper-Proof Audit | v1.4 | 2/2 | Complete    | 2026-04-15 |
 | 36. Identity & SSO | v1.4 | 3/3 | Complete    | 2026-04-15 |
 | 37. Error Handling & Compensation | v1.4 | 1/3 | Complete    | 2026-04-15 |
-| 38. Workflow Versioning | v1.4 | 0/2 | Planning    | - |
+| 38. Workflow Versioning | v1.4 | 1/2 | In Progress|  |
 | 39. Advanced Join Semantics | v1.4 | 0/? | Not started | - |
 | 40. Bulk Operations | v1.4 | 0/? | Not started | - |
 | 41. Import/Export | v1.4 | 0/? | Not started | - |

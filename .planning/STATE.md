@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Enterprise Completeness
-status: verifying
-stopped_at: Completed 37-03-PLAN.md (Designer Error Handler & Compensation UI)
-last_updated: "2026-04-15T05:47:54.548Z"
+status: executing
+stopped_at: Completed 38-01-PLAN.md (Template Family Versioning)
+last_updated: "2026-04-15T05:56:30.585Z"
 last_activity: 2026-04-15
 progress:
   total_phases: 11
   completed_phases: 4
-  total_plans: 12
-  completed_plans: 12
+  total_plans: 14
+  completed_plans: 13
   percent: 0
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-13)
 
 **Core value:** Any workflow or document management use case described in the Documentum specification can be modeled and executed end-to-end.
-**Current focus:** Phase 33 — saved-searches-smart-folders
+**Current focus:** Phase 38 — workflow-versioning
 
 ## Current Position
 
-Phase: 38
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 38 (workflow-versioning) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
 Last activity: 2026-04-15
 
 Progress: [..........] 0% (v1.3: 0/7 phases)
@@ -63,6 +63,7 @@ Progress: [..........] 0% (v1.3: 0/7 phases)
 | Phase 33-saved-searches-smart-folders P01 | 2min | 2 tasks | 7 files |
 | Phase 33-saved-searches-smart-folders P02 | 3min | 2 tasks | 6 files |
 | Phase 37-workflow-error-handling-compensation P03 | 1.5min | 1 tasks | 4 files |
+| Phase 38-workflow-versioning P01 | 3min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,8 @@ v1.3 architecture decisions (resolved during research):
 - [Phase 32]: FolderTree icon for Browse nav item (FolderOpen already used by admin Folders)
 - [Phase 33-saved-searches-smart-folders]: Raw DDL migration matching phase31 pattern; partial index on (user_id, is_smart_folder) for smart folder queries
 - [Phase 33-saved-searches-smart-folders]: Smart folder nodes use violet Search icon and mutually exclusive selection with real folders
+- [Phase 38-workflow-versioning]: Family-based deprecation checks for running instances before uninstalling old version
+- [Phase 38-workflow-versioning]: start_workflow resolves to latest installed version in family when requested template is not installed
 
 ### Pending Todos
 
@@ -97,6 +100,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-14T04:24:12.581Z
-Stopped at: Completed 37-03-PLAN.md (Designer Error Handler & Compensation UI)
+Last session: 2026-04-15T05:56:30.579Z
+Stopped at: Completed 38-01-PLAN.md (Template Family Versioning)
 Resume file: None

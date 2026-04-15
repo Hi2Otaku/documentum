@@ -36,9 +36,9 @@ Requirements for Enterprise Completeness milestone. Each maps to roadmap phases.
 
 ### Workflow Versioning
 
-- [ ] **WFVER-01**: Admin can install a new template version while previous version's instances continue running
-- [ ] **WFVER-02**: New workflow instances use the latest installed version; running instances remain on their original version
-- [ ] **WFVER-03**: Admin can view which template version each running instance uses
+- [x] **WFVER-01**: Admin can install a new template version while previous version's instances continue running
+- [x] **WFVER-02**: New workflow instances use the latest installed version; running instances remain on their original version
+- [x] **WFVER-03**: Admin can view which template version each running instance uses
 
 ### Advanced Join Semantics
 
@@ -130,9 +130,9 @@ Requirements for Enterprise Completeness milestone. Each maps to roadmap phases.
 | WFERR-02 | Phase 37 | Complete |
 | WFERR-03 | Phase 37 | Complete |
 | WFERR-04 | Phase 37 | Pending |
-| WFVER-01 | Phase 38 | Pending |
-| WFVER-02 | Phase 38 | Pending |
-| WFVER-03 | Phase 38 | Pending |
+| WFVER-01 | Phase 38 | Complete |
+| WFVER-02 | Phase 38 | Complete |
+| WFVER-03 | Phase 38 | Complete |
 | JOIN-01 | Phase 39 | Pending |
 | JOIN-02 | Phase 39 | Pending |
 | JOIN-03 | Phase 39 | Pending |
