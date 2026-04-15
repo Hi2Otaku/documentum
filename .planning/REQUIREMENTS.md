@@ -29,9 +29,9 @@ Requirements for Enterprise Completeness milestone. Each maps to roadmap phases.
 
 ### Workflow Error Handling
 
-- [ ] **WFERR-01**: Template designer can attach error handlers to activities that execute when the activity fails
-- [ ] **WFERR-02**: Template designer can define compensation activities that undo completed work when a flow fails
-- [ ] **WFERR-03**: Engine executes compensation handlers in reverse chronological order on workflow failure
+- [x] **WFERR-01**: Template designer can attach error handlers to activities that execute when the activity fails
+- [x] **WFERR-02**: Template designer can define compensation activities that undo completed work when a flow fails
+- [x] **WFERR-03**: Engine executes compensation handlers in reverse chronological order on workflow failure
 - [ ] **WFERR-04**: Failed activities show error details and allow manual retry or skip from the workflow operations UI
 
 ### Workflow Versioning
@@ -126,9 +126,9 @@ Requirements for Enterprise Completeness milestone. Each maps to roadmap phases.
 | AUTH-04 | Phase 36 | Complete |
 | AUTH-05 | Phase 36 | Complete |
 | AUTH-06 | Phase 36 | Complete |
-| WFERR-01 | Phase 37 | Pending |
-| WFERR-02 | Phase 37 | Pending |
-| WFERR-03 | Phase 37 | Pending |
+| WFERR-01 | Phase 37 | Complete |
+| WFERR-02 | Phase 37 | Complete |
+| WFERR-03 | Phase 37 | Complete |
 | WFERR-04 | Phase 37 | Pending |
 | WFVER-01 | Phase 38 | Pending |
 | WFVER-02 | Phase 38 | Pending |
