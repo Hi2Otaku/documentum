@@ -22,6 +22,7 @@ import { SSOSettingsPage } from "./pages/SSOSettingsPage";
 import { BulkJobsPage } from "./pages/BulkJobsPage";
 import ImportExportPage from "./pages/ImportExportPage";
 import { MonitoringPage } from "./pages/MonitoringPage";
+import { AnalyticsPage } from "./pages/AnalyticsPage";
 
 export default function App() {
   return (
@@ -57,6 +58,7 @@ export default function App() {
             <Route path="/admin/sso" element={<SSOSettingsPage />} />
             <Route path="/admin/import-export" element={<ImportExportPage />} />
             <Route path="/admin/monitoring" element={<MonitoringPage />} />
+            <Route path="/admin/analytics" element={<AnalyticsPage />} />
           </Route>
         </Route>
       </Route>
