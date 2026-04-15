@@ -2,18 +2,17 @@
 
 ## What This Is
 
-A Python-based clone of OpenText Documentum's ECM and Workflow Management system, with a full web UI. Four milestones shipped: a complete Petri-net workflow engine (v1.0), a full React frontend (v1.1), an advanced engine layer with timers, sub-workflows, event-driven activities, notifications, renditions, virtual documents, retention, and digital signatures (v1.2), and a document-centric ECM platform with folders, types, search, relationships, and document-first navigation (v1.3).
+A Python-based clone of OpenText Documentum's ECM and Workflow Management system, with a full web UI. Four milestones shipped: a complete Petri-net workflow engine (v1.0), a full React frontend (v1.1), an advanced engine layer with timers, sub-workflows, event-driven activities, notifications, renditions, virtual documents, retention, and digital signatures (v1.2), and a document-centric ECM platform with folders, types, search, relationships, and document-first navigation (v1.3). v1.4 targets enterprise completeness — wiring up existing backend features to the frontend, plus SSO, CMIS, bulk operations, workflow resilience, desktop integration, and operational tooling.
 
-## Current State (v1.3 shipped 2026-04-14)
+## Current State (v1.4 in progress)
 
-The system is now a full document-centric ECM platform. Key capabilities added in v1.3:
-- **Document Types** — Custom types with JSON Schema metadata validation and inheritance
-- **Cabinet/Folder Hierarchy** — Navigable tree with filing, move, copy, rename
-- **Folder ACL Inheritance** — Folder permissions flow down to documents automatically
-- **Full-Text Search** — PostgreSQL FTS with content extraction, prefix/substring matching, highlighted snippets
-- **Document Relationships** — Typed directional links (supersedes, references, related_to)
-- **Document-First Browse** — Three-panel layout: folder tree + content grid + detail panel
-- **Saved Searches & Smart Folders** — Persistent queries displayed as virtual folder nodes
+v1.3 shipped 2026-04-14 as a full document-centric ECM platform. Audit against real Documentum identified gaps: 6 backend features with no frontend UI, and ~13 missing enterprise capabilities. v1.4 addresses all of them.
+
+Previously shipped (v1.0–v1.3):
+- Petri-net workflow engine with visual designer, auto/timer/event-driven activities, sub-workflows
+- Full React frontend with inbox, dashboards, document management, folder browser
+- Document types, cabinet/folder hierarchy, folder ACL inheritance, full-text search
+- Document relationships, saved searches, smart folders, digital signatures, retention, renditions
 
 ## Core Value
 
@@ -61,16 +60,34 @@ Any workflow use case described in the Documentum specification can be modeled a
 - ✓ Retention policies and legal holds blocking premature document deletion — v1.2 Phase 22
 - ✓ Digital signatures (PKCS7/CMS) with post-signing immutability — v1.2 Phase 23
 
-### Active (v1.3 targets)
+### Active (v1.4 targets)
 
-- [ ] Cabinet/folder hierarchy — documents organized in a navigable tree (dm_cabinet, dm_folder equivalent)
-- [ ] Document type system — custom types extending a base document type, with type-specific metadata schemas
-- [ ] Full-text search — content indexing and search across document body and metadata
-- [ ] Document-first navigation — browse by folder/cabinet, not just by workflow or search
-- [ ] dm_sysobject supertype — unified base object model so documents, folders, and workflows share common attributes
-- [ ] Folder-level ACL inheritance — permissions flow down from cabinet to folder to document
-- [ ] Document relationships — relate documents to each other (supersedes, references, is-part-of)
-- [ ] Saved searches / smart folders — named queries that act like virtual folders
+*Frontend gap closure (backend exists, UI missing):*
+- [ ] Digital signatures UI — sign, verify, view certificates from the web interface
+- [ ] Retention & legal hold management UI — set policies, place/release holds
+- [ ] Document-level ACL UI — manage permissions per document (not just folder)
+- [ ] Queue administration UI — create, edit, delete queues and manage members
+- [ ] Fix document lifecycle state filter — dropdown exists but doesn't send filter to API
+- [ ] Notification preferences UI — configure which events trigger notifications
+
+*Authentication & integration:*
+- [ ] LDAP/SAML/OAuth2 SSO — enterprise identity provider integration
+- [ ] CMIS standard API — OASIS content management interoperability services
+- [ ] WebDAV file access — mount repository as network drive
+- [ ] Email archiving — capture, index, and store emails as documents
+
+*Workflow resilience:*
+- [ ] Workflow error handling & compensation — declarative exception handlers, rollback activities
+- [ ] Workflow versioning — concurrent active template versions with in-flight migration
+- [ ] Advanced join semantics — weighted, cancelling, timeout sync beyond basic AND/OR
+
+*Operations & administration:*
+- [ ] Bulk/batch operations — mass update, delete, reclassify with job tracking
+- [ ] Import/Export — standard format packages for migration and backup
+- [ ] System monitoring & health dashboard — deep health checks, alerting, queue depth
+- [ ] Tiered storage management — policy-based migration between hot/warm/cold storage
+- [ ] Tamper-proof audit trail — cryptographic signing of audit logs
+- [ ] Process analytics & mining — discover workflows from execution logs, optimization insights
 
 ### Out of Scope
 
@@ -82,20 +99,19 @@ Any workflow use case described in the Documentum specification can be modeled a
 - Full PKI/CA infrastructure — self-signed certs in DB suffice for internal use
 - Multi-tenant isolation — internal/personal use, adds complexity everywhere
 
-## Current Milestone: v1.3 Document-Centric ECM
+## Current Milestone: v1.4 Enterprise Completeness
 
-**Goal:** Reorient from workflow-centric to document-centric. Add a cabinet/folder hierarchy, document type system, full-text search, and document-first navigation — so the system operates as a genuine ECM platform, not just a workflow engine with document attachments.
+**Goal:** Close all functional gaps identified in the Documentum comparison audit — wire up existing backend features to the frontend, and build the missing enterprise capabilities (SSO, CMIS, bulk operations, workflow resilience, desktop integration, and operational tooling).
 
-**Phases:** TBD — defined via `/gsd:new-milestone`
+**Phases:** TBD — defined via roadmapper
 
 ## Context
 
 - Inspired by the OpenText Documentum Workflow Management technical specification (Vietnamese, March 2026)
-- 3 milestones shipped: v1.0 (engine), v1.1 (frontend), v1.2 (advanced engine)
+- 4 milestones shipped: v1.0 (engine), v1.1 (frontend), v1.2 (advanced engine), v1.3 (document-centric ECM)
 - Stack locked in: FastAPI + SQLAlchemy async + PostgreSQL + Redis + MinIO + Celery + React 19 + Vite
-- ~17,400 Python LOC, ~13,800 TypeScript LOC
 - Internal/personal use — not a SaaS product
-- Key gap identified: the system is workflow-centric; Documentum is document-centric. v1.3 closes this.
+- Key gap identified (v1.4): audit against real Documentum found 6 backend features without frontend UI, ~13 missing enterprise capabilities
 
 ## Constraints
 
@@ -135,4 +151,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-13 — Phase 28 complete: cabinet/folder hierarchy (tree, CRUD, filing, frontend UI). Phase 29 (folder ACL inheritance) is next.*
+*Last updated: 2026-04-15 — v1.3 complete. Starting v1.4 Enterprise Completeness milestone.*

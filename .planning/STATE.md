@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.3
-milestone_name: Document-Centric ECM
-status: verifying
-stopped_at: Completed 33-02-PLAN.md (Saved Searches Frontend)
-last_updated: "2026-04-14T04:26:55.345Z"
-last_activity: 2026-04-14
+milestone: v1.4
+milestone_name: Enterprise Completeness
+status: planning
+stopped_at: null
+last_updated: "2026-04-15"
+last_activity: 2026-04-15
 progress:
-  total_phases: 7
-  completed_phases: 7
-  total_plans: 19
-  completed_plans: 19
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
   percent: 0
 ---
 
@@ -18,73 +18,35 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-13)
+See: .planning/PROJECT.md (updated 2026-04-15)
 
 **Core value:** Any workflow or document management use case described in the Documentum specification can be modeled and executed end-to-end.
-**Current focus:** Phase 33 — saved-searches-smart-folders
+**Current focus:** Defining requirements for v1.4 Enterprise Completeness
 
 ## Current Position
 
-Phase: 33
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-04-14
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-15 — Milestone v1.4 started
 
-Progress: [..........] 0% (v1.3: 0/7 phases)
+Progress: [..........] 0%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 0 (v1.3)
+- Total plans completed: 0 (v1.4)
 - Average duration: -
 - Total execution time: 0 hours
-
-**By Phase:**
-
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| - | - | - | - |
-
-**Recent Trend (from v1.2):**
-
-| Phase 24 P03 | 1m | 2 tasks | 5 files |
-| Phase 24-01 P01 | 2min | 2 tasks | 4 files |
-| Phase 25 P01 | 2m | 2 tasks | 3 files |
-| Phase 26 P01 | 1m | 2 tasks | 1 files |
-| Phase 27-document-type-system P01 | 12 | 2 tasks | 9 files |
-| Phase 27-document-type-system P02 | 5min | 2 tasks | 5 files |
-| Phase 27-document-type-system P03 | 3.5min | 2 tasks | 8 files |
-| Phase 30 P03 | 2.4min | 2 tasks | 7 files |
-| Phase 30 P02 | 2min | 2 tasks | 3 files |
-| Phase 31-document-relationships P02 | 2.5min | 2 tasks | 5 files |
-| Phase 32 P01 | 1min | 1 tasks | 1 files |
-| Phase 32 P02 | 1min | 2 tasks | 2 files |
-| Phase 33-saved-searches-smart-folders P01 | 2min | 2 tasks | 7 files |
-| Phase 33-saved-searches-smart-folders P02 | 3min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
 ### Decisions
 
-v1.3 architecture decisions (resolved during research):
-
-- No dm_sysobject polymorphic base table -- Python mixin instead (too many FKs to migrate)
-- No ltree PostgreSQL extension -- adjacency list + recursive CTEs for folder hierarchy
-- PostgreSQL tsvector for full-text search -- no Elasticsearch
-- New Python packages: jsonschema, PyPDF2, python-docx
-- [Phase 27-document-type-system]: jsonschema Draft7Validator for metadata validation; max 1 level inheritance enforced at service layer; untyped documents skip validation for backward compatibility
-- [Phase 27-document-type-system]: Use explicit selectinload() in async queries for relationships accessed in response serialization (prevents MissingGreenlet in aiosqlite)
-- [Phase 27-document-type-system]: Place validate_metadata in router before service call to keep upload_document service pure and reusable
-- [Phase 27-document-type-system]: Client-side JSON schema validation in dialog validates parse correctness and property count before API call
-- [Phase 27-document-type-system]: Parent type dropdown restricted to root types (parent_type_id === null) to prevent 3-level hierarchy in UI
-- [Phase 30]: D-11 to D-14 search UI decisions implemented: prominent input, filter sidebar, result cards with snippets and badges
-- [Phase 30]: Dict-based search result mapping in router layer matching actual service return type
-- [Phase 31-document-relationships]: Used existing 31-01 file names (relationships.ts, RelationshipPanel.tsx) and added direction grouping, onDocumentSelect prop for navigation
-- [Phase 32]: Inline document table in BrowsePage without @tanstack/react-table for simpler browse-only view
-- [Phase 32]: FolderTree icon for Browse nav item (FolderOpen already used by admin Folders)
-- [Phase 33-saved-searches-smart-folders]: Raw DDL migration matching phase31 pattern; partial index on (user_id, is_smart_folder) for smart folder queries
-- [Phase 33-saved-searches-smart-folders]: Smart folder nodes use violet Search icon and mutually exclusive selection with real folders
+v1.4 scope decisions:
+- Full scope: both frontend gap closure (6 features) and new enterprise capabilities (~13 features)
+- Multi-tenancy, MLS, IRM/DRM, repository replication remain out of scope (internal/personal use)
 
 ### Pending Todos
 
@@ -96,6 +58,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-14T04:24:12.581Z
-Stopped at: Completed 33-02-PLAN.md (Saved Searches Frontend)
+Last session: 2026-04-15
+Stopped at: Milestone v1.4 initialization
 Resume file: None
