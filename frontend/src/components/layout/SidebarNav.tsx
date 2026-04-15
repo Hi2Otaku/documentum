@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   KeyRound,
   ListChecks,
+  Layers,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useAuthStore } from "../../stores/authStore";
@@ -36,6 +37,7 @@ const NAV_ITEMS: NavItem[] = [
   { icon: Search, label: "Search", route: "/search", adminOnly: false },
   { icon: GitBranch, label: "Workflows", route: "/workflows", adminOnly: false },
   { icon: Bell, label: "Notifications", route: "/settings/notifications", adminOnly: false },
+  { icon: Layers, label: "Bulk Jobs", route: "/bulk-jobs", adminOnly: false },
   { icon: BarChart3, label: "Dashboard", route: "/dashboard", adminOnly: true },
   { icon: Search, label: "Query", route: "/query", adminOnly: true },
   { icon: Tags, label: "Types", route: "/admin/types", adminOnly: true },

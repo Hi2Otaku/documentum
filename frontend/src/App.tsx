@@ -19,6 +19,7 @@ import { AdminRoute } from "./components/layout/AdminRoute";
 import { NotificationPreferencesPage } from "./pages/NotificationPreferencesPage";
 import { AuditVerificationPage } from "./pages/AuditVerificationPage";
 import { SSOSettingsPage } from "./pages/SSOSettingsPage";
+import { BulkJobsPage } from "./pages/BulkJobsPage";
 
 export default function App() {
   return (
@@ -40,6 +41,7 @@ export default function App() {
           <Route path="/search" element={<SearchPage />} />
           <Route path="/workflows" element={<WorkflowsPage />} />
           <Route path="/settings/notifications" element={<NotificationPreferencesPage />} />
+          <Route path="/bulk-jobs" element={<BulkJobsPage />} />
 
           {/* Admin-only routes */}
           <Route element={<AdminRoute />}>

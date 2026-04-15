@@ -16,6 +16,7 @@ import { Skeleton } from "../components/ui/skeleton";
 import { Badge } from "../components/ui/badge";
 import { Checkbox } from "../components/ui/checkbox";
 import { BulkActionToolbar } from "../components/documents/BulkActionToolbar";
+import { BulkJobDialog } from "../components/documents/BulkJobDialog";
 import {
   Table,
   TableHeader,
@@ -571,6 +572,13 @@ export function BrowsePage() {
           </div>
         )}
       </div>
+
+      {/* Bulk job progress dialog */}
+      <BulkJobDialog
+        jobId={activeJobId}
+        open={!!activeJobId}
+        onClose={() => setActiveJobId(null)}
+      />
     </div>
   );
 }
