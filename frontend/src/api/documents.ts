@@ -115,6 +115,7 @@ export interface DocumentListParams {
   page_size?: number;
   title?: string;
   author?: string;
+  lifecycle_state?: string;
 }
 
 export interface LifecycleTransitionResponse {

@@ -64,6 +64,7 @@ export function DocumentsPage() {
         page: currentPage,
         title: debouncedTitle || undefined,
         author: debouncedAuthor || undefined,
+        state: stateFilter !== "all" ? stateFilter : undefined,
       },
     ],
     queryFn: () =>
@@ -72,6 +73,7 @@ export function DocumentsPage() {
         page_size: PAGE_SIZE,
         title: debouncedTitle || undefined,
         author: debouncedAuthor || undefined,
+        lifecycle_state: stateFilter !== "all" ? stateFilter : undefined,
       }),
   });
 

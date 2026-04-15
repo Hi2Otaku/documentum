@@ -75,6 +75,7 @@ async def list_documents(
     title: str | None = Query(None),
     author: str | None = Query(None),
     folder_id: str | None = Query(None),
+    lifecycle_state: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -84,6 +85,7 @@ async def list_documents(
         user_id=str(current_user.id),
         is_superuser=current_user.is_superuser,
         folder_id=folder_id,
+        lifecycle_state=lifecycle_state,
     )
     results = []
     for d in documents:
