@@ -30,3 +30,12 @@ class NotificationListResponse(BaseModel):
 
 class UnreadCountResponse(BaseModel):
     unread_count: int
+
+
+class NotificationPreferenceResponse(BaseModel):
+    notification_type: str
+    enabled: bool
+
+
+class NotificationPreferencesUpdate(BaseModel):
+    preferences: list[NotificationPreferenceResponse]

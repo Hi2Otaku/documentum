@@ -10,7 +10,7 @@ from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.models.notification import Notification
+from app.models.notification import Notification, NotificationPreference
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +35,12 @@ async def create_notification(
     notification_type: str,
     entity_type: str | None = None,
     entity_id: uuid.UUID | None = None,
-) -> Notification:
+) -> Notification | None:
     """Create and persist a new notification for a user."""
+    # Check user preference
+    if not await is_notification_enabled(db, user_id, notification_type):
+        return None  # User has disabled this notification type
+
     notification = Notification(
         user_id=user_id,
         title=title,
@@ -143,3 +147,55 @@ async def mark_all_read(db: AsyncSession, *, user_id: uuid.UUID) -> int:
     )
     result = await db.execute(stmt)
     return result.rowcount  # type: ignore[union-attr]
+
+
+async def get_preferences(
+    db: AsyncSession, user_id: uuid.UUID
+) -> list[NotificationPreference]:
+    """Return all notification preferences for a user."""
+    result = await db.execute(
+        select(NotificationPreference).where(
+            NotificationPreference.user_id == user_id,
+            NotificationPreference.is_deleted == False,  # noqa: E712
+        )
+    )
+    return list(result.scalars().all())
+
+
+async def update_preferences(
+    db: AsyncSession, user_id: uuid.UUID, preferences: list
+) -> None:
+    """Upsert notification preferences for a user."""
+    for pref in preferences:
+        existing = await db.execute(
+            select(NotificationPreference).where(
+                NotificationPreference.user_id == user_id,
+                NotificationPreference.notification_type == pref.notification_type,
+                NotificationPreference.is_deleted == False,  # noqa: E712
+            )
+        )
+        row = existing.scalar_one_or_none()
+        if row:
+            row.enabled = pref.enabled
+        else:
+            db.add(NotificationPreference(
+                user_id=user_id,
+                notification_type=pref.notification_type,
+                enabled=pref.enabled,
+            ))
+    await db.commit()
+
+
+async def is_notification_enabled(
+    db: AsyncSession, user_id: uuid.UUID, notification_type: str
+) -> bool:
+    """Check if a notification type is enabled for a user. Default: True."""
+    result = await db.execute(
+        select(NotificationPreference).where(
+            NotificationPreference.user_id == user_id,
+            NotificationPreference.notification_type == notification_type,
+            NotificationPreference.is_deleted == False,  # noqa: E712
+        )
+    )
+    pref = result.scalar_one_or_none()
+    return pref.enabled if pref else True  # default enabled

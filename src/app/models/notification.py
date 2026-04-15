@@ -1,7 +1,7 @@
 """Notification model for in-app notifications."""
 import uuid
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text, Uuid
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text, UniqueConstraint, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import BaseModel
@@ -26,4 +26,21 @@ class Notification(BaseModel):
     )
     entity_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid(), nullable=True,
+    )
+
+
+class NotificationPreference(BaseModel):
+    __tablename__ = "notification_preferences"
+    __table_args__ = (
+        UniqueConstraint("user_id", "notification_type", name="uq_notification_pref"),
+    )
+
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(), ForeignKey("users.id"), nullable=False, index=True,
+    )
+    notification_type: Mapped[str] = mapped_column(
+        String(100), nullable=False,
+    )
+    enabled: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False,
     )
