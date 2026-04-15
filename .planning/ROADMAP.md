@@ -133,7 +133,13 @@ Plans:
   1. Template designer can attach an error handler activity to any activity in the workflow designer, and the engine executes it when that activity fails
   2. Template designer can define compensation activities that undo completed work, and the engine runs them in reverse chronological order when a flow-level failure triggers compensation
   3. Failed activities display error details in the workflow operations UI and allow an operator to retry or skip the failed activity
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 37-01-PLAN.md — DB migration + models + engine error handler & compensation logic
+- [ ] 37-02-PLAN.md — Operator UI: error details, retry/skip, compensation trigger
+- [ ] 37-03-PLAN.md — Designer UI: error handler & compensation activity selection
+
 **UI hint**: yes
 
 ### Phase 38: Workflow Versioning
@@ -233,7 +239,7 @@ Note: Phase 43 (CMIS) depends on Phase 36 (SSO) but is sequenced after Phase 42 
 | 34. Frontend Gap Closure | v1.4 | 0/4 | Complete    | 2026-04-15 |
 | 35. Tamper-Proof Audit | v1.4 | 2/2 | Complete    | 2026-04-15 |
 | 36. Identity & SSO | v1.4 | 3/3 | Complete    | 2026-04-15 |
-| 37. Error Handling & Compensation | v1.4 | 0/? | Not started | - |
+| 37. Error Handling & Compensation | v1.4 | 0/3 | Not started | - |
 | 38. Workflow Versioning | v1.4 | 0/? | Not started | - |
 | 39. Advanced Join Semantics | v1.4 | 0/? | Not started | - |
 | 40. Bulk Operations | v1.4 | 0/? | Not started | - |
