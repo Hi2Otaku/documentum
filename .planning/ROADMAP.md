@@ -200,8 +200,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 41-01-PLAN.md — TBD
-- [ ] 41-02-PLAN.md — TBD
+- [ ] 41-01-PLAN.md — Backend: schemas, service, Celery tasks, API endpoints for export/import
+- [ ] 41-02-PLAN.md — Frontend: API client, export dialog, import/export admin page, routing
 **UI hint**: yes
 
 ### Phase 42: System Monitoring & Health
