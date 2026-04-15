@@ -10,7 +10,7 @@ from app.models.acl import DocumentACL, LifecycleACLRule
 from app.models.execution_log import AutoActivityLog
 from app.models.metrics import MetricsSummary
 from app.models.signature import DocumentSignature
-from app.models.notification import Notification
+from app.models.notification import Notification, NotificationPreference
 from app.models.event import DomainEvent
 from app.models.rendition import Rendition
 from app.models.virtual_document import VirtualDocument, VirtualDocumentChild
@@ -69,6 +69,7 @@ __all__ = [
     "MetricsSummary",
     "DocumentSignature",
     "Notification",
+    "NotificationPreference",
     "DomainEvent",
     "Rendition",
     "VirtualDocument",
