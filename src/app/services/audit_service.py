@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.audit import AuditLog
+from app.tasks.audit_chain import compute_audit_chain_hash
 
 
 async def create_audit_record(
@@ -17,6 +18,8 @@ async def create_audit_record(
     """Create an audit log record in the current transaction.
 
     Does NOT commit -- the request-level transaction handles atomicity.
+    After flush (to assign ID), dispatches async Celery task to compute
+    SHA-256 content_hash and chain_hash.
     """
     record = AuditLog(
         entity_type=entity_type,
@@ -28,4 +31,6 @@ async def create_audit_record(
         details=details,
     )
     db.add(record)
+    await db.flush()
+    compute_audit_chain_hash.delay(str(record.id))
     return record
