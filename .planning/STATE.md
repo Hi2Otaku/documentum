@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Enterprise Completeness
-status: verifying
-stopped_at: Completed 35-02-PLAN.md (Audit Verification UI)
-last_updated: "2026-04-15T05:09:53.111Z"
+status: executing
+stopped_at: Completed 36-01-PLAN.md
+last_updated: "2026-04-15T05:19:34.703Z"
 last_activity: 2026-04-15
 progress:
   total_phases: 11
   completed_phases: 2
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 9
+  completed_plans: 7
   percent: 0
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-13)
 
 **Core value:** Any workflow or document management use case described in the Documentum specification can be modeled and executed end-to-end.
-**Current focus:** Phase 35 — tamper-proof-audit-trail
+**Current focus:** Phase 36 — identity-sso
 
 ## Current Position
 
-Phase: 36
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 36 (identity-sso) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
 Last activity: 2026-04-15
 
 Progress: [..........] 0% (v1.3: 0/7 phases)
@@ -65,6 +65,7 @@ Progress: [..........] 0% (v1.3: 0/7 phases)
 | Phase 34 P04 | 4min | 2 tasks | 9 files |
 | Phase 35 P01 | 3min | 2 tasks | 6 files |
 | Phase 35 P02 | 2min | 2 tasks | 5 files |
+| Phase 36-identity-sso P01 | 2min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,8 @@ v1.3 architecture decisions (resolved during research):
 - [Phase 34]: Notification preference defaults to enabled when no DB row exists; create_notification returns None for disabled types
 - [Phase 35]: GENESIS seed for first chain_hash; SELECT FOR UPDATE for monotonic sequence; canonical JSON with sort_keys for deterministic hashing
 - [Phase 35]: Used stored chain_hash as previous to avoid cascading false positives from single tampered record
+- [Phase 36-identity-sso]: Strategy pattern for auth backends with ordered iteration (LocalAuth first, ServiceToken second)
+- [Phase 36-identity-sso]: SHA-256 hashing for service tokens with svc_ prefix to distinguish from JWTs
 
 ### Pending Todos
 
@@ -102,6 +105,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-15T05:09:30.098Z
-Stopped at: Completed 35-02-PLAN.md (Audit Verification UI)
+Last session: 2026-04-15T05:19:34.697Z
+Stopped at: Completed 36-01-PLAN.md
 Resume file: None

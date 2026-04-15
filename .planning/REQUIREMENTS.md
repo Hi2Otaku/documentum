@@ -24,8 +24,8 @@ Requirements for Enterprise Completeness milestone. Each maps to roadmap phases.
 - [ ] **AUTH-02**: User can authenticate via SAML 2.0 SSO (redirect to IdP, consume assertion, create session)
 - [ ] **AUTH-03**: User can authenticate via OAuth2/OIDC (authorization code flow with PKCE)
 - [ ] **AUTH-04**: System provisions user accounts on first SSO login (JIT provisioning)
-- [ ] **AUTH-05**: Existing local authentication continues to work alongside SSO providers
-- [ ] **AUTH-06**: Background services (Celery workers, Workflow Agent) authenticate via service tokens without browser flow
+- [x] **AUTH-05**: Existing local authentication continues to work alongside SSO providers
+- [x] **AUTH-06**: Background services (Celery workers, Workflow Agent) authenticate via service tokens without browser flow
 
 ### Workflow Error Handling
 
@@ -124,8 +124,8 @@ Requirements for Enterprise Completeness milestone. Each maps to roadmap phases.
 | AUTH-02 | Phase 36 | Pending |
 | AUTH-03 | Phase 36 | Pending |
 | AUTH-04 | Phase 36 | Pending |
-| AUTH-05 | Phase 36 | Pending |
-| AUTH-06 | Phase 36 | Pending |
+| AUTH-05 | Phase 36 | Complete |
+| AUTH-06 | Phase 36 | Complete |
 | WFERR-01 | Phase 37 | Pending |
 | WFERR-02 | Phase 37 | Pending |
 | WFERR-03 | Phase 37 | Pending |
