@@ -240,6 +240,7 @@ function DesignerInner() {
       )}
       <Toolbar
         templateName={template.name}
+        templateVersion={template.version}
         onSave={isInstalled ? () => {} : save}
         onValidateInstall={isInstalled ? () => {} : validateAndInstall}
         saving={saving || isInstalled}

@@ -137,6 +137,9 @@ export function TemplateListPage() {
                     >
                       {t.state === "active" ? "Active" : "Draft"}
                     </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      v{t.version}
+                    </Badge>
                   </div>
                   <div className="text-sm text-muted-foreground flex items-center gap-4">
                     <span>v{t.version}</span>

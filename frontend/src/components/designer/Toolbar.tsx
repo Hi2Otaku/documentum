@@ -13,6 +13,7 @@ import { getLayoutedElements } from '../../hooks/useAutoLayout';
 
 interface ToolbarProps {
   templateName: string;
+  templateVersion?: number;
   onSave: () => void;
   onValidateInstall: () => void;
   saving: boolean;
@@ -21,6 +22,7 @@ interface ToolbarProps {
 
 export function Toolbar({
   templateName,
+  templateVersion,
   onSave,
   onValidateInstall,
   saving,
@@ -75,6 +77,12 @@ export function Toolbar({
         </button>
 
         <span className="text-lg font-semibold">{templateName}</span>
+
+        {templateVersion != null && (
+          <span className="inline-flex items-center rounded-md bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
+            v{templateVersion}
+          </span>
+        )}
 
         {isDirty && (
           <span

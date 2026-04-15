@@ -100,6 +100,21 @@ export function WorkflowTable({
         minSize: 120,
       },
     ),
+    columnHelper.accessor(
+      (row) =>
+        isAdminResponse(row) && row.template_version != null
+          ? `v${row.template_version}`
+          : "\u2014",
+      {
+        id: "template_version",
+        header: "Version",
+        cell: (info) => (
+          <span className="text-xs text-muted-foreground">{info.getValue()}</span>
+        ),
+        size: 70,
+        minSize: 70,
+      },
+    ),
     columnHelper.accessor("state", {
       header: "State",
       cell: (info) => <WorkflowStateBadge state={info.getValue()} />,
