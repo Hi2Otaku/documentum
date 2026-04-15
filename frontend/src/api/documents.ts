@@ -381,3 +381,58 @@ export async function verifySignature(
   );
   return res.data;
 }
+
+// --- Document ACL types and API functions ---
+
+export interface ACLEntryResponse {
+  id: string;
+  document_id: string;
+  accessor_type: "user" | "group";
+  accessor_id: string;
+  accessor_name: string;
+  permission_level: number;
+  permission_label: string;
+  created_at: string;
+}
+
+export interface ACLEntryCreate {
+  accessor_type: "user" | "group";
+  accessor_id: string;
+  permission_level: number;
+}
+
+export async function fetchDocumentACLs(
+  documentId: string,
+): Promise<ACLEntryResponse[]> {
+  const res = await apiFetch<{ data: ACLEntryResponse[] }>(
+    `/api/v1/documents/${documentId}/acl`,
+  );
+  return res.data;
+}
+
+export async function addDocumentACL(
+  documentId: string,
+  entry: ACLEntryCreate,
+): Promise<ACLEntryResponse> {
+  const res = await apiMutate<{ data: ACLEntryResponse }>(
+    `/api/v1/documents/${documentId}/acl`,
+    "POST",
+    entry,
+  );
+  return res.data;
+}
+
+export async function removeDocumentACL(
+  documentId: string,
+  aclId: string,
+): Promise<void> {
+  const res = await fetch(`/api/v1/documents/${documentId}/acl/${aclId}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (res.status === 401) handle401();
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`API error ${res.status}: ${text}`);
+  }
+}

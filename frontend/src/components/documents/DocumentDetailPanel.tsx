@@ -24,6 +24,7 @@ import {
 } from "../../api/folders";
 import { FolderPickerDialog } from "../folders/FolderPickerDialog";
 import { RelationshipPanel } from "./RelationshipPanel";
+import { DocumentACLPanel } from "./DocumentACLPanel";
 
 interface DocumentDetailPanelProps {
   documentId: string | null;
@@ -308,6 +309,12 @@ export function DocumentDetailPanel({
       <Separator />
       <div className="px-6 py-4">
         <RetentionStatusPanel documentId={documentId} />
+      </div>
+
+      {/* Section 12 - Document ACL */}
+      <Separator />
+      <div className="px-6 py-4">
+        <DocumentACLPanel documentId={documentId} />
       </div>
 
       <FolderPickerDialog
