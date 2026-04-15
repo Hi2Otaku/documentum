@@ -109,4 +109,52 @@ Requirements for Enterprise Completeness milestone. Each maps to roadmap phases.
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| (filled by roadmapper) | | |
+| FEGAP-01 | Phase 34 | Pending |
+| FEGAP-02 | Phase 34 | Pending |
+| FEGAP-03 | Phase 34 | Pending |
+| FEGAP-04 | Phase 34 | Pending |
+| FEGAP-05 | Phase 34 | Pending |
+| FEGAP-06 | Phase 34 | Pending |
+| FEGAP-07 | Phase 34 | Pending |
+| FEGAP-08 | Phase 34 | Pending |
+| AUDIT-01 | Phase 35 | Pending |
+| AUDIT-02 | Phase 35 | Pending |
+| AUDIT-03 | Phase 35 | Pending |
+| AUTH-01 | Phase 36 | Pending |
+| AUTH-02 | Phase 36 | Pending |
+| AUTH-03 | Phase 36 | Pending |
+| AUTH-04 | Phase 36 | Pending |
+| AUTH-05 | Phase 36 | Pending |
+| AUTH-06 | Phase 36 | Pending |
+| WFERR-01 | Phase 37 | Pending |
+| WFERR-02 | Phase 37 | Pending |
+| WFERR-03 | Phase 37 | Pending |
+| WFERR-04 | Phase 37 | Pending |
+| WFVER-01 | Phase 38 | Pending |
+| WFVER-02 | Phase 38 | Pending |
+| WFVER-03 | Phase 38 | Pending |
+| JOIN-01 | Phase 39 | Pending |
+| JOIN-02 | Phase 39 | Pending |
+| JOIN-03 | Phase 39 | Pending |
+| JOIN-04 | Phase 39 | Pending |
+| BULK-01 | Phase 40 | Pending |
+| BULK-02 | Phase 40 | Pending |
+| BULK-03 | Phase 40 | Pending |
+| BULK-04 | Phase 40 | Pending |
+| IOEX-01 | Phase 41 | Pending |
+| IOEX-02 | Phase 41 | Pending |
+| IOEX-03 | Phase 41 | Pending |
+| IOEX-04 | Phase 41 | Pending |
+| MON-01 | Phase 42 | Pending |
+| MON-02 | Phase 42 | Pending |
+| MON-03 | Phase 42 | Pending |
+| MON-04 | Phase 42 | Pending |
+| CMIS-01 | Phase 43 | Pending |
+| CMIS-02 | Phase 43 | Pending |
+| CMIS-03 | Phase 43 | Pending |
+| CMIS-04 | Phase 43 | Pending |
+| CMIS-05 | Phase 43 | Pending |
+| ANLYT-01 | Phase 44 | Pending |
+| ANLYT-02 | Phase 44 | Pending |
+| ANLYT-03 | Phase 44 | Pending |
+| ANLYT-04 | Phase 44 | Pending |

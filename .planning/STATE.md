@@ -3,11 +3,11 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Enterprise Completeness
 status: planning
-stopped_at: null
+stopped_at: roadmap_created
 last_updated: "2026-04-15"
 last_activity: 2026-04-15
 progress:
-  total_phases: 0
+  total_phases: 11
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-15)
 
 **Core value:** Any workflow or document management use case described in the Documentum specification can be modeled and executed end-to-end.
-**Current focus:** Defining requirements for v1.4 Enterprise Completeness
+**Current focus:** v1.4 Enterprise Completeness -- Phase 34 (Frontend Gap Closure) ready to plan
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-04-15 — Milestone v1.4 started
+Phase: 34 of 44 (Frontend Gap Closure)
+Plan: --
+Status: Ready to plan
+Last activity: 2026-04-15 -- Roadmap created for v1.4 (11 phases, 49 requirements)
 
 Progress: [..........] 0%
 
@@ -37,7 +37,7 @@ Progress: [..........] 0%
 **Velocity:**
 
 - Total plans completed: 0 (v1.4)
-- Average duration: -
+- Average duration: --
 - Total execution time: 0 hours
 
 ## Accumulated Context
@@ -45,8 +45,24 @@ Progress: [..........] 0%
 ### Decisions
 
 v1.4 scope decisions:
-- Full scope: both frontend gap closure (6 features) and new enterprise capabilities (~13 features)
-- Multi-tenancy, MLS, IRM/DRM, repository replication remain out of scope (internal/personal use)
+- Full scope: frontend gap closure (8 reqs) + enterprise capabilities (41 reqs)
+- WebDAV, email archiving, tiered storage deferred to v1.5+
+- Multi-tenancy, MLS, IRM/DRM, repository replication remain out of scope
+
+Research-driven ordering:
+- Frontend gaps first (zero risk, instant value)
+- Tamper-proof audit early (foundational for compliance)
+- SSO before CMIS (CMIS needs auth backend abstraction)
+- Error handling before compensation; versioning independent
+- Bulk ops before import/export (shared BatchJob infrastructure)
+- Process analytics last (benefits from accumulated data, isolates pm4py)
+
+### Critical Pitfalls
+
+- SSO retrofit: get_current_user hardwired to local JWT; needs auth backend abstraction + service tokens for Celery
+- Template versioning: WorkflowInstance.process_template_id points to mutable row; need immutable installed snapshots
+- Join race condition: _should_activate() lacks FOR UPDATE locking; fix in Phase 39
+- Audit hash chaining must be async (Celery) to avoid serializing all writes
 
 ### Pending Todos
 
@@ -59,5 +75,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-04-15
-Stopped at: Milestone v1.4 initialization
+Stopped at: Roadmap created for v1.4 Enterprise Completeness
 Resume file: None
