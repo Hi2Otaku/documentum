@@ -83,6 +83,8 @@ export interface ActivityInstanceResponse {
   state: string;
   started_at: string | null;
   completed_at: string | null;
+  error_message: string | null;
+  error_details: Record<string, unknown> | null;
   created_at: string;
 }
 
@@ -220,6 +222,36 @@ export async function terminateWorkflow(
 ): Promise<WorkflowActionResponse> {
   const res = await apiMutate<{ data: WorkflowActionResponse }>(
     `/api/v1/workflows/${id}/abort`,
+    "POST",
+  );
+  return res.data;
+}
+
+export async function retryActivity(
+  workflowId: string,
+  activityId: string,
+): Promise<{ activity_instance_id: string; status: string; message: string }> {
+  const res = await apiMutate<{
+    data: { activity_instance_id: string; status: string; message: string };
+  }>(`/api/v1/workflows/${workflowId}/activities/${activityId}/retry`, "POST");
+  return res.data;
+}
+
+export async function skipActivity(
+  workflowId: string,
+  activityId: string,
+): Promise<{ activity_instance_id: string; status: string; message: string }> {
+  const res = await apiMutate<{
+    data: { activity_instance_id: string; status: string; message: string };
+  }>(`/api/v1/workflows/${workflowId}/activities/${activityId}/skip`, "POST");
+  return res.data;
+}
+
+export async function triggerCompensation(
+  workflowId: string,
+): Promise<WorkflowActionResponse> {
+  const res = await apiMutate<{ data: WorkflowActionResponse }>(
+    `/api/v1/workflows/${workflowId}/compensate`,
     "POST",
   );
   return res.data;

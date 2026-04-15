@@ -9,6 +9,7 @@ import { AdminActionBar } from "./AdminActionBar";
 import { TerminateDialog } from "./TerminateDialog";
 import { WorkflowVariablesList } from "./WorkflowVariablesList";
 import { WorkflowProgressGraph } from "./WorkflowProgressGraph";
+import { ActivityErrorPanel } from "./ActivityErrorPanel";
 import { fetchWorkflowDetail } from "../../api/workflows";
 
 interface WorkflowDetailPanelProps {
@@ -136,6 +137,12 @@ export function WorkflowDetailPanel({ workflowId }: WorkflowDetailPanelProps) {
             </Card>
 
             <Separator className="my-4" />
+
+            {/* Error Panel for failed activities */}
+            <ActivityErrorPanel
+              workflowId={workflowId}
+              activities={workflow.activity_instances}
+            />
 
             {/* Process Variables */}
             <div>
