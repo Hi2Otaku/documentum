@@ -32,6 +32,8 @@ class ActivityInstanceResponse(BaseModel):
     state: ActivityState
     started_at: datetime | None = None
     completed_at: datetime | None = None
+    error_message: str | None = None
+    error_details: dict | None = None
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
 

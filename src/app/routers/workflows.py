@@ -211,6 +211,31 @@ async def restart_workflow(
     )
 
 
+@router.post(
+    "/{workflow_id}/compensate",
+    response_model=EnvelopeResponse[WorkflowActionResponse],
+)
+async def trigger_compensation(
+    workflow_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_admin),
+):
+    """Trigger compensation rollback for a workflow. Admin only."""
+    try:
+        workflow = await engine_service.trigger_compensation(
+            db, workflow_id, str(current_user.id)
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        )
+    return EnvelopeResponse(
+        data=WorkflowActionResponse(
+            id=workflow.id, state=workflow.state, message="Compensation initiated"
+        )
+    )
+
+
 @router.get(
     "/{workflow_id}",
     response_model=EnvelopeResponse[WorkflowDetailResponse],
@@ -504,12 +529,16 @@ async def skip_auto_activity(
         instance_variables=instance_variables,
     )
 
-    # Create skip log entry
+    # Create skip log entry (works for both auto and manual activities)
+    _method = (
+        activity_instance.activity_template.method_name
+        if activity_instance.activity_template
+        and activity_instance.activity_template.method_name
+        else "manual_skip"
+    )
     skip_log = AutoActivityLog(
         activity_instance_id=activity_id,
-        method_name=activity_instance.activity_template.method_name
-        if activity_instance.activity_template
-        else "unknown",
+        method_name=_method,
         attempt_number=0,
         status="skipped",
         started_at=datetime.now(timezone.utc),
