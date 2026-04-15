@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.3
-milestone_name: Document-Centric ECM
+milestone: v1.0
+milestone_name: milestone
 status: verifying
-stopped_at: Completed 33-02-PLAN.md (Saved Searches Frontend)
-last_updated: "2026-04-14T04:26:55.345Z"
+stopped_at: Completed 34-04-PLAN.md (Notification Preferences)
+last_updated: "2026-04-15T04:51:48.730Z"
 last_activity: 2026-04-14
 progress:
-  total_phases: 7
-  completed_phases: 7
-  total_plans: 19
-  completed_plans: 19
+  total_phases: 34
+  completed_phases: 34
+  total_plans: 97
+  completed_plans: 97
   percent: 0
 ---
 
@@ -62,6 +62,7 @@ Progress: [..........] 0% (v1.3: 0/7 phases)
 | Phase 32 P02 | 1min | 2 tasks | 2 files |
 | Phase 33-saved-searches-smart-folders P01 | 2min | 2 tasks | 7 files |
 | Phase 33-saved-searches-smart-folders P02 | 3min | 2 tasks | 6 files |
+| Phase 34 P04 | 4min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -85,6 +86,7 @@ v1.3 architecture decisions (resolved during research):
 - [Phase 32]: FolderTree icon for Browse nav item (FolderOpen already used by admin Folders)
 - [Phase 33-saved-searches-smart-folders]: Raw DDL migration matching phase31 pattern; partial index on (user_id, is_smart_folder) for smart folder queries
 - [Phase 33-saved-searches-smart-folders]: Smart folder nodes use violet Search icon and mutually exclusive selection with real folders
+- [Phase 34]: Notification preference defaults to enabled when no DB row exists; create_notification returns None for disabled types
 
 ### Pending Todos
 
@@ -96,6 +98,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-14T04:24:12.581Z
-Stopped at: Completed 33-02-PLAN.md (Saved Searches Frontend)
+Last session: 2026-04-15T04:51:48.723Z
+Stopped at: Completed 34-04-PLAN.md (Notification Preferences)
 Resume file: None
