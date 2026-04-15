@@ -59,7 +59,7 @@ See `.planning/milestones/v1.3-ROADMAP.md` for full phase details.
 - [x] **Phase 34: Frontend Gap Closure** - Wire 6 existing backend features to the web UI and fix lifecycle filter (completed 2026-04-15)
 - [x] **Phase 35: Tamper-Proof Audit Trail** - Cryptographic hash chaining for audit log integrity (completed 2026-04-15)
 - [x] **Phase 36: Identity & SSO** - LDAP/SAML/OAuth2 authentication with JIT provisioning and service tokens (completed 2026-04-15)
-- [x] **Phase 37: Workflow Error Handling & Compensation** - Declarative exception handlers and rollback activities (completed 2026-04-15)
+- [x] **Phase 37: Workflow Error Handling & Compensation** - Declarative exception handlers and rollback activities (completed 2026-04-15)
 - [x] **Phase 38: Workflow Versioning** - Concurrent active template versions with immutable installed snapshots (completed 2026-04-15)
 - [ ] **Phase 39: Advanced Join Semantics** - N-of-M, cancelling, timeout joins with race-condition-free locking
 - [ ] **Phase 40: Bulk Operations** - Mass update, delete, reclassify with background job tracking
@@ -168,8 +168,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [x] 38-01-PLAN.md � Backend: template_family_id migration, family-based install/start, version API
-- [ ] 38-02-PLAN.md � Frontend: version column in workflow table, version badge in designer & template list
+- [ ] 39-01-PLAN.md — Backend: migration, enum extensions, engine logic, Celery timeout task, concurrency tests
+- [ ] 39-02-PLAN.md — Frontend: advanced join type controls in workflow designer
 **UI hint**: yes
 
 ### Phase 40: Bulk Operations
@@ -184,8 +184,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 38-01-PLAN.md � Backend: template_family_id migration, family-based install/start, version API
-- [ ] 38-02-PLAN.md � Frontend: version column in workflow table, version badge in designer & template list
+- [ ] 40-01-PLAN.md — TBD
+- [ ] 40-02-PLAN.md — TBD
 **UI hint**: yes
 
 ### Phase 41: Import/Export
@@ -200,8 +200,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 38-01-PLAN.md � Backend: template_family_id migration, family-based install/start, version API
-- [ ] 38-02-PLAN.md � Frontend: version column in workflow table, version badge in designer & template list
+- [ ] 41-01-PLAN.md — TBD
+- [ ] 41-02-PLAN.md — TBD
 **UI hint**: yes
 
 ### Phase 42: System Monitoring & Health
@@ -216,8 +216,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 38-01-PLAN.md � Backend: template_family_id migration, family-based install/start, version API
-- [ ] 38-02-PLAN.md � Frontend: version column in workflow table, version badge in designer & template list
+- [ ] 42-01-PLAN.md — TBD
+- [ ] 42-02-PLAN.md — TBD
 **UI hint**: yes
 
 ### Phase 43: CMIS Standard API
@@ -233,8 +233,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 38-01-PLAN.md � Backend: template_family_id migration, family-based install/start, version API
-- [ ] 38-02-PLAN.md � Frontend: version column in workflow table, version badge in designer & template list
+- [ ] 43-01-PLAN.md — TBD
+- [ ] 43-02-PLAN.md — TBD
 
 ### Phase 44: Process Analytics & Mining
 **Goal**: Admins can discover actual execution patterns, identify bottlenecks, and analyze cycle times from workflow execution data
@@ -248,8 +248,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 38-01-PLAN.md � Backend: template_family_id migration, family-based install/start, version API
-- [ ] 38-02-PLAN.md � Frontend: version column in workflow table, version badge in designer & template list
+- [ ] 44-01-PLAN.md — TBD
+- [ ] 44-02-PLAN.md — TBD
 **UI hint**: yes
 
 ## Progress
@@ -269,7 +269,7 @@ Note: Phase 43 (CMIS) depends on Phase 36 (SSO) but is sequenced after Phase 42 
 | 36. Identity & SSO | v1.4 | 3/3 | Complete    | 2026-04-15 |
 | 37. Error Handling & Compensation | v1.4 | 1/3 | Complete    | 2026-04-15 |
 | 38. Workflow Versioning | v1.4 | 2/2 | Complete    | 2026-04-15 |
-| 39. Advanced Join Semantics | v1.4 | 0/? | Not started | - |
+| 39. Advanced Join Semantics | v1.4 | 0/2 | Not started | - |
 | 40. Bulk Operations | v1.4 | 0/? | Not started | - |
 | 41. Import/Export | v1.4 | 0/? | Not started | - |
 | 42. System Monitoring | v1.4 | 0/? | Not started | - |
