@@ -248,8 +248,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 44-01-PLAN.md — TBD
-- [ ] 44-02-PLAN.md — TBD
+- [ ] 44-01-PLAN.md — Backend: analytics service, schemas, Celery refresh task, API endpoints, tests
+- [ ] 44-02-PLAN.md — Frontend: analytics API client, Recharts dashboard page, routing + sidebar nav
 **UI hint**: yes
 
 ## Progress
