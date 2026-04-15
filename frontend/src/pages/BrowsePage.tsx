@@ -14,6 +14,8 @@ import {
 import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
 import { Badge } from "../components/ui/badge";
+import { Checkbox } from "../components/ui/checkbox";
+import { BulkActionToolbar } from "../components/documents/BulkActionToolbar";
 import {
   Table,
   TableHeader,
@@ -97,6 +99,8 @@ export function BrowsePage() {
   );
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedDocIds, setSelectedDocIds] = useState<Set<string>>(new Set());
+  const [activeJobId, setActiveJobId] = useState<string | null>(null);
 
   // Folder tree query
   const { data: tree = [], isLoading: treeLoading } = useQuery({
@@ -151,6 +155,7 @@ export function BrowsePage() {
     setSelectedSmartFolderId(null);
     setSelectedDocumentId(null);
     setCurrentPage(1);
+    setSelectedDocIds(new Set());
   }
 
   function handleSmartFolderSelect(id: string) {
@@ -158,6 +163,7 @@ export function BrowsePage() {
     setSelectedFolderId(null);
     setSelectedDocumentId(null);
     setCurrentPage(1);
+    setSelectedDocIds(new Set());
   }
 
   function handleBreadcrumbNavigate(id: string) {
@@ -251,6 +257,16 @@ export function BrowsePage() {
                 Smart Folder: {activeSmartFolder.name}
               </span>
             </div>
+          )}
+
+          {/* Bulk action toolbar */}
+          {selectedDocIds.size > 0 && (
+            <BulkActionToolbar
+              selectedCount={selectedDocIds.size}
+              selectedIds={Array.from(selectedDocIds)}
+              onClear={() => setSelectedDocIds(new Set())}
+              onJobStarted={(jobId) => setActiveJobId(jobId)}
+            />
           )}
 
           {/* Content rendering */}
@@ -427,6 +443,21 @@ export function BrowsePage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="h-10 bg-secondary">
+                      <TableHead className="w-10 px-3">
+                        <Checkbox
+                          checked={
+                            documents.length > 0 &&
+                            documents.every((d) => selectedDocIds.has(d.id))
+                          }
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedDocIds(new Set(documents.map((d) => d.id)));
+                            } else {
+                              setSelectedDocIds(new Set());
+                            }
+                          }}
+                        />
+                      </TableHead>
                       <TableHead className="w-10" />
                       <TableHead>Title</TableHead>
                       <TableHead>Type</TableHead>
@@ -445,6 +476,22 @@ export function BrowsePage() {
                         }`}
                         onClick={() => setSelectedDocumentId(doc.id)}
                       >
+                        <TableCell className="w-10 px-3" onClick={(e) => e.stopPropagation()}>
+                          <Checkbox
+                            checked={selectedDocIds.has(doc.id)}
+                            onCheckedChange={(checked) => {
+                              setSelectedDocIds((prev) => {
+                                const next = new Set(prev);
+                                if (checked) {
+                                  next.add(doc.id);
+                                } else {
+                                  next.delete(doc.id);
+                                }
+                                return next;
+                              });
+                            }}
+                          />
+                        </TableCell>
                         <TableCell className="w-10 px-3">
                           <FileTypeIcon contentType={doc.content_type} />
                         </TableCell>
