@@ -14,6 +14,7 @@ import { FoldersPage } from "./pages/FoldersPage";
 import { ProtectedRoute } from "./components/layout/ProtectedRoute";
 import { AppShell } from "./components/layout/AppShell";
 import { AdminRoute } from "./components/layout/AdminRoute";
+import { NotificationPreferencesPage } from "./pages/NotificationPreferencesPage";
 
 export default function App() {
   return (
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="/documents" element={<DocumentsPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/workflows" element={<WorkflowsPage />} />
+          <Route path="/settings/notifications" element={<NotificationPreferencesPage />} />
 
           {/* Admin-only routes */}
           <Route element={<AdminRoute />}>

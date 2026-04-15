@@ -24,6 +24,7 @@ async function apiFetch<T>(url: string): Promise<T> {
 async function apiMutate<T>(
   url: string,
   method: "POST" | "PUT" | "PATCH",
+  body?: unknown,
 ): Promise<T> {
   const res = await fetch(url, {
     method,
@@ -31,6 +32,7 @@ async function apiMutate<T>(
       "Content-Type": "application/json",
       ...authHeaders(),
     },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
   });
   if (res.status === 401) handle401();
   if (!res.ok) {
@@ -106,5 +108,34 @@ export async function markAllNotificationsRead(): Promise<{
   return apiMutate<{ ok: boolean; updated_count: number }>(
     "/api/v1/notifications/read-all",
     "PATCH",
+  );
+}
+
+// --- Notification Preferences ---
+
+export interface NotificationPreference {
+  notification_type: string;
+  enabled: boolean;
+}
+
+export interface NotificationPreferencesUpdate {
+  preferences: NotificationPreference[];
+}
+
+export async function fetchNotificationPreferences(): Promise<
+  NotificationPreference[]
+> {
+  return apiFetch<NotificationPreference[]>(
+    "/api/v1/notifications/preferences",
+  );
+}
+
+export async function updateNotificationPreferences(
+  data: NotificationPreferencesUpdate,
+): Promise<NotificationPreference[]> {
+  return apiMutate<NotificationPreference[]>(
+    "/api/v1/notifications/preferences",
+    "PUT",
+    data,
   );
 }
