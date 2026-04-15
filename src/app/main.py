@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select
 
 from app.core.config import settings
-from app.routers import aliases, audit, auth, bulk, cmis, dashboard, document_types, documents, events, folders, groups, health, identity, import_export, inbox, lifecycle, monitoring, notifications, query, queues, relationships, renditions, retention, roles, saved_searches, search, signatures, templates, users, virtual_documents, workflows
+from app.routers import aliases, analytics, audit, auth, bulk, cmis, dashboard, document_types, documents, events, folders, groups, health, identity, import_export, inbox, lifecycle, monitoring, notifications, query, queues, relationships, renditions, retention, roles, saved_searches, search, signatures, templates, users, virtual_documents, workflows
 
 logger = logging.getLogger(__name__)
 
@@ -109,6 +109,7 @@ def create_app() -> FastAPI:
     application.include_router(monitoring.router, prefix=settings.api_v1_prefix)
     application.include_router(monitoring.prometheus_router)
     application.include_router(cmis.router, prefix=settings.api_v1_prefix)
+    application.include_router(analytics.router, prefix=settings.api_v1_prefix)
 
     return application
 
