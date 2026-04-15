@@ -64,7 +64,7 @@ See `.planning/milestones/v1.3-ROADMAP.md` for full phase details.
 - [x] **Phase 39: Advanced Join Semantics** - N-of-M, cancelling, timeout joins with race-condition-free locking (completed 2026-04-15)
 - [x] **Phase 40: Bulk Operations** - Mass update, delete, reclassify with background job tracking (completed 2026-04-15)
 - [x] **Phase 41: Import/Export** - ZIP package export/import with hierarchy preservation and conflict resolution (completed 2026-04-15)
-- [ ] **Phase 42: System Monitoring & Health** - Deep health checks, queue metrics, Prometheus endpoint, alerting
+- [x] **Phase 42: System Monitoring & Health** - Deep health checks, queue metrics, Prometheus endpoint, alerting (completed 2026-04-15)
 - [ ] **Phase 43: CMIS Standard API** - OASIS CMIS 1.1 Browser Binding for content interoperability
 - [ ] **Phase 44: Process Analytics & Mining** - Execution path discovery, cycle time analysis, bottleneck identification
 
@@ -217,7 +217,7 @@ Plans:
 
 Plans:
 - [x] 42-01-PLAN.md — Backend: monitoring service, health checks, Prometheus endpoint, alert rules, Celery task
-- [ ] 42-02-PLAN.md — Frontend: monitoring API client, health dashboard page, alert rule management, routing
+- [x] 42-02-PLAN.md — Frontend: monitoring API client, health dashboard page, alert rule management, routing
 **UI hint**: yes
 
 ### Phase 43: CMIS Standard API
@@ -272,6 +272,6 @@ Note: Phase 43 (CMIS) depends on Phase 36 (SSO) but is sequenced after Phase 42 
 | 39. Advanced Join Semantics | v1.4 | 2/2 | Complete    | 2026-04-15 |
 | 40. Bulk Operations | v1.4 | 2/2 | Complete    | 2026-04-15 |
 | 41. Import/Export | v1.4 | 2/2 | Complete    | 2026-04-15 |
-| 42. System Monitoring | v1.4 | 1/2 | In Progress|  |
+| 42. System Monitoring | v1.4 | 2/2 | Complete   | 2026-04-15 |
 | 43. CMIS Standard API | v1.4 | 0/? | Not started | - |
 | 44. Process Analytics | v1.4 | 0/? | Not started | - |
