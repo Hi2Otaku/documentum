@@ -1,664 +1,825 @@
-# Architecture Research: v1.3 Document-Centric ECM
+# Architecture Patterns
 
-**Domain:** Document-centric ECM integration into existing workflow engine
-**Researched:** 2026-04-13
-**Overall confidence:** HIGH
+**Domain:** Enterprise ECM platform -- v1.4 Enterprise Completeness integration
+**Researched:** 2026-04-15
 
-This document maps exactly how eight new ECM features integrate with the existing 26-phase codebase (~17,400 Python LOC, ~13,800 TypeScript LOC). Every recommendation accounts for existing models, services, routers, and frontend components.
+## Current Architecture Snapshot
+
+The system is a well-structured monolith with clear separation of concerns, built over 33 phases (v1.0-v1.3):
+
+```
+                    +------------------+
+                    |   React 19 SPA   |
+                    |  (Vite + shadcn) |
+                    |  12 pages, ~50   |
+                    |  components      |
+                    +--------+---------+
+                             |
+                    HTTP/SSE | REST /api/v1/*
+                             |
+                    +--------+---------+
+                    |    FastAPI App    |
+                    |  (Uvicorn ASGI)  |
+                    +--------+---------+
+                    |  Routers (26)    |
+                    |  Services (22)   |
+                    |  Models (12)     |
+                    +--+-----+-----+--+
+                       |     |     |
+            +----------+  +--+--+  +-----------+
+            |             |     |              |
+      +-----+----+  +----+---+ +----+----+  +-+-------+
+      |PostgreSQL |  | Redis  | |  MinIO  |  | Celery  |
+      |  16       |  |  7     | | (S3)    |  | Workers |
+      | (asyncpg) |  | broker | | 1 bucket|  | +Beat   |
+      +-----------+  | pubsub | +---------+  | +Rend.  |
+                     +--------+              +---------+
+```
+
+**Key architectural facts from code inspection:**
+
+- **Auth:** JWT only (PyJWT + pwdlib/bcrypt). Single `get_current_user` dependency in `core/dependencies.py` that decodes JWT and does DB user lookup. No pluggable auth backend -- hardcoded DB user lookup by UUID from token `sub` claim.
+- **Storage:** Single MinIO bucket ("documents"), single `core/minio_client.py` with `upload_object`/`download_object`/`delete_object`. All operations wrapped in `asyncio.to_thread()`. No storage abstraction layer.
+- **Event bus:** In-process singleton `EventBus` class in `services/event_bus.py`. Persists events to `domain_events` table, dispatches to registered handlers synchronously within the request. Handlers registered via `@event_bus.on("event.type")` decorator.
+- **Audit:** Simple `AuditLog` model with JSON `before_state`/`after_state` columns. No tamper detection, no hash chain, no sequence numbering.
+- **Templates:** `ProcessTemplate` has `version` int field and `state` enum (DRAFT/VALIDATED/ACTIVE/DEPRECATED). No concurrent version management -- single row per template, version field incremented in place.
+- **Engine:** Petri-net token-based execution in `engine_service.py`. Explicit state transition maps for workflows (5 states), activities (5 states), and work items (6 states). Only AND_JOIN and OR_JOIN trigger types.
+- **Middleware:** Empty `middleware/` directory (only `__init__.py`).
+- **Config:** `pydantic-settings` based `Settings` class with env vars. No auth backend config, no storage tier config, no monitoring thresholds.
+- **Docker:** 6 containers: api, db, redis, minio, celery-worker, celery-beat, celery-rendition-worker.
 
 ---
 
-## Critical Design Decisions
+## Integration Analysis: Feature by Feature
 
-### Decision 1: Adjacency List + Recursive CTE (not ltree, not sysobject polymorphic base)
+### 1. LDAP/SAML/OAuth2 SSO
 
-**Rejected: ltree extension.** Requires rewriting materialized paths for all descendants on every move/rename. The existing codebase uses zero PostgreSQL extensions beyond core. Adding ltree creates a maintenance dependency for marginal benefit -- cabinet/folder trees in an ECM are typically 3-8 levels deep, where recursive CTEs perform fine.
+**Integration point:** `core/dependencies.py` (`get_current_user`) and `core/security.py`
 
-**Rejected: dm_sysobject polymorphic base table.** SQLAlchemy joined-table inheritance would require migrating the existing `documents` table to inherit from a new `sysobjects` table -- a destructive schema change touching every FK referencing `documents.id` (DocumentVersion, DocumentACL, WorkflowPackage, Rendition, Retention, Signature, VirtualDocumentChild). The migration risk is enormous for the existing 26-phase codebase. Instead, folders and documents share the same `BaseModel` (which already provides id, timestamps, soft-delete) and are kept as separate tables. This is the pragmatic choice.
+**What changes:**
 
-**Chosen: Adjacency list with `parent_id` FK on `folders`.** Consistent with existing codebase patterns. Augmented with recursive CTE helper functions for tree queries (breadcrumb, subtree listing, ancestor walk for ACL). If performance bottlenecks appear later, add a denormalized `materialized_path` TEXT column without changing the core model.
+| Type | File | Change |
+|------|------|--------|
+| NEW | `core/auth_backends.py` | Pluggable authentication backend interface (ABC) |
+| NEW | `services/sso_service.py` | LDAP bind, SAML assertion parsing, OAuth2 code exchange |
+| MODIFY | `core/dependencies.py` | `get_current_user` tries JWT first, delegates to configured backend on failure |
+| MODIFY | `core/config.py` | Add `auth_backend`, `ldap_url`, `saml_metadata_url`, `oauth2_*` settings |
+| MODIFY | `routers/auth.py` | Add `/auth/saml/callback`, `/auth/oauth2/callback`, `/auth/ldap/login` |
+| MODIFY | `services/auth_service.py` | JIT user provisioning on first SSO login |
+| MODIFY | `models/user.py` | Add `external_id`, `auth_provider` fields for SSO-provisioned users |
+| MODIFY | Frontend `LoginPage.tsx` | SSO buttons, redirect flows |
 
-### Decision 2: PostgreSQL tsvector for Full-Text Search (not Elasticsearch/Meilisearch)
-
-The existing stack is PostgreSQL-centric. Adding an external search engine is premature for an internal tool. PostgreSQL's tsvector with GIN indexes handles full-text search well up to ~1M documents. The tsvector approach requires zero new infrastructure and is maintained by a PostgreSQL trigger (no application-level index sync). If scale demands it later, Meilisearch can be added behind the same search service interface.
-
-### Decision 3: Separate `document_content_text` Table for Extracted Text
-
-Extracted text from document files (PDFs, Word docs) can be megabytes. Storing it directly on the `documents` table would bloat every query that touches documents. A separate `document_content_text` table (1:1 with documents) keeps the documents table lean. The content search vector lives on this separate table and is JOINed only during search queries.
-
-### Decision 4: Single `folders` Table for Cabinets + Folders
-
-In Documentum, `dm_cabinet` extends `dm_folder`. We collapse both into one table with an `is_cabinet` boolean. Cabinets are root folders (`parent_id IS NULL` + `is_cabinet = true`). This avoids unnecessary join complexity.
-
----
-
-## Data Model Changes
-
-### New Tables/Models
-
-#### 1. `document_types` -- new model `DocumentType`
-
-Defines custom document types with metadata schemas. The type system Documentum calls dm_type.
+**Architecture pattern:** Strategy pattern for auth backends. The `get_current_user` dependency remains the single entry point for all routers. Each backend implements `authenticate(credentials) -> User | None`. JWT stays the session token format even for SSO users -- SSO authenticates the user, then the system issues a JWT for subsequent requests.
 
 ```python
-# src/app/models/document_type.py
-class DocumentType(BaseModel):
-    __tablename__ = "document_types"
+# core/auth_backends.py
+class AuthBackend(ABC):
+    @abstractmethod
+    async def authenticate(self, db: AsyncSession, credentials: dict) -> User | None: ...
 
-    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
-    display_name: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    parent_type_id: Mapped[uuid.UUID | None] = mapped_column(
-        Uuid(), ForeignKey("document_types.id"), nullable=True
-    )
-    # JSON Schema defining required/optional metadata fields
-    metadata_schema: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
-    is_abstract: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+class DatabaseBackend(AuthBackend):
+    """Current behavior -- username/password against users table."""
 
-    parent_type: Mapped["DocumentType | None"] = relationship(remote_side="DocumentType.id")
+class LDAPBackend(AuthBackend):
+    """LDAP bind + JIT user provisioning."""
+
+class SAMLBackend(AuthBackend):
+    """SAML assertion validation + JIT provisioning."""
+
+class OAuth2Backend(AuthBackend):
+    """OAuth2 authorization code exchange + JIT provisioning."""
 ```
 
-**Rationale:** `metadata_schema` stores a JSON Schema document that validates `Document.custom_properties`. Type inheritance via `parent_type_id` means a child type's schema extends the parent's. Validation at service layer via `jsonschema` library.
+**New Python dependencies:** `ldap3` (pure Python LDAP, no C deps), `python3-saml` (OneLogin SAML toolkit), `authlib` (OAuth2 code flow).
 
-#### 2. `folders` -- new model `Folder`
+**Component boundary:** Auth backends are isolated behind an interface. The rest of the system never knows how the user authenticated -- it only sees the JWT. This is critical: CMIS, WebDAV, bulk operations, and every other feature that calls `get_current_user` works identically regardless of auth method.
 
-Unified model for dm_cabinet and dm_folder.
+### 2. CMIS API
 
-```python
-# src/app/models/folder.py
-class Folder(BaseModel):
-    __tablename__ = "folders"
-    __table_args__ = (
-        UniqueConstraint("parent_id", "name", name="uq_folder_name_in_parent"),
-    )
+**Integration point:** New API surface mounted parallel to existing REST API
 
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    parent_id: Mapped[uuid.UUID | None] = mapped_column(
-        Uuid(), ForeignKey("folders.id"), nullable=True, index=True
-    )
-    owner_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid(), ForeignKey("users.id"), nullable=False
-    )
-    is_cabinet: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    acl_inherited: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+**What changes:**
 
-    parent: Mapped["Folder | None"] = relationship(
-        remote_side="Folder.id", back_populates="children"
-    )
-    children: Mapped[list["Folder"]] = relationship(back_populates="parent")
-```
+| Type | File | Change |
+|------|------|--------|
+| NEW | `routers/cmis.py` | CMIS AtomPub and Browser (JSON) bindings at `/cmis/` |
+| NEW | `services/cmis_service.py` | Maps CMIS object model to existing Document/Folder/ACL models |
+| NEW | `schemas/cmis.py` | CMIS type definitions, property mappings, CMIS error responses |
+| MODIFY | `main.py` | Mount CMIS router at separate prefix (NOT under `/api/v1/`) |
 
-**Constraint:** Cabinets have `parent_id IS NULL` + `is_cabinet = true`. Non-cabinet folders must have a parent. Enforced via DB check constraint in migration.
+**Architecture pattern:** Adapter/facade. CMIS service wraps existing `document_service`, `folder_service`, `acl_service`. No new database tables. CMIS types map to existing `DocumentType` model. CMIS "repository" is the entire system instance.
 
-#### 3. `folder_documents` -- association table
+**Key design decision:** Mount CMIS at `/cmis/atom` (AtomPub binding) and `/cmis/browser` (JSON binding) as separate router groups. Do NOT mix with the internal REST API. The CMIS 1.1 spec prescribes its own URL patterns and response formats.
 
-Many-to-many: documents can live in multiple folders (Documentum link/unlink semantics).
+**CMIS service operations map to existing services:**
 
-```python
-# src/app/models/folder.py
-folder_documents = Table(
-    "folder_documents",
-    BaseModel.metadata,
-    Column("folder_id", Uuid(), ForeignKey("folders.id"), primary_key=True),
-    Column("document_id", Uuid(), ForeignKey("documents.id"), primary_key=True),
-    Column("linked_at", DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)),
-    Column("linked_by", Uuid(), nullable=True),
-)
-```
+| CMIS Operation | Internal Service Call |
+|---------------|----------------------|
+| `getObject` | `document_service.get()` or `folder_service.get()` |
+| `getChildren` | `folder_service.list_children()` |
+| `createDocument` | `document_service.create()` |
+| `createFolder` | `folder_service.create()` |
+| `updateProperties` | `document_service.update()` |
+| `deleteObject` | `document_service.delete()` or `folder_service.delete()` |
+| `getContentStream` | `minio_client.download_object()` via `document_service` |
+| `checkOut/checkIn` | `document_service.checkout()` / `document_service.checkin()` |
+| `getACL` | `acl_service.get_permissions()` |
+| `query` (CMIS SQL) | `query_service.execute()` (adapt DQL parser) |
 
-#### 4. `folder_acl` -- new model `FolderACL`
+**Component boundary:** CMIS introduces zero new domain models. It is purely a translation layer.
 
-Mirror of existing `DocumentACL` but for folders. Enables ACL inheritance down the folder tree.
+### 3. WebDAV
 
-```python
-# src/app/models/folder_acl.py (or extend acl.py)
-class FolderACL(BaseModel):
-    __tablename__ = "folder_acl"
-    __table_args__ = (
-        UniqueConstraint(
-            "folder_id", "principal_id", "principal_type", "permission_level",
-            name="uq_folder_acl_entry",
-        ),
-    )
+**Integration point:** New protocol endpoint, separate from REST API
 
-    folder_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid(), ForeignKey("folders.id"), nullable=False, index=True
-    )
-    principal_id: Mapped[uuid.UUID] = mapped_column(Uuid(), nullable=False)
-    principal_type: Mapped[str] = mapped_column(String(20), nullable=False)
-    permission_level: Mapped[str] = mapped_column(
-        Enum(PermissionLevel, name="permissionlevel"), nullable=False
-    )
-```
+**What changes:**
 
-#### 5. `document_relationships` -- new model `DocumentRelationship`
+| Type | File | Change |
+|------|------|--------|
+| NEW | `routers/webdav.py` | WebDAV method handlers (PROPFIND, PROPPATCH, MKCOL, GET, PUT, DELETE, COPY, MOVE, LOCK, UNLOCK) |
+| NEW | `services/webdav_service.py` | Maps WebDAV operations to existing document/folder services |
+| NEW | `middleware/webdav_auth.py` | HTTP Basic Auth for WebDAV (OS clients don't do JWT) |
+| MODIFY | `main.py` | Mount WebDAV handler at `/webdav/` prefix |
 
-Typed relationships between documents.
+**Architecture pattern:** Protocol adapter. WebDAV is a different HTTP dialect over the same domain services. The critical nuance: WebDAV clients (Windows Explorer, macOS Finder, LibreOffice) use HTTP Basic Auth, not Bearer tokens. This requires the auth backend abstraction from feature #1 to support Basic Auth -> user lookup -> internal JWT issuance.
 
-```python
-# src/app/models/document_relationship.py
-class RelationshipType(str, enum.Enum):
-    SUPERSEDES = "supersedes"
-    REFERENCES = "references"
-    IS_PART_OF = "is_part_of"
-    RELATED_TO = "related_to"
+**Key design decision:** FastAPI can handle custom HTTP methods via `@router.api_route(methods=["PROPFIND"])`. For the `/webdav/` prefix, add a dedicated middleware that converts Basic Auth to an internal user context before the request reaches the router.
 
-class DocumentRelationship(BaseModel):
-    __tablename__ = "document_relationships"
-    __table_args__ = (
-        UniqueConstraint(
-            "source_document_id", "target_document_id", "relationship_type",
-            name="uq_document_relationship",
-        ),
-    )
+**Dependency on feature #1 (SSO):** The auth backend abstraction enables Basic Auth for WebDAV alongside JWT for REST and SSO callbacks. Without the abstraction, WebDAV would need a separate parallel auth implementation.
 
-    source_document_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid(), ForeignKey("documents.id"), nullable=False, index=True
-    )
-    target_document_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid(), ForeignKey("documents.id"), nullable=False, index=True
-    )
-    relationship_type: Mapped[str] = mapped_column(
-        Enum(RelationshipType, name="relationshiptype"), nullable=False
-    )
-    description: Mapped[str | None] = mapped_column(Text, nullable=True)
-```
-
-#### 6. `saved_searches` -- new model `SavedSearch`
-
-Named queries acting as virtual folders.
-
-```python
-# src/app/models/saved_search.py
-class SavedSearch(BaseModel):
-    __tablename__ = "saved_searches"
-
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    owner_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid(), ForeignKey("users.id"), nullable=False
-    )
-    query_definition: Mapped[dict] = mapped_column(JSON, nullable=False)
-    is_public: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    show_in_tree: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-```
-
-#### 7. `document_content_text` -- new model `DocumentContentText`
-
-Extracted text from document files for full-text content search.
-
-```python
-# src/app/models/document_content.py
-class DocumentContentText(BaseModel):
-    __tablename__ = "document_content_text"
-
-    document_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid(), ForeignKey("documents.id"), nullable=False, unique=True
-    )
-    extracted_text: Mapped[str | None] = mapped_column(Text, nullable=True)
-    extraction_status: Mapped[str] = mapped_column(
-        String(20), default="pending", nullable=False
-    )  # pending, processing, completed, failed
-    content_search_vector: Mapped[None] = mapped_column(
-        TSVECTOR, nullable=True  # GIN indexed
-    )
-```
-
-### Modified Existing Models
-
-#### `Document` model (`src/app/models/document.py`) -- 3 new columns
-
-```python
-# NEW columns to add:
-document_type_id: Mapped[uuid.UUID | None] = mapped_column(
-    Uuid(), ForeignKey("document_types.id"), nullable=True, index=True
-)
-
-search_vector: Mapped[None] = mapped_column(
-    TSVECTOR, nullable=True  # GIN index + PostgreSQL trigger
-)
-
-owner_id: Mapped[uuid.UUID | None] = mapped_column(
-    Uuid(), ForeignKey("users.id"), nullable=True
-)
-```
-
-**Migration strategy for `search_vector`:**
-1. Add nullable TSVECTOR column
-2. Create GIN index: `CREATE INDEX ix_documents_search_vector ON documents USING GIN(search_vector)`
-3. Create PostgreSQL trigger to auto-update on INSERT/UPDATE of title, filename, author
-4. Backfill existing rows in the same migration
-
-**Migration for `owner_id`:** Backfill from `created_by` (stored as string UUID): `UPDATE documents SET owner_id = created_by::uuid WHERE created_by IS NOT NULL`
-
-#### `enums.py` -- add `RelationshipType` enum
-
-#### `models/__init__.py` -- register all new models
-
-### Key Relationships
+**WebDAV URL mapping:**
 
 ```
-DocumentType (1) ------< (many) Document [via document_type_id]
-DocumentType (1) ------< (many) DocumentType [self-ref: parent_type_id]
-
-Folder (1) ------< (many) Folder [self-ref: parent_id]
-Folder (many) >---< (many) Document [via folder_documents]
-Folder (1) ------< (many) FolderACL
-
-Document (1) ------< (many) DocumentRelationship [as source]
-Document (1) ------< (many) DocumentRelationship [as target]
-Document (1) ------< (0..1) DocumentContentText
-
-User (1) ------< (many) SavedSearch
-User (1) ------< (many) Folder [as owner]
+/webdav/                    -> root (list cabinets)
+/webdav/{cabinet}/          -> cabinet contents
+/webdav/{cabinet}/{folder}/ -> folder contents
+/webdav/{cabinet}/.../{file} -> document content (GET/PUT)
 ```
 
-**All existing relationships preserved unchanged:** Document->DocumentVersion->Rendition, Document->DocumentACL, Document->WorkflowPackage, Document->VirtualDocumentChild, Document->RetentionPolicy/LegalHold, Document->DocumentSignature.
+### 4. Email Archiving
 
----
+**Integration point:** New ingest pipeline, new Celery task
 
-## API Surface
+**What changes:**
 
-### New Endpoints
+| Type | File | Change |
+|------|------|--------|
+| NEW | `services/email_service.py` | Email parsing (headers, body, attachments), IMAP polling |
+| NEW | `tasks/email_ingestion.py` | Celery periodic task to poll mailbox |
+| NEW | `models/email.py` | `EmailMessage` model (from, to, subject, message_id, thread references) linking to Document |
+| NEW | `routers/email.py` | Manual .eml import endpoint, mailbox configuration endpoints |
+| MODIFY | `services/document_service.py` | Support creating documents from email (body as content, attachments as related docs) |
+| MODIFY | Celery Beat schedule | Add email polling interval |
 
-#### Folder/Cabinet Management -- `src/app/routers/folders.py`
+**Architecture pattern:** Ingest pipeline. Email arrives (IMAP poll or manual upload) -> parse headers/body/attachments -> create Document for email body -> create Documents for each attachment -> link via existing `DocumentRelationship` model (relationship_type: `IS_PART_OF`) -> store all in MinIO -> index for search via existing search infrastructure.
 
-| Method | Path | Purpose |
-|--------|------|---------|
-| `POST` | `/api/folders` | Create folder or cabinet |
-| `GET` | `/api/folders` | List root cabinets |
-| `GET` | `/api/folders/{id}` | Get folder details |
-| `GET` | `/api/folders/{id}/children` | List child folders + documents |
-| `GET` | `/api/folders/{id}/tree` | Get subtree (recursive, depth-limited) |
-| `PUT` | `/api/folders/{id}` | Update folder metadata |
-| `DELETE` | `/api/folders/{id}` | Delete folder (must be empty) |
-| `POST` | `/api/folders/{id}/documents/{doc_id}` | File document into folder |
-| `DELETE` | `/api/folders/{id}/documents/{doc_id}` | Unlink document from folder |
-| `POST` | `/api/folders/{id}/move` | Move folder to new parent |
-| `GET` | `/api/folders/{id}/breadcrumb` | Path from root to folder |
+**Key design decision:** Use Celery Beat for IMAP polling (simpler than running an SMTP server, which requires port 25 and MX records). For demo/testing, support manual .eml file upload via REST endpoint. Use Python's built-in `email` module for parsing (stdlib, no external deps needed for basic RFC 5322 parsing).
 
-#### Folder ACL -- under folders router
+### 5. Workflow Error Handling & Compensation
 
-| Method | Path | Purpose |
-|--------|------|---------|
-| `GET` | `/api/folders/{id}/acl` | List folder ACL entries |
-| `POST` | `/api/folders/{id}/acl` | Add ACL entry |
-| `DELETE` | `/api/folders/{id}/acl/{entry_id}` | Remove ACL entry |
-| `GET` | `/api/folders/{id}/effective-acl` | Computed inherited + direct ACL |
+**Integration point:** `services/engine_service.py` -- core engine modifications
 
-#### Document Types -- `src/app/routers/document_types.py`
+**What changes:**
 
-| Method | Path | Purpose |
-|--------|------|---------|
-| `POST` | `/api/document-types` | Create type (admin) |
-| `GET` | `/api/document-types` | List all types |
-| `GET` | `/api/document-types/{id}` | Get type with schema |
-| `PUT` | `/api/document-types/{id}` | Update type (admin) |
-| `DELETE` | `/api/document-types/{id}` | Delete if unused |
-| `GET` | `/api/document-types/{id}/schema` | Merged schema (type + ancestors) |
+| Type | File | Change |
+|------|------|--------|
+| MODIFY | `models/workflow.py` | Add `ExceptionHandler` model (linked to ActivityTemplate), add `is_compensation` flag to ActivityTemplate |
+| MODIFY | `models/enums.py` | Add `COMPENSATING` to ActivityState |
+| MODIFY | `services/engine_service.py` | Wrap activity execution in try/catch, look up exception handlers, execute compensation chain |
+| MODIFY | `schemas/template.py` | Exception handler configuration in template design |
+| MODIFY | Frontend designer | Exception handler nodes and compensation flow edges |
 
-#### Full-Text Search -- `src/app/routers/search.py`
+**Architecture pattern:** Exception handler chain. Each activity template can declare 0..N exception handlers with conditions (exception type match, max retry count). When an activity enters ERROR state:
 
-| Method | Path | Purpose |
-|--------|------|---------|
-| `GET` | `/api/search` | Full-text search with filters and facets |
-| `POST` | `/api/search/reindex` | Trigger full reindex (admin) |
+1. Check handler chain for matching handler
+2. If handler says "retry" -> retry with exponential backoff via Celery
+3. If handler says "compensate" -> execute compensation activities in reverse order of completed activities
+4. If handler says "halt" -> halt workflow for admin intervention
+5. If no handler matches -> mark workflow FAILED (current behavior, backward compatible)
 
-#### Document Relationships -- extend `src/app/routers/documents.py`
+**Key design decision:** Compensation activities are regular ActivityTemplate rows with `is_compensation = True`. They execute in reverse order of the activities that completed. This reuses the existing activity execution infrastructure entirely.
 
-| Method | Path | Purpose |
-|--------|------|---------|
-| `GET` | `/api/documents/{id}/relationships` | List relationships |
-| `POST` | `/api/documents/{id}/relationships` | Create relationship |
-| `DELETE` | `/api/documents/{id}/relationships/{rel_id}` | Remove relationship |
+### 6. Workflow Versioning
 
-#### Saved Searches -- `src/app/routers/saved_searches.py`
+**Integration point:** `services/template_service.py` and `models/workflow.py`
 
-| Method | Path | Purpose |
-|--------|------|---------|
-| `POST` | `/api/saved-searches` | Save a search |
-| `GET` | `/api/saved-searches` | List user's + public saved searches |
-| `GET` | `/api/saved-searches/{id}` | Get definition |
-| `GET` | `/api/saved-searches/{id}/results` | Execute saved search |
-| `PUT` | `/api/saved-searches/{id}` | Update |
-| `DELETE` | `/api/saved-searches/{id}` | Delete |
+**What changes:**
 
-### Modified Endpoints
+| Type | File | Change |
+|------|------|--------|
+| MODIFY | `models/workflow.py` | Add `template_family_id` UUID to ProcessTemplate, unique constraint on `(template_family_id, version)` |
+| MODIFY | `services/template_service.py` | "Create new version" duplicates template with incremented version, old stays ACTIVE until deprecated |
+| MODIFY | `services/engine_service.py` | `instantiate_workflow()` resolves latest ACTIVE version in family |
+| MODIFY | `routers/templates.py` | Version listing, version comparison, deprecation, family-scoped queries |
+| MODIFY | Frontend template list | Version history panel, create-new-version action |
 
-| Endpoint | Change |
-|----------|--------|
-| `POST /api/documents/` | Add optional `document_type_id` and `folder_id` params; validate custom_properties against type schema; dispatch text extraction task |
-| `PUT /api/documents/{id}` | Add `document_type_id` to payload; re-validate custom_properties on type change |
-| `GET /api/documents/` | Add `folder_id`, `document_type_id`, `q` query params for filtering |
-| `DELETE /api/documents/{id}` | Clean up `folder_documents` entries |
+**Architecture pattern:** Immutable versioned records. Each installed version is a separate `ProcessTemplate` row (with its own `ActivityTemplate`, `FlowTemplate`, `ProcessVariable` rows). `WorkflowInstance.template_id` FK points to a specific version row. The `template_family_id` groups all versions of the same logical process.
 
-### New Services
+**Key design decision:** Do NOT migrate in-flight workflows to new template versions. Running instances keep their template version. New instances automatically use the latest ACTIVE version in the family. This is the Documentum approach and avoids the enormous complexity of runtime template migration. A `ProcessTemplate` in DEPRECATED state cannot spawn new instances but existing instances continue normally.
 
-| Service File | Purpose |
-|-------------|---------|
-| `folder_service.py` | Folder/cabinet CRUD, tree queries (recursive CTE), filing, move |
-| `document_type_service.py` | Type CRUD, schema inheritance, metadata validation |
-| `search_service.py` | Full-text search, tsvector queries, faceted filtering, ranking |
-| `relationship_service.py` | Document relationship CRUD |
-| `saved_search_service.py` | Saved search CRUD, execution |
-| `folder_acl_service.py` | Folder ACL CRUD, inheritance computation |
-| `content_extraction_service.py` | Text extraction from files (PDF, Word, etc.) |
+**Migration:** Backfill existing templates: `UPDATE process_templates SET template_family_id = id WHERE template_family_id IS NULL` (each existing template becomes the sole member of its own family).
 
-### New Celery Tasks
+### 7. Advanced Join Semantics
 
-| Task | Trigger | Purpose |
-|------|---------|---------|
-| `extract_document_text` | On upload/checkin | Extract text from document file for search index |
-| `reindex_all_documents` | Admin manual trigger | Full reindex of all document search vectors |
+**Integration point:** `models/enums.py` and `services/engine_service.py`
 
----
+**What changes:**
 
-## Frontend Architecture
+| Type | File | Change |
+|------|------|--------|
+| MODIFY | `models/enums.py` | Extend `TriggerType` with WEIGHTED_JOIN, CANCELLING_JOIN, TIMEOUT_JOIN, N_OF_M_JOIN |
+| MODIFY | `models/workflow.py` | Add `join_config` JSONB field to `ActivityTemplate` |
+| MODIFY | `services/engine_service.py` | Token counting logic in join evaluation becomes strategy-based |
+| MODIFY | `schemas/template.py` | Join configuration schema |
+| MODIFY | Frontend designer | Join type selector in activity properties panel |
 
-### New Pages/Routes
+**Architecture pattern:** Strategy on join evaluation. Current AND/OR logic is simple token counting. New types add configurable conditions:
 
-Add to `App.tsx`:
+| Join Type | Behavior | Config |
+|-----------|----------|--------|
+| AND_JOIN | All incoming tokens required (existing) | None |
+| OR_JOIN | Any one token sufficient (existing) | None |
+| N_OF_M_JOIN | N of M incoming paths must complete | `{"threshold": 2}` |
+| WEIGHTED_JOIN | Sum of path weights >= threshold | `{"weights": {"flow_id": 3}, "threshold": 5}` |
+| CANCELLING_JOIN | First token fires, cancels pending siblings | None |
+| TIMEOUT_JOIN | AND-join with deadline, falls back to OR | `{"timeout_seconds": 3600}` |
 
-```typescript
-<Route path="/browse" element={<BrowsePage />} />
-<Route path="/browse/:folderId" element={<BrowsePage />} />
-<Route path="/search" element={<SearchPage />} />
-<Route element={<AdminRoute />}>
-  <Route path="/admin/document-types" element={<DocumentTypesPage />} />
-</Route>
+**Component boundary:** All join logic stays in `engine_service.py`. No new services needed. This is a refinement of existing engine logic.
+
+### 8. Bulk Operations
+
+**Integration point:** New job tracking infrastructure
+
+**What changes:**
+
+| Type | File | Change |
+|------|------|--------|
+| NEW | `models/job.py` | `BulkJob` model (type, status, progress, error details) |
+| NEW | `services/bulk_service.py` | Orchestrates bulk operations, creates job record, dispatches to Celery |
+| NEW | `tasks/bulk_operations.py` | Celery tasks for bulk delete, update, reclassify, permission change |
+| NEW | `routers/bulk.py` | POST to start job, GET status, GET list jobs |
+| NEW | Frontend bulk operation UI | Multi-select -> action -> progress tracking |
+
+**Architecture pattern:** Async job queue with progress tracking.
+
+```
+POST /api/v1/bulk/delete {document_ids: [...]}
+  -> bulk_service.create_job(type="delete", items=ids) -> returns job_id immediately
+  -> Celery task: process items sequentially
+    -> for each: document_service.delete() + update job.completed_items
+  -> Frontend polls GET /api/v1/bulk/jobs/{job_id} for progress
 ```
 
-#### BrowsePage -- Document-centric navigation hub
+**Key design decision:** Always use Celery for bulk operations, never in-request. Even "small" batches (50 items) can timeout if each item has ACL checks, audit logging, event emission, and MinIO operations. Redis-backed result tracking for real-time progress.
 
-- **Left panel:** Folder tree (collapsible, lazy-loaded via `GET /api/folders/{id}/children`)
-  - Root shows cabinets; expand to see child folders
-  - Smart folders (saved searches with `show_in_tree=true`) with distinct icon
-  - Context menu: New Folder, Rename, Delete, Properties, Permissions
-- **Main panel:** Contents of selected folder (child folders + documents as table/grid)
-  - Sort by name, date, type, size
-  - Multi-select for batch operations
-  - Upload drop zone auto-files into current folder
-- **Right panel:** Detail panel for selected item (reuses `DocumentDetailPanel` pattern)
-- **Breadcrumb bar:** Clickable path from root cabinet to current folder
+### 9. Import/Export
 
-#### SearchPage -- Full-text search with facets
+**Integration point:** Serialization layer over existing models
 
-- Search bar with debounced query input
-- Results with highlighted snippets
-- Facet sidebar: document type, lifecycle state, date range, folder, author
-- "Save this search" button
-- Saved searches list in sidebar
+**What changes:**
 
-#### DocumentTypesPage (admin)
+| Type | File | Change |
+|------|------|--------|
+| NEW | `services/import_export_service.py` | Serialize/deserialize templates, documents, folder trees, ACLs |
+| NEW | `routers/import_export.py` | Export (GET -> ZIP), Import (POST ZIP) |
+| NEW | `tasks/import_export.py` | Celery task for large imports |
+| NEW | `schemas/import_export.py` | Package manifest schema |
 
-- CRUD table for document types
-- Type hierarchy tree view
-- JSON Schema editor for metadata_schema
-- Preview of the metadata form users see during upload
+**Architecture pattern:** Package-based serialization. Export creates a ZIP containing:
 
-### Modified Components
+```
+package.zip
+  manifest.json          # metadata, checksums, ID mapping table
+  templates/
+    {family_id}.json     # template definition with activities, flows, variables
+  documents/
+    {doc_id}/
+      metadata.json      # document properties, type, lifecycle state
+      content/           # binary files (all versions)
+      acl.json           # permission entries
+  folders/
+    tree.json            # folder hierarchy
+  acls/
+    folder_acls.json     # folder-level permissions
+```
 
-| Component | Changes |
+**Key design decision:** UUID remapping on import (new UUIDs generated, old-to-new mapping in manifest). This allows importing the same package multiple times without conflicts. SHA-256 checksums in manifest for integrity verification.
+
+### 10. System Monitoring
+
+**Integration point:** New observability layer, read-only
+
+**What changes:**
+
+| Type | File | Change |
+|------|------|--------|
+| NEW | `routers/monitoring.py` | Deep health checks, queue depths, connection pool stats |
+| NEW | `services/monitoring_service.py` | Collect metrics from all subsystems |
+| NEW | `tasks/monitoring.py` | Celery Beat task for periodic metric collection + alerting |
+| MODIFY | `core/config.py` | Alerting thresholds (queue depth, error rate, storage usage) |
+| NEW | Frontend monitoring dashboard page |
+
+**Architecture pattern:** Self-contained pull-based monitoring. No external infrastructure (no Prometheus/Grafana). Monitoring endpoints expose current state on demand. Celery Beat task runs periodic checks and emits alert events through the event bus when thresholds exceeded.
+
+**Metrics collected:**
+
+| Subsystem | Metrics |
 |-----------|---------|
-| `DocumentDetailPanel.tsx` | Add Location (folder paths), Relationships tab, Type display with type-specific metadata |
-| `DocumentTable.tsx` | Add Type and Location columns; accept `folderId` prop for folder-scoped view |
-| `DocumentDropZone.tsx` | Accept optional `folderId` prop for auto-filing |
-| `DocumentsPage.tsx` | Add document type filter, full-text search input |
-| `SidebarNav.tsx` | Restructure: Browse and Search as primary items |
+| PostgreSQL | Connection pool size/available, query latency, table sizes |
+| Redis | Memory usage, connected clients, queue lengths |
+| MinIO | Bucket sizes, object counts per tier |
+| Celery | Queue depths per queue, active/reserved task counts, worker status |
+| Application | Active workflows, pending work items, error rate, event bus throughput |
 
-### New Frontend Components
+**Key design decision:** If the user later wants Prometheus, add a `/metrics` endpoint in Prometheus exposition format. But for internal/personal use, the built-in monitoring dashboard is sufficient.
 
-| Component | Purpose |
-|-----------|---------|
-| `components/folders/FolderTree.tsx` | Recursive tree with lazy loading, context menu |
-| `components/folders/FolderTreeNode.tsx` | Single expandable node |
-| `components/folders/FolderBreadcrumb.tsx` | Clickable path |
-| `components/folders/CreateFolderDialog.tsx` | Create folder/cabinet |
-| `components/folders/FolderACLEditor.tsx` | ACL management for folders |
-| `components/search/SearchBar.tsx` | Full-text search input |
-| `components/search/SearchResults.tsx` | Results with snippets |
-| `components/search/SearchFacets.tsx` | Facet filter sidebar |
-| `components/search/SaveSearchDialog.tsx` | Save current search |
-| `components/document-types/TypeSelector.tsx` | Type selection dropdown |
-| `components/document-types/TypeMetadataForm.tsx` | Dynamic form from JSON Schema |
-| `components/documents/RelationshipPanel.tsx` | View/manage relationships |
+### 11. Tiered Storage
 
-### Navigation Changes
+**Integration point:** `core/minio_client.py` -- requires a storage abstraction layer
 
-Sidebar nav restructure (`SidebarNav.tsx`):
+**What changes:**
 
-```typescript
-const NAV_ITEMS: NavItem[] = [
-  { icon: FolderTree, label: "Browse", route: "/browse", adminOnly: false },    // NEW primary
-  { icon: Search, label: "Search", route: "/search", adminOnly: false },         // NEW
-  { icon: Inbox, label: "Inbox", route: "/inbox", adminOnly: false },
-  { icon: FileText, label: "Documents", route: "/documents", adminOnly: false },
-  { icon: GitBranch, label: "Workflows", route: "/workflows", adminOnly: false },
-  { icon: LayoutTemplate, label: "Templates", route: "/templates", adminOnly: false },
-  { icon: BarChart3, label: "Dashboard", route: "/dashboard", adminOnly: true },
-  { icon: Database, label: "Query", route: "/query", adminOnly: true },
-  { icon: Settings2, label: "Doc Types", route: "/admin/document-types", adminOnly: true },
-];
+| Type | File | Change |
+|------|------|--------|
+| NEW | `core/storage.py` | `StorageBackend` abstract class (upload, download, delete, copy) |
+| NEW | `core/storage_backends/minio_backend.py` | Wraps existing MinIO client operations |
+| NEW | `core/storage_backends/filesystem_backend.py` | Local filesystem for cold/archive tier |
+| NEW | `models/storage.py` | `StorageTier` config model, `StoragePolicy` model (rules) |
+| NEW | `services/storage_service.py` | Policy evaluation, tier migration, transparent download routing |
+| NEW | `tasks/storage_migration.py` | Celery task for background tier migration |
+| MODIFY | `models/document.py` | Add `storage_tier` field to `DocumentVersion` (default "hot") |
+| MODIFY | `services/document_service.py` | Route uploads/downloads through storage service |
+| REFACTOR | `core/minio_client.py` | Extract into `storage_backends/minio_backend.py` |
+
+**Architecture pattern:** Strategy pattern for storage backends.
+
+```
+                storage_service.download(version)
+                        |
+            +-----------+-----------+
+            |           |           |
+       hot (MinIO    warm (MinIO   cold (MinIO
+       "documents"   "documents-   "documents-
+        bucket)       warm")        cold" or
+                                    filesystem)
 ```
 
-**Default route change:** Root redirect changes from `/inbox` to `/browse` -- signaling the document-centric reorientation.
+**Tier definitions:**
 
-### New API Client Modules
+| Tier | Backend | Use Case | Policy Trigger |
+|------|---------|----------|----------------|
+| Hot | MinIO `documents` bucket | Active documents, recent uploads | Default |
+| Warm | MinIO `documents-warm` bucket | Infrequently accessed, still needs fast retrieval | No access in 90 days |
+| Cold | MinIO `documents-cold` bucket or filesystem | Archived, regulatory retention | Lifecycle state = ARCHIVED |
 
-`frontend/src/api/folders.ts`, `search.ts`, `documentTypes.ts`, `savedSearches.ts`
+**Key design decision:** All tiers use MinIO buckets initially (simplest). "Cold" can be swapped to filesystem backend for true cost savings on local deployment. The `StorageBackend` abstraction makes this a config change, not a code change.
+
+### 12. Tamper-Proof Audit
+
+**Integration point:** `models/audit.py` and `services/audit_service.py`
+
+**What changes:**
+
+| Type | File | Change |
+|------|------|--------|
+| MODIFY | `models/audit.py` | Add `hash` (SHA-256), `previous_hash`, `sequence_number` (monotonic) to AuditLog |
+| MODIFY | `services/audit_service.py` | Compute hash chain on every new record |
+| NEW | `services/audit_verification_service.py` | Walk chain and verify every hash |
+| MODIFY | `routers/audit.py` | Add verification endpoint, tamper detection report |
+| NEW | `tasks/audit_verification.py` | Celery Beat task for periodic chain verification |
+
+**Architecture pattern:** Hash chain (blockchain-lite). Each audit record includes:
+
+```
+hash = SHA-256(
+    sequence_number |
+    entity_type |
+    entity_id |
+    action |
+    user_id |
+    timestamp.isoformat() |
+    json.dumps(before_state, sort_keys=True) |
+    json.dumps(after_state, sort_keys=True) |
+    previous_hash
+)
+```
+
+Any modification to any historical record breaks the chain from that point forward. Verification walks the chain and recomputes hashes.
+
+**Key design decision:** Use PostgreSQL SEQUENCE for `sequence_number` (not application-level counter) to guarantee monotonic ordering even under concurrent writes. The first record's `previous_hash` is a well-known genesis value (e.g., SHA-256 of "GENESIS").
+
+**Migration:** Backfill existing audit records with hash chain. Run a one-time migration task that walks all existing records in timestamp order, assigns sequence numbers, and computes the hash chain.
+
+### 13. Process Analytics
+
+**Integration point:** Event bus data + existing execution data
+
+**What changes:**
+
+| Type | File | Change |
+|------|------|--------|
+| NEW | `services/analytics_service.py` | Aggregate execution data, compute metrics |
+| NEW | `routers/analytics.py` | Analytics query endpoints |
+| NEW | `tasks/analytics.py` | Celery Beat task for periodic aggregation |
+| NEW | `models/analytics.py` | `ProcessMetricsSummary` (pre-computed daily/weekly aggregates) |
+| NEW | Frontend analytics page | Recharts visualizations |
+
+**Architecture pattern:** Pre-computed aggregates. Raw data exists in `execution_log`, `audit_log`, `domain_events`. Analytics service aggregates into summary tables on a schedule. Frontend queries summaries for fast dashboard rendering. On-demand drill-down queries raw tables.
+
+**Metrics:**
+
+| Metric | Source | Computation |
+|--------|--------|-------------|
+| Cycle time per activity | execution_log timestamps | end_time - start_time per activity instance |
+| Bottleneck detection | activity instance durations | Activities with highest average wait time |
+| Throughput per template | workflow_instances | Completed instances per time period |
+| SLA compliance rate | workflow_instances + timer config | % completed within deadline |
+| Performer workload | work_items | Items per user per period |
+
+**Key design decision:** Process mining (discovering workflows from execution logs) is a stretch goal. Start with descriptive analytics computed from existing data. No ML infrastructure needed.
+
+### 14. Frontend Gap Closure (6 UI Panels)
+
+**Integration point:** Frontend only -- all backend APIs already exist
+
+**What changes (all frontend):**
+
+| Component | Backend API | Status |
+|-----------|-------------|--------|
+| `pages/SignaturesPage.tsx` | `routers/signatures.py` | API exists, no UI |
+| `pages/RetentionPage.tsx` | `routers/retention.py` | API exists, no UI |
+| `components/documents/AclPanel.tsx` | ACL endpoints on documents router | API exists, no UI |
+| `pages/QueueAdminPage.tsx` | `routers/queues.py` | API exists, no UI |
+| Fix lifecycle state filter | `routers/documents.py` | API accepts filter, UI doesn't send it |
+| `pages/NotificationPreferencesPage.tsx` | `routers/notifications.py` | API exists, no UI |
+| `api/signatures.ts`, `api/retention.ts` | -- | API client files missing |
+
+**Architecture pattern:** Standard CRUD pages consuming existing REST endpoints. No architectural novelty. Pure frontend work.
 
 ---
 
-## Build Order
+## Recommended Architecture: v1.4 Target State
 
-### Dependency Graph
-
-```
-Document Types (independent)
-    |
-    v
-Folders/Cabinets ---------> Folder ACL Inheritance
-    |                              |
-    +---> Document Filing ---------+
-    |                              |
-    v                              v
-Full-Text Search          Browse UI (integration phase)
-    |                              ^
-    v                              |
-Document Relationships      all features feed in
-    |
-    v
-Saved Searches / Smart Folders (needs search + browse)
-```
-
-### Suggested Phase Sequence
-
-#### Phase 27: Document Type System
-**Why first:** Zero dependencies on other new features. Modifies Document model (adds `document_type_id`), so do this before other Document-modifying phases. Provides metadata validation that improves document quality for all subsequent uploads. Low risk, clear scope.
-
-- New: `DocumentType` model, `document_type_service.py`, router, schemas
-- Modify: `Document` model (+document_type_id), `document_service` (schema validation)
-- Frontend: `DocumentTypesPage`, `TypeSelector`, `TypeMetadataForm`
-- New dependency: `jsonschema` package
-
-#### Phase 28: Cabinet/Folder Hierarchy + Document Filing
-**Why second:** Core infrastructure. Three later phases depend on folders existing. Filing and folders are inseparable.
-
-- New: `Folder` model, `folder_documents` table, `folder_service.py`, router, schemas
-- New column: `Document.owner_id` (backfill from `created_by`)
-- Frontend: `FolderTree`, `FolderBreadcrumb`, `CreateFolderDialog`, basic browse layout
-- Events: `folder.created`, `folder.moved`, `document.filed`, `document.unfiled`
-
-#### Phase 29: Folder ACL Inheritance
-**Why third:** Needs folders. Critical security layer before browse UI goes to production users.
-
-- New: `FolderACL` model, `folder_acl_service.py`
-- Modify: `acl_service.check_permission()` -- add folder ACL fallback path
-- Modify: `core/dependencies.py` -- extend `require_permission` for folder scoping
-- Frontend: `FolderACLEditor`
-
-**Extended ACL resolution order:**
-1. Direct `DocumentACL` (existing, unchanged)
-2. Folder ACL inheritance walk via recursive CTE (new)
-3. Workflow participant fallback (existing)
-4. No ACL = open access (existing backward compat)
-
-#### Phase 30: Full-Text Search
-**Why fourth:** Independent of folders but placed after them so results show folder paths.
-
-- New: `Document.search_vector` (TSVECTOR + GIN index + trigger), `DocumentContentText` model
-- New: `search_service.py`, `content_extraction_service.py`, search router
-- New Celery task: `extract_document_text`
-- Modify: document upload/checkin to dispatch extraction
-- Frontend: `SearchPage`, `SearchBar`, `SearchResults`, `SearchFacets`
-- New dependencies: `PyPDF2`, `python-docx`
-
-**Search query combines metadata + content vectors:**
-```sql
-SELECT d.*, ts_rank(d.search_vector, q) AS meta_rank,
-       ts_rank(ct.content_search_vector, q) AS content_rank
-FROM documents d
-LEFT JOIN document_content_text ct ON ct.document_id = d.id,
-     to_tsquery('english', :query) q
-WHERE d.search_vector @@ q OR ct.content_search_vector @@ q
-ORDER BY (ts_rank(d.search_vector, q) * 2 + ts_rank(ct.content_search_vector, q)) DESC
-```
-
-#### Phase 31: Document Relationships
-**Why fifth:** Simple, independent. Only needs existing Document model. Low risk, quick win.
-
-- New: `DocumentRelationship` model, `RelationshipType` enum, `relationship_service.py`
-- New endpoints under `/api/documents/{id}/relationships`
-- Frontend: `RelationshipPanel` in `DocumentDetailPanel`
-
-#### Phase 32: Document-First Navigation (Browse UI Integration)
-**Why sixth:** Integration phase. Requires folders (28), ACL (29), search (30), types (27), relationships (31). Brings the document-centric paradigm together.
-
-- New: `BrowsePage` (full implementation)
-- Modify: `App.tsx` default route `/inbox` -> `/browse`
-- Modify: `SidebarNav.tsx` -- restructure with Browse and Search as primary
-- Modify: `DocumentDetailPanel` -- add Location, Relationships, Type sections
-- Modify: `DocumentTable` -- add Type, Location columns
-- Performance: virtualized list, debounced tree expansion, React Query caching
-
-#### Phase 33: Saved Searches / Smart Folders
-**Why last:** Depends on search (30) and browse UI (32) both existing.
-
-- New: `SavedSearch` model, `saved_search_service.py`, router
-- Frontend: `SaveSearchDialog`, smart folder nodes in `FolderTree`
-- Modify: `SearchPage` -- "Save this search" button
-
----
-
-## Integration Points with Existing System
-
-### Event Bus
-
-All new features emit via `event_bus.emit()` (existing singleton in `src/app/services/event_bus.py`). New event types: `document_type.*`, `folder.*`, `document.filed/unfiled`, `folder_acl.*`, `document.relationship_*`, `saved_search.*`. These feed the notification system (Phase 16) and can trigger event-driven workflow activities (Phase 19).
-
-### ACL System
-
-Existing `DocumentACL` + `check_permission()` in `acl_service.py` (lines 136-218) unchanged. Extension is additive: when no direct document ACL exists and the document is filed in a folder, walk up the folder tree checking `FolderACL`. The `require_permission` FastAPI dependency in `core/dependencies.py` needs a parallel `require_folder_permission` for folder endpoints.
-
-### Workflow Engine
-
-`WorkflowPackage.document_id` FK unchanged. Workflows don't need to know about folders. Only UI change: workflow package display shows document's folder path for context. Optional: document types can restrict valid lifecycle states via `metadata_schema`.
-
-### Audit Trail
-
-All operations use existing `create_audit_record()`. New entity_type values: `folder`, `folder_acl`, `document_type`, `document_relationship`, `saved_search`.
-
-### Retention System
-
-Documents under retention/legal hold cannot be unfiled from their last folder. `folder_service.unfile_document()` must check `retention_service.check_document_deletable()` when the document would have zero remaining folder links.
-
-### Virtual Documents
-
-Virtual documents (Phase 21) don't participate in folder hierarchy. No changes needed.
-
-### Renditions
-
-Text extraction (Phase 30) can reuse the rendition worker's LibreOffice installation for extracting text from Office formats.
-
-### Existing Search/Query
-
-The existing `/api/query` (DQL-like, admin-only) coexists with new `/api/search` (user-facing full-text). Different purposes: search finds by content keywords; query handles structured metadata/workflow queries.
-
----
-
-## Component Boundary Summary
+### Layer Diagram
 
 ```
-EXISTING (modify)                          NEW (create)
-=================                          ============
++---------------------------------------------------------------------+
+|                         React 19 SPA                                |
+|  18+ pages | analytics dashboard | bulk ops UI | SSO login          |
++---------------------------------------------------------------------+
+        |              |              |              |
+     REST API      CMIS API       WebDAV        SSE/Events
+    /api/v1/*     /cmis/*        /webdav/*      /api/v1/events/stream
+        |              |              |              |
++---------------------------------------------------------------------+
+|                   Auth Layer (pluggable)                             |
+|  JWT (default) | LDAP | SAML | OAuth2 | Basic Auth (WebDAV)        |
++---------------------------------------------------------------------+
+|                                                                     |
+|  +-----------------+  +------------------+  +--------------------+  |
+|  | Domain Services |  | Protocol Adapters|  | Infrastructure Svc |  |
+|  | engine, docs,   |  | CMIS facade      |  | monitoring, bulk   |  |
+|  | templates,      |  | WebDAV adapter   |  | jobs, import/      |  |
+|  | folders, search |  | email ingest     |  | export, analytics  |  |
+|  +--------+--------+  +--------+---------+  +---------+----------+  |
+|           |                     |                      |            |
+|  +--------+--------+  +--------+---------+  +----------+---------+  |
+|  | Storage Layer   |  | Event Bus        |  | Audit Chain        |  |
+|  | tiered: hot/    |  | in-process +     |  | hash-linked SHA256 |  |
+|  | warm/cold via   |  | Redis pub/sub    |  | with sequence nums |  |
+|  | StorageBackend  |  |                  |  |                    |  |
+|  +-----------------+  +------------------+  +--------------------+  |
++---------------------------------------------------------------------+
+        |              |              |              |
+   PostgreSQL      Redis          MinIO          Celery
+   (data+audit     (broker+       (tiered         (workers per
+    +analytics)     cache+         buckets:        queue: main,
+                    pubsub)        hot/warm/       bulk, email,
+                                   cold)           rendition,
+                                                   storage)
+```
+
+### Component Boundaries
+
+| Component | Responsibility | Communicates With |
+|-----------|---------------|-------------------|
+| Auth Layer (`core/auth_backends.py`) | Authenticate users via JWT, LDAP, SAML, OAuth2, Basic Auth | All routers via `get_current_user` dependency |
+| Protocol Adapters (CMIS, WebDAV) | Translate external protocols to internal service calls | Domain Services, Auth Layer |
+| Domain Services (existing 22 + 2 new) | Core business logic -- workflows, documents, folders, templates | Models, Storage Layer, Event Bus, Audit |
+| Storage Layer (`core/storage.py`) | Abstract file storage across hot/warm/cold tiers | MinIO backends, filesystem backend |
+| Event Bus (existing) | Emit and dispatch domain events | All services (emitters), handlers (consumers) |
+| Audit Chain (enhanced) | Tamper-proof audit logging with SHA-256 hash chain | Event Bus (listener), PostgreSQL |
+| Job Queue (new) | Bulk operations, import/export, email ingestion, storage migration | Celery, Domain Services |
+| Analytics (new) | Pre-computed process metrics | Execution logs, Event Bus, PostgreSQL |
+| Monitoring (new) | Health checks, metrics, alerting | All infrastructure (DB, Redis, MinIO, Celery) |
+
+### New Components vs Modifications
+
+```
+EXISTING (modify)                         NEW (create)
+================================         ================================
+core/
+  config.py           [+15 settings]     auth_backends.py (ABC + 4 impls)
+  dependencies.py     [+auth dispatch]   storage.py (ABC)
+  security.py         [minor]            storage_backends/
+  minio_client.py     [refactor out]       minio_backend.py
+                                           filesystem_backend.py
 
 models/
-  document.py ......... +document_type_id,   document_type.py
-                         +search_vector,      folder.py (+ folder_documents)
-                         +owner_id            folder_acl.py
-  enums.py ............ +RelationshipType    document_relationship.py
-  __init__.py ......... +new imports          document_content.py
-                                              saved_search.py
+  audit.py            [+hash,seq,prev]   job.py (BulkJob)
+  document.py         [+storage_tier]    storage.py (StorageTier, StoragePolicy)
+  workflow.py         [+family_id,       email.py (EmailMessage)
+                       +join_config,     analytics.py (ProcessMetricsSummary)
+                       +is_compensation,
+                       +ExceptionHandler]
+  enums.py            [+5 new enums]
+  user.py             [+external_id,
+                       +auth_provider]
 
 services/
-  acl_service.py ...... +folder ACL fallback  folder_service.py
-  document_service.py . +type validation,     document_type_service.py
-                         +folder filing,       search_service.py
-                         +text extraction      relationship_service.py
-                         dispatch              folder_acl_service.py
-                                              saved_search_service.py
-                                              content_extraction_service.py
+  auth_service.py     [+JIT provision]   sso_service.py
+  engine_service.py   [+error handling,  cmis_service.py
+                       +advanced joins]  webdav_service.py
+  template_service.py [+versioning]      email_service.py
+  document_service.py [+storage tier]    bulk_service.py
+  audit_service.py    [+hash chain]      import_export_service.py
+                                         monitoring_service.py
+                                         storage_service.py
+                                         audit_verification_service.py
+                                         analytics_service.py
 
 routers/
-  documents.py ........ +type/folder params   folders.py
-                         +relationship         document_types.py
-                         endpoints             search.py
-                                              saved_searches.py
+  auth.py             [+SSO callbacks]   cmis.py
+  audit.py            [+verify endpoint] webdav.py
+  templates.py        [+version mgmt]    email.py
+                                         bulk.py
+                                         import_export.py
+                                         monitoring.py
+                                         analytics.py
+
+middleware/
+  (empty __init__.py)                    webdav_auth.py
 
 tasks/
-  (existing unchanged)                        content_extraction.py
+  (existing 5 unchanged)                 email_ingestion.py
+                                         bulk_operations.py
+                                         import_export.py
+                                         monitoring.py
+                                         storage_migration.py
+                                         analytics.py
+                                         audit_verification.py
 
-schemas/
-  document.py ......... +type_id, folder_id   folder.py
-                                              document_type.py
-                                              search.py
-                                              document_relationship.py
-                                              saved_search.py
+frontend/pages/
+  LoginPage.tsx       [+SSO buttons]     SignaturesPage.tsx
+  DocumentsPage.tsx   [+lifecycle fix]   RetentionPage.tsx
+  TemplateListPage.tsx [+versions]       QueueAdminPage.tsx
+                                         NotificationPrefsPage.tsx
+                                         MonitoringPage.tsx
+                                         AnalyticsPage.tsx
+                                         BulkJobsPage.tsx
 
-frontend/
-  pages/ .............. DocumentsPage mods    BrowsePage.tsx
-  App.tsx ............. +routes, / -> /browse  SearchPage.tsx
-  components/layout/                          DocumentTypesPage.tsx
-    SidebarNav.tsx .... +Browse,Search,Types
-  components/documents/                       folders/ (5 components)
-    DocumentDetailPanel +location,type,rels   search/ (4 components)
-    DocumentTable ..... +type,location cols   document-types/ (2 components)
-    DocumentDropZone .. +folderId prop        documents/RelationshipPanel.tsx
-  api/ ................ documents.ts mods     folders.ts, search.ts,
-                                              documentTypes.ts, savedSearches.ts
+frontend/api/
+  (existing unchanged)                   signatures.ts
+                                         retention.ts
+                                         bulk.ts
+                                         monitoring.ts
+                                         analytics.ts
+                                         importExport.ts
+```
+
+**Summary counts:** 12 files modified, 35+ new files created. 6 new Celery task modules. 8 new routers. 10 new services. 5 new models.
+
+---
+
+## Data Flow Diagrams for Key Integration Points
+
+### SSO Login Flow
+
+```
+Browser -> "Login with SAML" button
+  -> Redirect to IdP (identity provider)
+  -> IdP authenticates user
+  -> POST /auth/saml/callback (SAML assertion)
+  -> sso_service.validate_saml_assertion(assertion)
+  -> auth_service.find_or_create_user(external_id, provider="saml", attrs)
+  -> security.create_access_token({"sub": user.id})
+  -> JWT returned -> browser stores token -> all subsequent requests use JWT
+```
+
+### Tiered Storage Flow
+
+```
+Celery Beat (every hour) -> tasks/storage_migration.evaluate_policies()
+  -> storage_service.find_migration_candidates(all_policies)
+     [SQL: documents not accessed in 90 days AND storage_tier = "hot"]
+  -> for each candidate:
+     -> storage_service.migrate(doc_version, from="hot", to="warm")
+       -> hot_backend.download(object_key)
+       -> warm_backend.upload(object_key, data)
+       -> hot_backend.delete(object_key)
+       -> UPDATE document_versions SET storage_tier = "warm"
+       -> audit_service.log("storage.migrated", ...)
+```
+
+### Bulk Operation Flow
+
+```
+User selects 200 documents -> clicks "Bulk Delete"
+  -> POST /api/v1/bulk/delete {document_ids: [...200 UUIDs...]}
+  -> bulk_service.create_job(type="delete", items=200) -> returns job_id
+  -> Celery task dispatched to "bulk" queue
+  -> Task processes items one by one:
+     -> document_service.delete(id) + event_bus.emit + audit
+     -> UPDATE bulk_jobs SET completed_items = completed_items + 1
+     -> On error: log to job.errors JSONB, increment error_items
+  -> Frontend polls GET /api/v1/bulk/jobs/{job_id}
+     -> Returns {status: "running", total: 200, completed: 147, errors: 2}
+```
+
+### Email Archiving Flow
+
+```
+Celery Beat (every 5 min) -> tasks/email_ingestion.poll_mailbox()
+  -> email_service.connect_imap(settings.imap_url, credentials)
+  -> email_service.fetch_unseen_messages()
+  -> for each message:
+     -> email_service.parse(raw_email) -> EmailParsed(headers, body_html, body_text, attachments[])
+     -> document_service.create(title=subject, content=body, type="email")
+     -> for each attachment:
+        -> document_service.create(title=filename, content=bytes)
+        -> relationship_service.create(email_doc, attachment_doc, "IS_PART_OF")
+     -> email_model = EmailMessage(document_id=email_doc.id, from=..., to=..., subject=...)
+     -> Mark message as seen on IMAP server
+     -> event_bus.emit("email.archived")
+```
+
+---
+
+## Anti-Patterns to Avoid
+
+### Anti-Pattern 1: Protocol Adapters Bypassing Service Layer
+**What:** CMIS or WebDAV endpoints directly querying SQLAlchemy models or calling MinIO
+**Why bad:** Skips ACL checks, audit logging, event emission, business validation. Creates parallel code paths that diverge from REST API behavior over time.
+**Instead:** CMIS and WebDAV must ONLY call existing domain services. Protocol adapters translate request format and response format -- nothing more.
+
+### Anti-Pattern 2: In-Request Bulk Processing
+**What:** Processing 100+ items synchronously in an HTTP request handler
+**Why bad:** HTTP timeouts (30s default), no progress visibility, no retry on partial failure, blocks the async event loop.
+**Instead:** Always dispatch to Celery for operations over ~10 items. Return a job ID immediately. Frontend polls for progress.
+
+### Anti-Pattern 3: Mutable Template Versioning
+**What:** Overwriting `ProcessTemplate` fields to "update" a version, mutating rows that in-flight workflows reference via FK
+**Why bad:** Changes the template definition for currently running workflows. Can cause token routing errors, missing activities, broken flows.
+**Instead:** New version = new row. `template_family_id` groups versions. FKs point to immutable version rows. Never mutate an ACTIVE or DEPRECATED template.
+
+### Anti-Pattern 4: Storage Tier Logic Scattered in Services
+**What:** `if tier == "hot": use_minio_bucket_a() elif tier == "cold": use_filesystem()` throughout document_service, rendition_service, etc.
+**Why bad:** Every new tier or backend change requires editing every file that touches storage.
+**Instead:** `StorageBackend` abstract class. `storage_service.download(version)` resolves the tier from `version.storage_tier` and delegates transparently.
+
+### Anti-Pattern 5: Separate Auth Per Protocol
+**What:** WebDAV implementing its own user lookup, CMIS implementing its own token validation, REST keeping its own separate flow
+**Why bad:** Auth bugs and inconsistencies multiply. A user disabled in one flow might still work in another.
+**Instead:** All auth flows converge on `get_current_user` -> User object. Auth backends are the abstraction. WebDAV Basic Auth middleware converts credentials to a User object using the same backend chain.
+
+### Anti-Pattern 6: Audit Hash Chain Without DB Sequence
+**What:** Using application-level counters or timestamps for audit chain ordering
+**Why bad:** Concurrent inserts can produce duplicate or out-of-order sequence numbers, breaking the hash chain verification
+**Instead:** Use PostgreSQL SEQUENCE (CREATE SEQUENCE audit_log_seq) for guaranteed monotonic ordering even under concurrent writes.
+
+---
+
+## Suggested Build Order (Dependency-Driven)
+
+The dependencies between features determine the build order:
+
+```
+Feature Dependency Graph:
+
+  Auth Backends (#1)
+    |-- CMIS (#2) needs pluggable auth
+    |-- WebDAV (#3) needs Basic Auth backend
+    '-- Email (#4) needs auth for IMAP config endpoints
+
+  Storage Abstraction (#11)
+    |-- Email (#4) creates documents via storage layer
+    |-- Import/Export (#9) creates documents via storage layer
+    '-- Bulk Ops (#8) deletes documents via storage layer
+
+  Workflow Versioning (#6)
+    '-- Error Handling (#5) compensation activities are part of templates
+
+  Frontend Gap Closure (#14) -- no backend deps (APIs exist)
+  Advanced Joins (#7) -- no cross-feature deps
+  Tamper Audit (#12) -- no cross-feature deps (but schema change: do early)
+  Monitoring (#10) -- no deps (read-only)
+  Analytics (#13) -- no deps (reads existing data)
+  Bulk Ops (#8) -- independent (new job model)
+```
+
+**Recommended phase sequence:**
+
+| Phase | Feature | Rationale |
+|-------|---------|-----------|
+| 34 | Frontend Gap Closure (#14) | Pure UI, zero backend risk, immediate user value, can ship independently |
+| 35 | Tamper-Proof Audit (#12) | Schema change to audit_log table -- do early before more audit records accumulate. Backfill migration is cheaper now. |
+| 36 | Auth Backend Abstraction + SSO (#1) | Foundation: CMIS, WebDAV, email all depend on pluggable auth |
+| 37 | Storage Abstraction + Tiered Storage (#11) | Foundation: refactors minio_client.py that email, import/export, bulk ops all use |
+| 38 | Workflow Versioning (#6) | Must precede error handling. Template schema change. |
+| 39 | Advanced Join Semantics (#7) | Engine internals, no external deps, pairs well with versioning phase |
+| 40 | Workflow Error Handling & Compensation (#5) | Needs versioning from phase 38. Completes engine enhancements. |
+| 41 | Bulk Operations (#8) | Independent job queue pattern. Needed before import/export. |
+| 42 | CMIS API (#2) | Needs auth abstraction (phase 36). High integration value. |
+| 43 | WebDAV (#3) | Needs auth abstraction (phase 36). Desktop integration. |
+| 44 | Email Archiving (#4) | Needs auth (36) and storage (37). Ingest pipeline. |
+| 45 | Import/Export (#9) | Needs stable models from all prior phases. Uses bulk job pattern from phase 41. |
+| 46 | System Monitoring (#10) | Read-only, no deps, but benefits from seeing all subsystems in final form. |
+| 47 | Process Analytics (#13) | Needs stable execution data. Benefits from monitoring infrastructure. |
+
+**Phase ordering rationale:**
+
+1. **Frontend gap closure first** -- zero backend risk, immediate user value, proves existing APIs work correctly (may uncover API bugs that inform later phases)
+2. **Tamper audit early** -- adding `hash`, `previous_hash`, `sequence_number` columns to `audit_log` requires backfilling all existing records. The more records that exist, the longer the migration. Do it before the 13 remaining features each add more audit records.
+3. **Auth + Storage abstractions next** -- these are the two foundational refactors. Auth abstraction is needed by CMIS, WebDAV, and email. Storage abstraction is needed by email, import/export, and bulk operations.
+4. **Engine enhancements (versioning, joins, error handling)** -- grouped together as they all modify `engine_service.py`. Versioning must precede error handling because compensation activities are part of templates.
+5. **Bulk operations before import/export** -- import/export reuses the bulk job tracking pattern.
+6. **CMIS and WebDAV after auth** -- both are protocol adapters that depend on pluggable auth.
+7. **Email after both auth and storage** -- needs IMAP credentials management (auth) and document creation (storage).
+8. **Monitoring and analytics last** -- they are read-only observation layers that benefit from seeing the final system state.
+
+---
+
+## Docker Compose Changes (v1.4)
+
+No new infrastructure services needed. All 14 features use existing PostgreSQL, Redis, MinIO, and Celery.
+
+**New Celery queue isolation:**
+
+```yaml
+# Additions to docker-compose.yml
+
+celery-bulk-worker:
+  # ... same base config as celery-worker ...
+  command: celery -A app.celery_app worker -Q bulk,import_export --concurrency=2 --loglevel=info
+
+celery-email-worker:
+  # ... same base config ...
+  command: celery -A app.celery_app worker -Q email --concurrency=1 --loglevel=info
+  # concurrency=1 prevents duplicate email processing
+```
+
+**MinIO additional buckets** (created at startup):
+
+```python
+# core/storage.py -- ensure_storage_buckets()
+BUCKETS = ["documents", "documents-warm", "documents-cold"]
+```
+
+**New environment variables** (added to api + worker containers):
+
+```yaml
+# SSO
+- AUTH_BACKEND=database  # or "ldap", "saml", "oauth2"
+- LDAP_URL=ldap://ldap.example.com
+- SAML_METADATA_URL=https://idp.example.com/metadata
+- OAUTH2_CLIENT_ID=...
+- OAUTH2_CLIENT_SECRET=...
+# Email
+- IMAP_URL=imaps://mail.example.com
+- IMAP_USERNAME=...
+- IMAP_PASSWORD=...
+# Storage tiers
+- STORAGE_WARM_BUCKET=documents-warm
+- STORAGE_COLD_BUCKET=documents-cold
 ```
 
 ---
 
 ## Scalability Considerations
 
-| Concern | At 1K docs | At 100K docs | At 1M docs |
-|---------|------------|--------------|------------|
-| Folder tree loading | Eager load all | Lazy-load children, React Query cache | Virtual scrolling, paginate per level |
-| Full-text search | tsvector trivial | GIN index <100ms | Add pg_trgm for fuzzy; consider Meilisearch |
-| ACL inheritance walk | 3-5 levels, trivial | Cache effective ACL in Redis (60s TTL) | Materialize effective ACL table |
-| Content text extraction | Sync ok | Celery queue essential | Multiple extraction workers |
-| Type schema validation | In-memory <1ms | Same | Cache compiled schemas per type |
+| Concern | Current (v1.3) | v1.4 Design | At Scale |
+|---------|----------------|-------------|----------|
+| Auth | JWT decode per request | Add Redis token cache (60s TTL) for SSO-validated users | Token cache eliminates repeated IdP round-trips |
+| Storage | Single MinIO bucket | Multiple buckets per tier, `StorageBackend` abstraction | Add S3-compatible cloud backend without code changes |
+| Bulk ops | N/A | Celery "bulk" queue, per-item processing | Add more bulk workers; chunk large jobs |
+| Audit chain | Simple INSERT | `sequence_number` via PostgreSQL SEQUENCE, hash on every insert | Advisory lock or sequence guarantees ordering under concurrency |
+| CMIS/WebDAV | N/A | Same FastAPI process | Separate worker processes via `--workers` if traffic justifies |
+| Analytics | N/A | Pre-computed summaries avoid real-time aggregation | Partition summary tables by time period |
+| Email ingest | N/A | Celery concurrency=1 per mailbox | One worker per mailbox prevents duplicates |
+| Monitoring | N/A | Self-monitoring via /health/deep | Add Prometheus /metrics endpoint for external monitoring if needed |
 
 ---
 
 ## Sources
 
-- [PostgreSQL Full-Text Search: Tables and Indexes](https://www.postgresql.org/docs/current/textsearch-tables.html) -- HIGH confidence
-- [PostgreSQL GIN Index for Text Search](https://www.postgresql.org/docs/current/textsearch-indexes.html) -- HIGH confidence
-- [PostgreSQL ltree Extension](https://www.postgresql.org/docs/current/ltree.html) -- HIGH confidence (evaluated, not recommended)
-- [SQLAlchemy PostgreSQL TSVECTOR](https://docs.sqlalchemy.org/en/20/dialects/postgresql.html) -- HIGH confidence
-- [Documentum Object Types](https://argondigital.com/blog/ecm/object-types/) -- MEDIUM confidence
-- [Documentum Type Hierarchy](https://documentumexpert.wordpress.com/2012/08/11/hierarchical-list-of-documentum-types/) -- MEDIUM confidence
-- Codebase analysis: all model, service, router, and frontend files examined -- HIGH confidence
+- Codebase inspection of all 12 model files, 22 service files, 26 router files, frontend structure (HIGH confidence)
+- `core/dependencies.py` -- current auth flow analysis (HIGH confidence)
+- `core/minio_client.py` -- current storage interface analysis (HIGH confidence)
+- `services/engine_service.py` -- current engine state machines and join logic (HIGH confidence)
+- `models/audit.py` -- current audit schema (HIGH confidence)
+- `docker-compose.yml` -- current infrastructure topology (HIGH confidence)
+- [CMIS 1.1 OASIS Standard](http://docs.oasis-open.org/cmis/CMIS/v1.1/CMIS-v1.1.html) -- MEDIUM confidence (training data)
+- [WebDAV RFC 4918](https://tools.ietf.org/html/rfc4918) -- HIGH confidence (stable standard)
+- [ldap3 Python library](https://ldap3.readthedocs.io/) -- MEDIUM confidence (library recommendation from training data)
+- [authlib OAuth2](https://docs.authlib.org/) -- MEDIUM confidence (library recommendation from training data)
+- [python3-saml](https://github.com/SAML-Toolkits/python3-saml) -- MEDIUM confidence (library recommendation from training data)
