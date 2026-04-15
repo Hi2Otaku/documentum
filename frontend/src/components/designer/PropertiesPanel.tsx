@@ -331,6 +331,15 @@ function NodeProperties({
         </div>
       )}
 
+      {/* Error Handling section (manual and auto nodes) */}
+      {(data.activityType === 'manual' || data.activityType === 'auto') && (
+        <ErrorHandlingSection
+          nodeId={nodeId}
+          errorHandlerActivityId={data.errorHandlerActivityId ?? null}
+          compensationActivityId={data.compensationActivityId ?? null}
+        />
+      )}
+
       {/* Sub-workflow configuration */}
       {data.activityType === 'sub_workflow' && (
         <SubWorkflowConfig
@@ -348,6 +357,74 @@ function NodeProperties({
           eventFilterConfig={data.eventFilterConfig ?? null}
         />
       )}
+    </div>
+  );
+}
+
+// ---- Error Handling Section ----
+function ErrorHandlingSection({
+  nodeId,
+  errorHandlerActivityId,
+  compensationActivityId,
+}: {
+  nodeId: string;
+  errorHandlerActivityId: string | null;
+  compensationActivityId: string | null;
+}) {
+  const updateNodeData = useDesignerStore((s) => s.updateNodeData);
+  const nodes = useDesignerStore((s) => s.nodes);
+
+  // Build list of eligible activities (exclude current node, start, and end nodes)
+  const eligibleActivities = nodes
+    .filter((n) => {
+      const d = n.data as ActivityNodeData;
+      return n.id !== nodeId && d.activityType !== 'start' && d.activityType !== 'end';
+    })
+    .map((n) => ({ id: n.id, name: (n.data as ActivityNodeData).name }));
+
+  return (
+    <div className="space-y-3 border-t pt-4 mt-4">
+      <h4 className="text-sm font-semibold text-muted-foreground flex items-center gap-1">
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+        </svg>
+        Error Handling
+      </h4>
+      <div>
+        <label className="text-sm font-medium" htmlFor="error-handler-activity">
+          Error Handler Activity
+        </label>
+        <select
+          id="error-handler-activity"
+          className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+          value={errorHandlerActivityId ?? ''}
+          onChange={(e) => updateNodeData(nodeId, { errorHandlerActivityId: e.target.value || null })}
+        >
+          <option value="">None</option>
+          {eligibleActivities.map((a) => (
+            <option key={a.id} value={a.id}>{a.name}</option>
+          ))}
+        </select>
+        <p className="text-xs text-muted-foreground mt-1">Activity to execute if this activity fails</p>
+      </div>
+      <div>
+        <label className="text-sm font-medium" htmlFor="compensation-activity">
+          Compensation Activity
+        </label>
+        <select
+          id="compensation-activity"
+          className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+          value={compensationActivityId ?? ''}
+          onChange={(e) => updateNodeData(nodeId, { compensationActivityId: e.target.value || null })}
+        >
+          <option value="">None</option>
+          {eligibleActivities.map((a) => (
+            <option key={a.id} value={a.id}>{a.name}</option>
+          ))}
+        </select>
+        <p className="text-xs text-muted-foreground mt-1">Activity to undo this activity's work during compensation</p>
+      </div>
     </div>
   );
 }

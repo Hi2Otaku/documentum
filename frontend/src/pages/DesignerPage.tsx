@@ -48,6 +48,8 @@ function activitiesToNodes(
       expectedDurationHours: a.expected_duration_hours,
       escalationAction: a.escalation_action,
       warningThresholdHours: a.warning_threshold_hours,
+      errorHandlerActivityId: a.error_handler_activity_id ?? null,
+      compensationActivityId: a.compensation_activity_id ?? null,
       backendId: a.id,
     },
   }));
