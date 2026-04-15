@@ -58,7 +58,7 @@ See `.planning/milestones/v1.3-ROADMAP.md` for full phase details.
 
 - [x] **Phase 34: Frontend Gap Closure** - Wire 6 existing backend features to the web UI and fix lifecycle filter (completed 2026-04-15)
 - [x] **Phase 35: Tamper-Proof Audit Trail** - Cryptographic hash chaining for audit log integrity (completed 2026-04-15)
-- [ ] **Phase 36: Identity & SSO** - LDAP/SAML/OAuth2 authentication with JIT provisioning and service tokens
+- [x] **Phase 36: Identity & SSO** - LDAP/SAML/OAuth2 authentication with JIT provisioning and service tokens (completed 2026-04-15)
 - [ ] **Phase 37: Workflow Error Handling & Compensation** - Declarative exception handlers and rollback activities
 - [ ] **Phase 38: Workflow Versioning** - Concurrent active template versions with immutable installed snapshots
 - [ ] **Phase 39: Advanced Join Semantics** - N-of-M, cancelling, timeout joins with race-condition-free locking
@@ -121,7 +121,7 @@ Plans:
 Plans:
 - [x] 36-01-PLAN.md — Auth backend abstraction + service tokens + DB migration
 - [x] 36-02-PLAN.md — LDAP/SAML/OIDC identity service + SSO endpoints
-- [ ] 36-03-PLAN.md — Admin SSO settings page + Login page SSO buttons
+- [x] 36-03-PLAN.md — Admin SSO settings page + Login page SSO buttons
 
 **UI hint**: yes
 
@@ -232,7 +232,7 @@ Note: Phase 43 (CMIS) depends on Phase 36 (SSO) but is sequenced after Phase 42 
 | 27-33 | v1.3 | 19/19 | Complete | 2026-04-14 |
 | 34. Frontend Gap Closure | v1.4 | 0/4 | Complete    | 2026-04-15 |
 | 35. Tamper-Proof Audit | v1.4 | 2/2 | Complete    | 2026-04-15 |
-| 36. Identity & SSO | v1.4 | 2/3 | In Progress|  |
+| 36. Identity & SSO | v1.4 | 3/3 | Complete   | 2026-04-15 |
 | 37. Error Handling & Compensation | v1.4 | 0/? | Not started | - |
 | 38. Workflow Versioning | v1.4 | 0/? | Not started | - |
 | 39. Advanced Join Semantics | v1.4 | 0/? | Not started | - |
