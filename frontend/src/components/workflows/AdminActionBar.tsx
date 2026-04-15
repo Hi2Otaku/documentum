@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
-import { Pause, Play, Trash2 } from "lucide-react";
-import { haltWorkflow, resumeWorkflow } from "../../api/workflows";
+import { Pause, Play, Trash2, Undo } from "lucide-react";
+import { haltWorkflow, resumeWorkflow, triggerCompensation } from "../../api/workflows";
 import { useAuthStore } from "../../stores/authStore";
 
 interface AdminActionBarProps {
@@ -43,6 +43,18 @@ export function AdminActionBar({
     },
   });
 
+  const compensateMutation = useMutation({
+    mutationFn: () => triggerCompensation(workflowId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["workflows"] });
+      queryClient.invalidateQueries({ queryKey: ["workflows", workflowId] });
+      toast("Compensation initiated");
+    },
+    onError: (error: Error) => {
+      toast(`Compensation failed: ${error.message}`);
+    },
+  });
+
   if (!isSuperuser) return null;
 
   return (
@@ -73,6 +85,17 @@ export function AdminActionBar({
         <Button variant="destructive" size="sm" onClick={onTerminateClick}>
           <Trash2 className="w-4 h-4 mr-2" />
           Terminate
+        </Button>
+      )}
+      {(workflowState === "running" || workflowState === "failed") && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => compensateMutation.mutate()}
+          disabled={compensateMutation.isPending}
+        >
+          <Undo className="w-4 h-4 mr-2" />
+          Compensate
         </Button>
       )}
     </div>
