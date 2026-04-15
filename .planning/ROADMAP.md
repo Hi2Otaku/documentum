@@ -56,7 +56,7 @@ See `.planning/milestones/v1.3-ROADMAP.md` for full phase details.
 
 **Milestone Goal:** Close all functional gaps identified in the Documentum comparison audit -- wire up existing backend features to the frontend, and build the missing enterprise capabilities (SSO, CMIS, bulk operations, workflow resilience, desktop integration, and operational tooling).
 
-- [ ] **Phase 34: Frontend Gap Closure** - Wire 6 existing backend features to the web UI and fix lifecycle filter
+- [x] **Phase 34: Frontend Gap Closure** - Wire 6 existing backend features to the web UI and fix lifecycle filter (completed 2026-04-15)
 - [ ] **Phase 35: Tamper-Proof Audit Trail** - Cryptographic hash chaining for audit log integrity
 - [ ] **Phase 36: Identity & SSO** - LDAP/SAML/OAuth2 authentication with JIT provisioning and service tokens
 - [ ] **Phase 37: Workflow Error Handling & Compensation** - Declarative exception handlers and rollback activities
@@ -218,7 +218,7 @@ Note: Phase 43 (CMIS) depends on Phase 36 (SSO) but is sequenced after Phase 42 
 | 12-15 | v1.1 | 4/4 | Complete | 2026-04-06 |
 | 16-26 | v1.2 | 26/26 | Complete | 2026-04-13 |
 | 27-33 | v1.3 | 19/19 | Complete | 2026-04-14 |
-| 34. Frontend Gap Closure | v1.4 | 0/4 | Planned | - |
+| 34. Frontend Gap Closure | v1.4 | 0/4 | Complete    | 2026-04-15 |
 | 35. Tamper-Proof Audit | v1.4 | 0/? | Not started | - |
 | 36. Identity & SSO | v1.4 | 0/? | Not started | - |
 | 37. Error Handling & Compensation | v1.4 | 0/? | Not started | - |
