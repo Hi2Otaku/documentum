@@ -115,6 +115,7 @@ export interface DocumentListParams {
   page_size?: number;
   title?: string;
   author?: string;
+  lifecycle_state?: string;
 }
 
 export interface LifecycleTransitionResponse {
@@ -316,4 +317,58 @@ export function thumbnailUrl(
   renditionId: string,
 ): string {
   return renditionDownloadUrl(documentId, versionId, renditionId);
+}
+
+// --- ACL types and API functions ---
+
+export interface ACLEntryResponse {
+  id: string;
+  document_id: string;
+  principal_id: string;
+  principal_type: string;
+  permission_level: string;
+  created_at: string;
+}
+
+export interface ACLEntryCreate {
+  document_id: string;
+  principal_id: string;
+  principal_type: "user" | "group";
+  permission_level: "READ" | "WRITE" | "DELETE" | "ADMIN";
+}
+
+export async function fetchDocumentACLs(
+  documentId: string,
+): Promise<ACLEntryResponse[]> {
+  const res = await apiFetch<{ data: ACLEntryResponse[] }>(
+    `/api/v1/documents/${documentId}/acl`,
+  );
+  return res.data;
+}
+
+export async function addDocumentACL(
+  documentId: string,
+  entry: ACLEntryCreate,
+): Promise<ACLEntryResponse> {
+  const res = await apiMutate<{ data: ACLEntryResponse }>(
+    `/api/v1/documents/${documentId}/acl`,
+    "POST",
+    entry,
+  );
+  return res.data;
+}
+
+export async function removeDocumentACL(
+  documentId: string,
+  aclId: string,
+): Promise<void> {
+  const res = await fetch(`/api/v1/documents/${documentId}/acl/${aclId}`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+  });
+  if (res.status === 401) handle401();
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(`API error ${res.status}: ${t}`);
+  }
 }

@@ -171,6 +171,7 @@ async def list_documents(
     user_id: str | None = None,
     is_superuser: bool = False,
     folder_id: str | None = None,
+    lifecycle_state: str | None = None,
 ) -> tuple[list[Document], int]:
     """List documents with pagination, filters, and ACL enforcement.
 
@@ -201,6 +202,8 @@ async def list_documents(
                 )
             )
         )
+    if lifecycle_state is not None:
+        base_conditions.append(Document.lifecycle_state == lifecycle_state)
 
     if is_superuser or not user_id:
         # Superusers see everything

@@ -22,6 +22,7 @@ import {
 } from "../../api/folders";
 import { FolderPickerDialog } from "../folders/FolderPickerDialog";
 import { RelationshipPanel } from "./RelationshipPanel";
+import { DocumentACLPanel } from "./DocumentACLPanel";
 
 interface DocumentDetailPanelProps {
   documentId: string | null;
@@ -287,6 +288,10 @@ export function DocumentDetailPanel({
           }
         }}
       />
+
+      {/* Section 9 - Document ACL */}
+      <Separator />
+      <DocumentACLPanel documentId={documentId} />
 
       <FolderPickerDialog
         open={folderPickerOpen}
