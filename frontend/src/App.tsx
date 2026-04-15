@@ -11,6 +11,8 @@ import { WorkflowsPage } from "./pages/WorkflowsPage";
 import { BrowsePage } from "./pages/BrowsePage";
 import { DocumentTypesPage } from "./pages/DocumentTypesPage";
 import { FoldersPage } from "./pages/FoldersPage";
+import { RetentionPage } from "./pages/RetentionPage";
+import { QueueAdminPage } from "./pages/QueueAdminPage";
 import { ProtectedRoute } from "./components/layout/ProtectedRoute";
 import { AppShell } from "./components/layout/AppShell";
 import { AdminRoute } from "./components/layout/AdminRoute";
@@ -41,6 +43,8 @@ export default function App() {
             <Route path="/query" element={<QueryPage />} />
             <Route path="/admin/types" element={<DocumentTypesPage />} />
             <Route path="/admin/folders" element={<FoldersPage />} />
+            <Route path="/admin/retention" element={<RetentionPage />} />
+            <Route path="/admin/queues" element={<QueueAdminPage />} />
           </Route>
         </Route>
       </Route>
