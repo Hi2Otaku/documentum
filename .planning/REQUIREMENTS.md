@@ -1,0 +1,112 @@
+# Requirements: Documentum Workflow Clone
+
+**Defined:** 2026-04-15
+**Core Value:** Any workflow or document management use case described in the Documentum specification can be modeled and executed end-to-end.
+
+## v1.4 Requirements
+
+Requirements for Enterprise Completeness milestone. Each maps to roadmap phases.
+
+### Frontend Gap Closure
+
+- [ ] **FEGAP-01**: User can sign documents with digital certificate and verify signatures from the web UI
+- [ ] **FEGAP-02**: User can view signature details (signer, timestamp, certificate, validity status) on signed documents
+- [ ] **FEGAP-03**: Admin can create, edit, and delete retention policies and assign them to documents from the UI
+- [ ] **FEGAP-04**: Admin can place and release legal holds on documents from the UI
+- [ ] **FEGAP-05**: User can manage document-level ACL entries (add/remove users and groups with permission levels)
+- [ ] **FEGAP-06**: Admin can create, edit, and delete work queues and manage queue membership from the UI
+- [ ] **FEGAP-07**: User can filter documents by lifecycle state (Draft/Review/Approved/Archived) in the documents list
+- [ ] **FEGAP-08**: User can configure notification preferences (which event types trigger notifications)
+
+### Identity & Access
+
+- [ ] **AUTH-01**: Admin can configure LDAP directory connection and map LDAP groups to system groups
+- [ ] **AUTH-02**: User can authenticate via SAML 2.0 SSO (redirect to IdP, consume assertion, create session)
+- [ ] **AUTH-03**: User can authenticate via OAuth2/OIDC (authorization code flow with PKCE)
+- [ ] **AUTH-04**: System provisions user accounts on first SSO login (JIT provisioning)
+- [ ] **AUTH-05**: Existing local authentication continues to work alongside SSO providers
+- [ ] **AUTH-06**: Background services (Celery workers, Workflow Agent) authenticate via service tokens without browser flow
+
+### Workflow Error Handling
+
+- [ ] **WFERR-01**: Template designer can attach error handlers to activities that execute when the activity fails
+- [ ] **WFERR-02**: Template designer can define compensation activities that undo completed work when a flow fails
+- [ ] **WFERR-03**: Engine executes compensation handlers in reverse chronological order on workflow failure
+- [ ] **WFERR-04**: Failed activities show error details and allow manual retry or skip from the workflow operations UI
+
+### Workflow Versioning
+
+- [ ] **WFVER-01**: Admin can install a new template version while previous version's instances continue running
+- [ ] **WFVER-02**: New workflow instances use the latest installed version; running instances remain on their original version
+- [ ] **WFVER-03**: Admin can view which template version each running instance uses
+
+### Advanced Join Semantics
+
+- [ ] **JOIN-01**: Template designer can configure N-of-M joins (activate when N of M incoming flows complete)
+- [ ] **JOIN-02**: Template designer can configure cancelling joins (remaining branches cancelled when join fires)
+- [ ] **JOIN-03**: Template designer can configure timeout joins (join fires after duration even if not all branches complete)
+- [ ] **JOIN-04**: Engine handles concurrent token arrivals at joins without race conditions (row-level locking)
+
+### Bulk Operations
+
+- [ ] **BULK-01**: User can select multiple documents and apply batch update (metadata, lifecycle state, ACL)
+- [ ] **BULK-02**: User can select multiple documents and batch delete with confirmation
+- [ ] **BULK-03**: Bulk operations run as background jobs with progress tracking and partial failure reporting
+- [ ] **BULK-04**: User can view bulk job history with success/failure counts
+
+### Import/Export
+
+- [ ] **IOEX-01**: Admin can export selected documents as a ZIP package including content files and metadata JSON
+- [ ] **IOEX-02**: Admin can export folder trees preserving hierarchy, ACLs, and document relationships
+- [ ] **IOEX-03**: Admin can import a ZIP package, recreating documents with metadata and filing into folders
+- [ ] **IOEX-04**: Import handles conflicts (duplicate names, missing references) with configurable strategy (skip/overwrite/rename)
+
+### System Monitoring
+
+- [ ] **MON-01**: Admin can view system health dashboard (database connections, Redis status, Celery worker status, MinIO health)
+- [ ] **MON-02**: Admin can view queue depths, active task counts, and worker utilization
+- [ ] **MON-03**: System exposes Prometheus-compatible metrics endpoint for external monitoring integration
+- [ ] **MON-04**: Admin receives alerts when health checks fail or thresholds are exceeded
+
+### Tamper-Proof Audit
+
+- [ ] **AUDIT-01**: Each audit record includes a SHA-256 hash of its content chained to the previous record's hash
+- [ ] **AUDIT-02**: Admin can verify audit trail integrity (detect gaps or tampering) from the UI
+- [ ] **AUDIT-03**: Audit hash computation runs asynchronously without impacting write throughput
+
+### CMIS Standard API
+
+- [ ] **CMIS-01**: System exposes CMIS 1.1 Browser Binding endpoints for document CRUD operations
+- [ ] **CMIS-02**: System exposes CMIS 1.1 Browser Binding endpoints for folder/navigation operations
+- [ ] **CMIS-03**: System supports CMIS-QL queries mapped to existing search infrastructure
+- [ ] **CMIS-04**: CMIS endpoints respect existing ACL enforcement and authentication
+- [ ] **CMIS-05**: CMIS clients (CMIS Workbench, LibreOffice) can connect and perform basic operations
+
+### Process Analytics
+
+- [ ] **ANLYT-01**: Admin can view process mining dashboard showing actual execution paths discovered from workflow logs
+- [ ] **ANLYT-02**: Admin can view cycle time analysis per activity and per template
+- [ ] **ANLYT-03**: Admin can identify bottleneck activities via frequency and duration analysis
+- [ ] **ANLYT-04**: Analytics data refreshes from workflow execution logs without impacting live performance
+
+## Future Requirements (v1.5+)
+
+- WebDAV file access — deferred due to client compatibility complexity across OS versions
+- Email archiving — deferred, requires SMTP/IMAP infrastructure decision
+- Tiered storage management — deferred, only valuable at scale (100K+ docs)
+- CMIS AtomPub/SOAP bindings — Browser Binding is sufficient for v1.4
+
+## Out of Scope
+
+- Multi-tenancy — internal/personal use, adds complexity everywhere
+- Multi-level security (MLS) — government/defense requirement, not relevant
+- Information Rights Management (IRM/DRM) — post-download control not needed for internal use
+- Repository replication / HA — single-instance deployment sufficient
+- xCP platform bundling — too broad, focus on engine
+- Mobile native app — web-responsive UI is sufficient
+
+## Traceability
+
+| REQ-ID | Phase | Status |
+|--------|-------|--------|
+| (filled by roadmapper) | | |
