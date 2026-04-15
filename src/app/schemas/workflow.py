@@ -111,6 +111,7 @@ class WorkflowAdminListResponse(BaseModel):
     parent_workflow_id: uuid.UUID | None = None
     nesting_depth: int = 0
     template_name: str | None = None
+    template_version: int | None = None
     started_by_username: str | None = None
     active_activity_name: str | None = None
     created_at: datetime

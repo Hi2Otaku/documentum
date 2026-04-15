@@ -76,6 +76,29 @@ async def list_templates(
 
 
 @router.get(
+    "/{template_id}/versions",
+    response_model=EnvelopeResponse[list[ProcessTemplateResponse]],
+)
+async def list_template_versions(
+    template_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """List all versions of the template family that this template belongs to."""
+    template = await template_service.get_template(db, template_id)
+    if template is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Template not found"
+        )
+    versions = await template_service.list_template_versions(
+        db, template.template_family_id
+    )
+    return EnvelopeResponse(
+        data=[ProcessTemplateResponse.model_validate(v) for v in versions]
+    )
+
+
+@router.get(
     "/{template_id}",
     response_model=EnvelopeResponse[ProcessTemplateDetailResponse],
 )
@@ -116,6 +139,7 @@ async def get_template(
         state=template.state,
         is_installed=template.is_installed,
         installed_at=template.installed_at,
+        template_family_id=template.template_family_id,
         created_at=template.created_at,
         updated_at=template.updated_at,
         created_by=template.created_by,

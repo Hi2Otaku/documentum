@@ -293,7 +293,11 @@ async def list_workflows_filtered(
 
     # Fetch workflows with template join
     query = (
-        select(WorkflowInstance, ProcessTemplate.name.label("template_name"))
+        select(
+            WorkflowInstance,
+            ProcessTemplate.name.label("template_name"),
+            ProcessTemplate.version.label("template_version"),
+        )
         .join(
             ProcessTemplate,
             WorkflowInstance.process_template_id == ProcessTemplate.id,
@@ -307,7 +311,7 @@ async def list_workflows_filtered(
     rows = result.all()
 
     workflows = []
-    for workflow, template_name in rows:
+    for workflow, template_name, template_version in rows:
         # Find started_by username
         started_by_username = None
         if workflow.supervisor_id:
@@ -341,6 +345,7 @@ async def list_workflows_filtered(
                 "completed_at": workflow.completed_at,
                 "supervisor_id": workflow.supervisor_id,
                 "template_name": template_name,
+                "template_version": template_version,
                 "started_by_username": started_by_username,
                 "active_activity_name": active_activity_name,
                 "created_at": workflow.created_at,

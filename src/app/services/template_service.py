@@ -8,7 +8,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models.enums import ActivityType, ProcessState, TriggerType
+from app.models.enums import ActivityType, ProcessState, TriggerType, WorkflowState
 from app.models.workflow import (
     ActivityTemplate,
     FlowTemplate,
@@ -99,6 +99,10 @@ async def create_template(
         created_by=user_id,
     )
     db.add(template)
+    await db.flush()
+
+    # New template is the root of its own family
+    template.template_family_id = template.id
     await db.flush()
 
     await create_audit_record(
@@ -926,10 +930,10 @@ async def install_template(
     template.is_installed = True
     template.installed_at = datetime.now(timezone.utc)
 
-    # Deprecate other installed versions with the same name
+    # Deprecate other installed versions in the same family
     result = await db.execute(
         select(ProcessTemplate).where(
-            ProcessTemplate.name == template.name,
+            ProcessTemplate.template_family_id == template.template_family_id,
             ProcessTemplate.is_installed == True,  # noqa: E712
             ProcessTemplate.id != template.id,
             ProcessTemplate.is_deleted == False,  # noqa: E712
@@ -937,8 +941,25 @@ async def install_template(
     )
     old_versions = list(result.scalars().all())
     for old in old_versions:
+        # Check if any running instances reference this old version
+        from app.models.workflow import WorkflowInstance
+        running_result = await db.execute(
+            select(func.count()).select_from(WorkflowInstance).where(
+                WorkflowInstance.process_template_id == old.id,
+                WorkflowInstance.state.in_([
+                    WorkflowState.RUNNING,
+                    WorkflowState.HALTED,
+                    WorkflowState.DORMANT,
+                ]),
+                WorkflowInstance.is_deleted == False,  # noqa: E712
+            )
+        )
+        running_count = running_result.scalar_one()
         old.state = ProcessState.DEPRECATED
-        old.is_installed = False
+        if running_count == 0:
+            # No running instances: fully supersede
+            old.is_installed = False
+        # else: leave is_installed=True so running instances can still reference it
 
     await db.flush()
 
@@ -977,6 +998,7 @@ async def create_new_version(
         version=original.version + 1,
         state=ProcessState.DRAFT,
         is_installed=False,
+        template_family_id=original.template_family_id,
         created_by=user_id,
     )
     db.add(new_template)
@@ -1052,3 +1074,23 @@ async def create_new_version(
     )
 
     return new_template
+
+
+# ---------------------------------------------------------------------------
+# Template version history
+# ---------------------------------------------------------------------------
+
+
+async def list_template_versions(
+    db: AsyncSession, template_family_id: UUID
+) -> list[ProcessTemplate]:
+    """List all versions of a template family, ordered by version desc."""
+    result = await db.execute(
+        select(ProcessTemplate)
+        .where(
+            ProcessTemplate.template_family_id == template_family_id,
+            ProcessTemplate.is_deleted == False,  # noqa: E712
+        )
+        .order_by(ProcessTemplate.version.desc())
+    )
+    return list(result.scalars().all())

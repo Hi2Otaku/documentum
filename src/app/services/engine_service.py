@@ -275,7 +275,7 @@ async def start_workflow(
     Creates the instance, activity instances, copies variables, attaches
     documents, then auto-advances through the start activity.
     """
-    # 1. Load installed template with relations
+    # 1. Load template and resolve to latest installed version in family
     result = await db.execute(
         select(ProcessTemplate)
         .options(
@@ -289,8 +289,29 @@ async def start_workflow(
         )
     )
     template = result.scalar_one_or_none()
-    if template is None or not template.is_installed:
+    if template is None:
         raise ValueError("Template not found or not installed")
+
+    # If the requested template is not installed, resolve to latest installed in family
+    if not template.is_installed:
+        family_result = await db.execute(
+            select(ProcessTemplate)
+            .options(
+                selectinload(ProcessTemplate.activity_templates),
+                selectinload(ProcessTemplate.flow_templates),
+                selectinload(ProcessTemplate.process_variables),
+            )
+            .where(
+                ProcessTemplate.template_family_id == template.template_family_id,
+                ProcessTemplate.is_installed == True,  # noqa: E712
+                ProcessTemplate.is_deleted == False,  # noqa: E712
+            )
+            .order_by(ProcessTemplate.version.desc())
+            .limit(1)
+        )
+        template = family_result.scalar_one_or_none()
+        if template is None:
+            raise ValueError("No installed version available for this template")
 
     # 2. Create WorkflowInstance
     now = datetime.now(timezone.utc)
