@@ -114,11 +114,23 @@ class ActivityTemplate(BaseModel):
     event_filter_config: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     warning_threshold_hours: Mapped[float | None] = mapped_column(Float, nullable=True)
     escalation_action: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    error_handler_activity_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid(), ForeignKey("activity_templates.id"), nullable=True
+    )
+    compensation_activity_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid(), ForeignKey("activity_templates.id"), nullable=True
+    )
 
     process_template: Mapped["ProcessTemplate"] = relationship(
         back_populates="activity_templates", foreign_keys=[process_template_id]
     )
     sub_template: Mapped["ProcessTemplate"] = relationship(foreign_keys=[sub_template_id])
+    error_handler: Mapped["ActivityTemplate | None"] = relationship(
+        foreign_keys=[error_handler_activity_id], remote_side="ActivityTemplate.id"
+    )
+    compensation_handler: Mapped["ActivityTemplate | None"] = relationship(
+        foreign_keys=[compensation_activity_id], remote_side="ActivityTemplate.id"
+    )
 
 
 class FlowTemplate(BaseModel):
@@ -200,6 +212,9 @@ class ActivityInstance(BaseModel):
     started_at: Mapped[None] = mapped_column(DateTime(timezone=True), nullable=True)
     completed_at: Mapped[None] = mapped_column(DateTime(timezone=True), nullable=True)
     current_performer_index: Mapped[int | None] = mapped_column(Integer, nullable=True, default=0)
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    error_details: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    completed_order: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     workflow_instance: Mapped["WorkflowInstance"] = relationship(back_populates="activity_instances", foreign_keys=[workflow_instance_id])
     activity_template: Mapped["ActivityTemplate"] = relationship(foreign_keys=[activity_template_id])

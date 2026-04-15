@@ -62,6 +62,8 @@ class ActivityTemplateCreate(BaseModel):
     expected_duration_hours: float | None = None
     escalation_action: str | None = None
     warning_threshold_hours: float | None = None
+    error_handler_activity_id: uuid.UUID | None = None
+    compensation_activity_id: uuid.UUID | None = None
 
 
 class ActivityTemplateUpdate(BaseModel):
@@ -83,6 +85,8 @@ class ActivityTemplateUpdate(BaseModel):
     expected_duration_hours: float | None = None
     escalation_action: str | None = None
     warning_threshold_hours: float | None = None
+    error_handler_activity_id: uuid.UUID | None = None
+    compensation_activity_id: uuid.UUID | None = None
 
 
 class ActivityTemplateResponse(BaseModel):
@@ -107,6 +111,8 @@ class ActivityTemplateResponse(BaseModel):
     expected_duration_hours: float | None = None
     escalation_action: str | None = None
     warning_threshold_hours: float | None = None
+    error_handler_activity_id: uuid.UUID | None = None
+    compensation_activity_id: uuid.UUID | None = None
     created_at: datetime
     updated_at: datetime
     is_deleted: bool

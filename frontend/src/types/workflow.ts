@@ -43,6 +43,8 @@ export interface ActivityTemplate {
   expected_duration_hours: number | null;
   escalation_action: string | null;
   warning_threshold_hours: number | null;
+  error_handler_activity_id: string | null;
+  compensation_activity_id: string | null;
   created_at: string;
   updated_at: string;
   is_deleted: boolean;
