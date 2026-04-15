@@ -16,6 +16,7 @@ import {
   ListChecks,
   Layers,
   Package,
+  Activity,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useAuthStore } from "../../stores/authStore";
@@ -48,6 +49,7 @@ const NAV_ITEMS: NavItem[] = [
   { icon: KeyRound, label: "SSO Settings", route: "/admin/sso", adminOnly: true },
   { icon: ShieldCheck, label: "Audit Integrity", route: "/admin/audit-verification", adminOnly: true },
   { icon: Package, label: "Import/Export", route: "/admin/import-export", adminOnly: true },
+  { icon: Activity, label: "System Health", route: "/admin/monitoring", adminOnly: true },
 ];
 
 interface SidebarNavProps {
