@@ -84,10 +84,10 @@ Requirements for Enterprise Completeness milestone. Each maps to roadmap phases.
 
 ### Process Analytics
 
-- [ ] **ANLYT-01**: Admin can view process mining dashboard showing actual execution paths discovered from workflow logs
-- [ ] **ANLYT-02**: Admin can view cycle time analysis per activity and per template
-- [ ] **ANLYT-03**: Admin can identify bottleneck activities via frequency and duration analysis
-- [ ] **ANLYT-04**: Analytics data refreshes from workflow execution logs without impacting live performance
+- [x] **ANLYT-01**: Admin can view process mining dashboard showing actual execution paths discovered from workflow logs
+- [x] **ANLYT-02**: Admin can view cycle time analysis per activity and per template
+- [x] **ANLYT-03**: Admin can identify bottleneck activities via frequency and duration analysis
+- [x] **ANLYT-04**: Analytics data refreshes from workflow execution logs without impacting live performance
 
 ## Future Requirements (v1.5+)
 
@@ -154,7 +154,7 @@ Requirements for Enterprise Completeness milestone. Each maps to roadmap phases.
 | CMIS-03 | Phase 43 | Complete |
 | CMIS-04 | Phase 43 | Complete |
 | CMIS-05 | Phase 43 | Complete |
-| ANLYT-01 | Phase 44 | Pending |
-| ANLYT-02 | Phase 44 | Pending |
-| ANLYT-03 | Phase 44 | Pending |
-| ANLYT-04 | Phase 44 | Pending |
+| ANLYT-01 | Phase 44 | Complete |
+| ANLYT-02 | Phase 44 | Complete |
+| ANLYT-03 | Phase 44 | Complete |
+| ANLYT-04 | Phase 44 | Complete |

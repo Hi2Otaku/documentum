@@ -248,7 +248,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 44-01-PLAN.md — Backend: analytics service, schemas, Celery refresh task, API endpoints, tests
+- [x] 44-01-PLAN.md — Backend: analytics service, schemas, Celery refresh task, API endpoints, tests
 - [ ] 44-02-PLAN.md — Frontend: analytics API client, Recharts dashboard page, routing + sidebar nav
 **UI hint**: yes
 
@@ -274,4 +274,4 @@ Note: Phase 43 (CMIS) depends on Phase 36 (SSO) but is sequenced after Phase 42 
 | 41. Import/Export | v1.4 | 2/2 | Complete    | 2026-04-15 |
 | 42. System Monitoring | v1.4 | 2/2 | Complete    | 2026-04-15 |
 | 43. CMIS Standard API | v1.4 | 2/2 | Complete    | 2026-04-15 |
-| 44. Process Analytics | v1.4 | 0/? | Not started | - |
+| 44. Process Analytics | v1.4 | 1/2 | In Progress|  |
