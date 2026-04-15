@@ -63,10 +63,10 @@ Requirements for Enterprise Completeness milestone. Each maps to roadmap phases.
 
 ### System Monitoring
 
-- [ ] **MON-01**: Admin can view system health dashboard (database connections, Redis status, Celery worker status, MinIO health)
-- [ ] **MON-02**: Admin can view queue depths, active task counts, and worker utilization
-- [ ] **MON-03**: System exposes Prometheus-compatible metrics endpoint for external monitoring integration
-- [ ] **MON-04**: Admin receives alerts when health checks fail or thresholds are exceeded
+- [x] **MON-01**: Admin can view system health dashboard (database connections, Redis status, Celery worker status, MinIO health)
+- [x] **MON-02**: Admin can view queue depths, active task counts, and worker utilization
+- [x] **MON-03**: System exposes Prometheus-compatible metrics endpoint for external monitoring integration
+- [x] **MON-04**: Admin receives alerts when health checks fail or thresholds are exceeded
 
 ### Tamper-Proof Audit
 
@@ -145,10 +145,10 @@ Requirements for Enterprise Completeness milestone. Each maps to roadmap phases.
 | IOEX-02 | Phase 41 | Complete |
 | IOEX-03 | Phase 41 | Complete |
 | IOEX-04 | Phase 41 | Complete |
-| MON-01 | Phase 42 | Pending |
-| MON-02 | Phase 42 | Pending |
-| MON-03 | Phase 42 | Pending |
-| MON-04 | Phase 42 | Pending |
+| MON-01 | Phase 42 | Complete |
+| MON-02 | Phase 42 | Complete |
+| MON-03 | Phase 42 | Complete |
+| MON-04 | Phase 42 | Complete |
 | CMIS-01 | Phase 43 | Pending |
 | CMIS-02 | Phase 43 | Pending |
 | CMIS-03 | Phase 43 | Pending |
