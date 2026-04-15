@@ -31,6 +31,7 @@ class ProcessTemplateResponse(BaseModel):
     state: ProcessState
     is_installed: bool
     installed_at: datetime | None
+    template_family_id: uuid.UUID | None = None
     created_at: datetime
     updated_at: datetime
     created_by: str | None

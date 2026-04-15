@@ -73,6 +73,7 @@ class ProcessTemplate(BaseModel):
     alias_set_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid(), ForeignKey("alias_sets.id"), nullable=True
     )
+    template_family_id: Mapped[uuid.UUID] = mapped_column(Uuid(), nullable=False)
 
     activity_templates: Mapped[list["ActivityTemplate"]] = relationship(
         back_populates="process_template", foreign_keys="[ActivityTemplate.process_template_id]"
