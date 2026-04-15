@@ -62,7 +62,7 @@ See `.planning/milestones/v1.3-ROADMAP.md` for full phase details.
 - [x] **Phase 37: Workflow Error Handling & Compensation** - Declarative exception handlers and rollback activities (completed 2026-04-15)
 - [x] **Phase 38: Workflow Versioning** - Concurrent active template versions with immutable installed snapshots (completed 2026-04-15)
 - [x] **Phase 39: Advanced Join Semantics** - N-of-M, cancelling, timeout joins with race-condition-free locking (completed 2026-04-15)
-- [ ] **Phase 40: Bulk Operations** - Mass update, delete, reclassify with background job tracking
+- [x] **Phase 40: Bulk Operations** - Mass update, delete, reclassify with background job tracking (completed 2026-04-15)
 - [ ] **Phase 41: Import/Export** - ZIP package export/import with hierarchy preservation and conflict resolution
 - [ ] **Phase 42: System Monitoring & Health** - Deep health checks, queue metrics, Prometheus endpoint, alerting
 - [ ] **Phase 43: CMIS Standard API** - OASIS CMIS 1.1 Browser Binding for content interoperability
@@ -185,7 +185,7 @@ Plans:
 
 Plans:
 - [x] 40-01-PLAN.md — Backend: BulkJob model, migration, Celery task, service layer, API endpoints
-- [ ] 40-02-PLAN.md — Frontend: checkbox selection, bulk action toolbar, job progress dialog, job history page
+- [x] 40-02-PLAN.md — Frontend: checkbox selection, bulk action toolbar, job progress dialog, job history page
 **UI hint**: yes
 
 ### Phase 41: Import/Export
@@ -270,7 +270,7 @@ Note: Phase 43 (CMIS) depends on Phase 36 (SSO) but is sequenced after Phase 42 
 | 37. Error Handling & Compensation | v1.4 | 1/3 | Complete    | 2026-04-15 |
 | 38. Workflow Versioning | v1.4 | 2/2 | Complete    | 2026-04-15 |
 | 39. Advanced Join Semantics | v1.4 | 2/2 | Complete    | 2026-04-15 |
-| 40. Bulk Operations | v1.4 | 1/2 | In Progress|  |
+| 40. Bulk Operations | v1.4 | 2/2 | Complete   | 2026-04-15 |
 | 41. Import/Export | v1.4 | 0/? | Not started | - |
 | 42. System Monitoring | v1.4 | 0/? | Not started | - |
 | 43. CMIS Standard API | v1.4 | 0/? | Not started | - |
