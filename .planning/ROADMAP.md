@@ -98,7 +98,13 @@ Plans:
   1. Every new audit record includes a SHA-256 hash incorporating its content and the previous record's hash, forming an unbroken chain
   2. Admin can trigger an audit trail integrity verification from the UI and see a clear pass/fail result with details of any breaks
   3. Hash computation runs asynchronously (Celery worker) so write throughput to the main application is not degraded
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 35-01-PLAN.md -- DB migration + model + Celery hash chaining task
+- [ ] 35-02-PLAN.md -- Verification API endpoint + admin verification UI
+
+**UI hint**: yes
 
 ### Phase 36: Identity & SSO
 **Goal**: Users can authenticate via enterprise identity providers (LDAP, SAML, OAuth2/OIDC) alongside existing local auth, with background services using service tokens
@@ -219,7 +225,7 @@ Note: Phase 43 (CMIS) depends on Phase 36 (SSO) but is sequenced after Phase 42 
 | 16-26 | v1.2 | 26/26 | Complete | 2026-04-13 |
 | 27-33 | v1.3 | 19/19 | Complete | 2026-04-14 |
 | 34. Frontend Gap Closure | v1.4 | 0/4 | Complete    | 2026-04-15 |
-| 35. Tamper-Proof Audit | v1.4 | 0/? | Not started | - |
+| 35. Tamper-Proof Audit | v1.4 | 0/2 | Planned | - |
 | 36. Identity & SSO | v1.4 | 0/? | Not started | - |
 | 37. Error Handling & Compensation | v1.4 | 0/? | Not started | - |
 | 38. Workflow Versioning | v1.4 | 0/? | Not started | - |
