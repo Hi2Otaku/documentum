@@ -80,7 +80,14 @@ See `.planning/milestones/v1.3-ROADMAP.md` for full phase details.
   3. User can add and remove ACL entries (users/groups with permission levels) on individual documents from the UI
   4. Admin can create, edit, and delete work queues and manage queue membership from a dedicated admin page
   5. User can filter the documents list by lifecycle state (Draft/Review/Approved/Archived) and the filter actually produces results; user can configure which event types trigger notifications in a preferences panel
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 34-01-PLAN.md — Lifecycle state filter fix + Document ACL panel
+- [ ] 34-02-PLAN.md — Retention admin page + Queue admin page + routing
+- [ ] 34-03-PLAN.md — Digital signatures UI + Retention status panel on document detail
+- [ ] 34-04-PLAN.md — Notification preferences backend + frontend
+
 **UI hint**: yes
 
 ### Phase 35: Tamper-Proof Audit Trail
@@ -211,7 +218,7 @@ Note: Phase 43 (CMIS) depends on Phase 36 (SSO) but is sequenced after Phase 42 
 | 12-15 | v1.1 | 4/4 | Complete | 2026-04-06 |
 | 16-26 | v1.2 | 26/26 | Complete | 2026-04-13 |
 | 27-33 | v1.3 | 19/19 | Complete | 2026-04-14 |
-| 34. Frontend Gap Closure | v1.4 | 0/? | Not started | - |
+| 34. Frontend Gap Closure | v1.4 | 0/4 | Planned | - |
 | 35. Tamper-Proof Audit | v1.4 | 0/? | Not started | - |
 | 36. Identity & SSO | v1.4 | 0/? | Not started | - |
 | 37. Error Handling & Compensation | v1.4 | 0/? | Not started | - |
