@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     smtp_password: str = ""
     smtp_from_email: str = "workflow@localhost"
     max_sub_workflow_depth: int = 5
+    service_token_prefix: str = "svc_"
 
     model_config = {
         "env_file": ".env",
