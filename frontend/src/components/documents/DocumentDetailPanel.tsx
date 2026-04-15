@@ -11,8 +11,10 @@ import { LockIndicator } from "./LockIndicator";
 import { AccessSourceBadge } from "./AccessSourceBadge";
 import { DocumentActions } from "./DocumentActions";
 import { VersionHistoryList } from "./VersionHistoryList";
+import { SignaturePanel } from "./SignaturePanel";
+import { RetentionStatusPanel } from "./RetentionStatusPanel";
 import { useSelectedType } from "./TypeSelector";
-import { fetchDocument } from "../../api/documents";
+import { fetchDocument, fetchVersions } from "../../api/documents";
 import {
   fileDocument,
   unfileDocument,
@@ -22,7 +24,6 @@ import {
 } from "../../api/folders";
 import { FolderPickerDialog } from "../folders/FolderPickerDialog";
 import { RelationshipPanel } from "./RelationshipPanel";
-import { DocumentACLPanel } from "./DocumentACLPanel";
 
 interface DocumentDetailPanelProps {
   documentId: string | null;
@@ -43,6 +44,14 @@ export function DocumentDetailPanel({
 
   // Resolve the type schema from the cached documentTypes list (no extra fetch)
   const selectedType = useSelectedType(document?.document_type_id ?? null);
+
+  // Fetch versions to get latest version ID for SignaturePanel
+  const { data: versions } = useQuery({
+    queryKey: ["versions", documentId],
+    queryFn: () => fetchVersions(documentId!),
+    enabled: !!documentId && !!document,
+  });
+  const latestVersionId = versions?.[0]?.id ?? null;
 
   // Folder filing state
   const [folderPickerOpen, setFolderPickerOpen] = useState(false);
@@ -289,9 +298,17 @@ export function DocumentDetailPanel({
         }}
       />
 
-      {/* Section 9 - Document ACL */}
+      {/* Section 10 - Digital Signatures */}
       <Separator />
-      <DocumentACLPanel documentId={documentId} />
+      <div className="px-6 py-4">
+        <SignaturePanel documentId={documentId} versionId={latestVersionId} />
+      </div>
+
+      {/* Section 11 - Retention & Legal Holds */}
+      <Separator />
+      <div className="px-6 py-4">
+        <RetentionStatusPanel documentId={documentId} />
+      </div>
 
       <FolderPickerDialog
         open={folderPickerOpen}

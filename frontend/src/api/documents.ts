@@ -115,7 +115,6 @@ export interface DocumentListParams {
   page_size?: number;
   title?: string;
   author?: string;
-  lifecycle_state?: string;
 }
 
 export interface LifecycleTransitionResponse {
@@ -319,56 +318,66 @@ export function thumbnailUrl(
   return renditionDownloadUrl(documentId, versionId, renditionId);
 }
 
-// --- ACL types and API functions ---
+// --- Signature types and API functions ---
 
-export interface ACLEntryResponse {
+export interface SignatureResponse {
   id: string;
-  document_id: string;
-  principal_id: string;
-  principal_type: string;
-  permission_level: string;
+  version_id: string;
+  signer_id: string;
+  signer_cn: string;
+  signed_at: string;
+  content_hash: string;
+  algorithm: string;
+  reason: string | null;
+  is_valid: boolean;
   created_at: string;
 }
 
-export interface ACLEntryCreate {
-  document_id: string;
-  principal_id: string;
-  principal_type: "user" | "group";
-  permission_level: "READ" | "WRITE" | "DELETE" | "ADMIN";
+export interface SignatureVerifyResponse {
+  signature_id: string;
+  is_valid: boolean;
+  signer_cn: string;
+  signed_at: string;
+  content_hash_match: boolean;
+  detail: string;
 }
 
-export async function fetchDocumentACLs(
+export interface SignDocumentRequest {
+  certificate_pem: string;
+  private_key_pem: string;
+  reason?: string;
+}
+
+export async function fetchSignatures(
   documentId: string,
-): Promise<ACLEntryResponse[]> {
-  const res = await apiFetch<{ data: ACLEntryResponse[] }>(
-    `/api/v1/documents/${documentId}/acl`,
+  versionId: string,
+): Promise<SignatureResponse[]> {
+  const res = await apiFetch<{ data: SignatureResponse[] }>(
+    `/api/v1/documents/${documentId}/versions/${versionId}/signatures`,
   );
   return res.data;
 }
 
-export async function addDocumentACL(
+export async function signDocumentVersion(
   documentId: string,
-  entry: ACLEntryCreate,
-): Promise<ACLEntryResponse> {
-  const res = await apiMutate<{ data: ACLEntryResponse }>(
-    `/api/v1/documents/${documentId}/acl`,
+  versionId: string,
+  data: SignDocumentRequest,
+): Promise<SignatureResponse> {
+  const res = await apiMutate<{ data: SignatureResponse }>(
+    `/api/v1/documents/${documentId}/versions/${versionId}/signatures`,
     "POST",
-    entry,
+    data,
   );
   return res.data;
 }
 
-export async function removeDocumentACL(
+export async function verifySignature(
   documentId: string,
-  aclId: string,
-): Promise<void> {
-  const res = await fetch(`/api/v1/documents/${documentId}/acl/${aclId}`, {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json", ...authHeaders() },
-  });
-  if (res.status === 401) handle401();
-  if (!res.ok) {
-    const t = await res.text();
-    throw new Error(`API error ${res.status}: ${t}`);
-  }
+  versionId: string,
+  signatureId: string,
+): Promise<SignatureVerifyResponse> {
+  const res = await apiFetch<{ data: SignatureVerifyResponse }>(
+    `/api/v1/documents/${documentId}/versions/${versionId}/signatures/${signatureId}/verify`,
+  );
+  return res.data;
 }
