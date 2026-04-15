@@ -233,23 +233,81 @@ function NodeProperties({
 
       {/* Trigger type (when 2+ incoming edges) */}
       {incomingEdgeCount >= 2 && (
-        <div>
-          <label className="text-sm font-medium" htmlFor="trigger-type">
-            Trigger Type
-          </label>
-          <select
-            id="trigger-type"
-            className="mt-1 w-full rounded border px-3 py-2 text-sm"
-            value={data.triggerType ?? 'or_join'}
-            onChange={(e) =>
-              updateNodeData(nodeId, {
-                triggerType: e.target.value as 'and_join' | 'or_join',
-              })
-            }
-          >
-            <option value="and_join">AND-join</option>
-            <option value="or_join">OR-join</option>
-          </select>
+        <div className="space-y-3">
+          <div>
+            <label className="text-sm font-medium" htmlFor="trigger-type">
+              Trigger Type
+            </label>
+            <select
+              id="trigger-type"
+              className="mt-1 w-full rounded border px-3 py-2 text-sm"
+              value={data.triggerType ?? 'or_join'}
+              onChange={(e) => {
+                const newType = e.target.value as 'and_join' | 'or_join' | 'n_of_m_join' | 'cancelling_join' | 'timeout_join';
+                const clearFields = (newType === 'and_join' || newType === 'or_join')
+                  ? { joinThreshold: null, joinTimeoutHours: null }
+                  : {};
+                updateNodeData(nodeId, { triggerType: newType, ...clearFields });
+              }}
+            >
+              <option value="and_join">AND-join (all branches)</option>
+              <option value="or_join">OR-join (any branch)</option>
+              <option value="n_of_m_join">N-of-M join (threshold)</option>
+              <option value="cancelling_join">Cancelling join (threshold + cancel rest)</option>
+              <option value="timeout_join">Timeout join (all or timeout)</option>
+            </select>
+          </div>
+
+          {/* Join Threshold (N-of-M and Cancelling joins) */}
+          {(data.triggerType === 'n_of_m_join' || data.triggerType === 'cancelling_join') && (
+            <div>
+              <label className="text-sm font-medium" htmlFor="join-threshold">
+                Join Threshold (N of {incomingEdgeCount})
+              </label>
+              <input
+                id="join-threshold"
+                type="number"
+                min={1}
+                max={incomingEdgeCount}
+                className="mt-1 w-full rounded border px-3 py-2 text-sm"
+                value={data.joinThreshold ?? 1}
+                onChange={(e) =>
+                  updateNodeData(nodeId, { joinThreshold: parseInt(e.target.value) || 1 })
+                }
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Fires when {data.joinThreshold ?? 1} of {incomingEdgeCount} branches complete
+              </p>
+              {data.triggerType === 'cancelling_join' && (
+                <p className="text-xs text-amber-600 mt-1">
+                  Remaining incomplete branches will be cancelled when threshold is met
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Timeout Duration (Timeout join) */}
+          {data.triggerType === 'timeout_join' && (
+            <div>
+              <label className="text-sm font-medium" htmlFor="join-timeout">
+                Timeout (hours)
+              </label>
+              <input
+                id="join-timeout"
+                type="number"
+                min={0.1}
+                step={0.1}
+                className="mt-1 w-full rounded border px-3 py-2 text-sm"
+                value={data.joinTimeoutHours ?? 1}
+                onChange={(e) =>
+                  updateNodeData(nodeId, { joinTimeoutHours: parseFloat(e.target.value) || 1 })
+                }
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Join fires after this duration even if not all branches complete
+              </p>
+            </div>
+          )}
         </div>
       )}
 

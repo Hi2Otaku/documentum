@@ -10,7 +10,9 @@ export interface ActivityNodeData extends Record<string, unknown> {
   eventFilterConfig?: Record<string, string> | null;
   performerType?: string | null;
   performerId?: string | null;
-  triggerType?: 'and_join' | 'or_join';
+  triggerType?: 'and_join' | 'or_join' | 'n_of_m_join' | 'cancelling_join' | 'timeout_join';
+  joinThreshold?: number | null;
+  joinTimeoutHours?: number | null;
   methodName?: string | null;
   routingType?: string | null;
   performerList?: string[] | null;
