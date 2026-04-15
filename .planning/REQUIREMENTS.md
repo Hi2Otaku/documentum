@@ -70,9 +70,9 @@ Requirements for Enterprise Completeness milestone. Each maps to roadmap phases.
 
 ### Tamper-Proof Audit
 
-- [ ] **AUDIT-01**: Each audit record includes a SHA-256 hash of its content chained to the previous record's hash
+- [x] **AUDIT-01**: Each audit record includes a SHA-256 hash of its content chained to the previous record's hash
 - [ ] **AUDIT-02**: Admin can verify audit trail integrity (detect gaps or tampering) from the UI
-- [ ] **AUDIT-03**: Audit hash computation runs asynchronously without impacting write throughput
+- [x] **AUDIT-03**: Audit hash computation runs asynchronously without impacting write throughput
 
 ### CMIS Standard API
 
@@ -117,9 +117,9 @@ Requirements for Enterprise Completeness milestone. Each maps to roadmap phases.
 | FEGAP-06 | Phase 34 | Pending |
 | FEGAP-07 | Phase 34 | Pending |
 | FEGAP-08 | Phase 34 | Pending |
-| AUDIT-01 | Phase 35 | Pending |
+| AUDIT-01 | Phase 35 | Complete |
 | AUDIT-02 | Phase 35 | Pending |
-| AUDIT-03 | Phase 35 | Pending |
+| AUDIT-03 | Phase 35 | Complete |
 | AUTH-01 | Phase 36 | Pending |
 | AUTH-02 | Phase 36 | Pending |
 | AUTH-03 | Phase 36 | Pending |
