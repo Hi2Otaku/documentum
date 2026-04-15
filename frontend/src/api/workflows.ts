@@ -72,6 +72,7 @@ export interface WorkflowInstanceResponse {
 
 export interface WorkflowAdminListResponse extends WorkflowInstanceResponse {
   template_name: string | null;
+  template_version: number | null;
   started_by_username: string | null;
   active_activity_name: string | null;
 }

@@ -252,6 +252,16 @@ export async function deleteVariable(
   });
 }
 
+/** Fetch version history for a template (all versions in the same family) */
+export async function fetchTemplateVersions(
+  templateId: string,
+): Promise<ProcessTemplate[]> {
+  const res = await apiFetch<ApiResponse<ProcessTemplate[]>>(
+    `${BASE}${templateId}/versions`,
+  );
+  return res.data;
+}
+
 /** Install template */
 export async function installTemplate(id: string): Promise<ProcessTemplate> {
   const res = await apiFetch<ApiResponse<ProcessTemplate>>(

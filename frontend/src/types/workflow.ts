@@ -19,6 +19,7 @@ export interface ProcessTemplate {
   version: number;
   state: ProcessState;
   is_installed: boolean;
+  template_family_id: string | null;
   installed_at: string | null;
   created_at: string;
   updated_at: string;
