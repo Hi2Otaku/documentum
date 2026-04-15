@@ -63,7 +63,7 @@ See `.planning/milestones/v1.3-ROADMAP.md` for full phase details.
 - [x] **Phase 38: Workflow Versioning** - Concurrent active template versions with immutable installed snapshots (completed 2026-04-15)
 - [x] **Phase 39: Advanced Join Semantics** - N-of-M, cancelling, timeout joins with race-condition-free locking (completed 2026-04-15)
 - [x] **Phase 40: Bulk Operations** - Mass update, delete, reclassify with background job tracking (completed 2026-04-15)
-- [ ] **Phase 41: Import/Export** - ZIP package export/import with hierarchy preservation and conflict resolution
+- [x] **Phase 41: Import/Export** - ZIP package export/import with hierarchy preservation and conflict resolution (completed 2026-04-15)
 - [ ] **Phase 42: System Monitoring & Health** - Deep health checks, queue metrics, Prometheus endpoint, alerting
 - [ ] **Phase 43: CMIS Standard API** - OASIS CMIS 1.1 Browser Binding for content interoperability
 - [ ] **Phase 44: Process Analytics & Mining** - Execution path discovery, cycle time analysis, bottleneck identification
@@ -201,7 +201,7 @@ Plans:
 
 Plans:
 - [x] 41-01-PLAN.md — Backend: schemas, service, Celery tasks, API endpoints for export/import
-- [ ] 41-02-PLAN.md — Frontend: API client, export dialog, import/export admin page, routing
+- [x] 41-02-PLAN.md — Frontend: API client, export dialog, import/export admin page, routing
 **UI hint**: yes
 
 ### Phase 42: System Monitoring & Health
@@ -271,7 +271,7 @@ Note: Phase 43 (CMIS) depends on Phase 36 (SSO) but is sequenced after Phase 42 
 | 38. Workflow Versioning | v1.4 | 2/2 | Complete    | 2026-04-15 |
 | 39. Advanced Join Semantics | v1.4 | 2/2 | Complete    | 2026-04-15 |
 | 40. Bulk Operations | v1.4 | 2/2 | Complete    | 2026-04-15 |
-| 41. Import/Export | v1.4 | 1/2 | In Progress|  |
+| 41. Import/Export | v1.4 | 2/2 | Complete   | 2026-04-15 |
 | 42. System Monitoring | v1.4 | 0/? | Not started | - |
 | 43. CMIS Standard API | v1.4 | 0/? | Not started | - |
 | 44. Process Analytics | v1.4 | 0/? | Not started | - |
