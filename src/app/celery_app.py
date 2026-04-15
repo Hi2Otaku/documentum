@@ -11,7 +11,7 @@ celery_app = Celery(
     "documentum",
     broker=settings.redis_url,
     backend=settings.redis_url,
-    include=["app.tasks.auto_activity", "app.tasks.metrics_aggregation", "app.tasks.notification", "app.tasks.rendition", "app.tasks.extraction", "app.tasks.audit_chain"],
+    include=["app.tasks.auto_activity", "app.tasks.metrics_aggregation", "app.tasks.notification", "app.tasks.rendition", "app.tasks.extraction", "app.tasks.audit_chain", "app.tasks.join_timeout"],
 )
 
 celery_app.conf.update(
@@ -38,6 +38,10 @@ celery_app.conf.update(
         "check-approaching-deadlines": {
             "task": "app.tasks.notification.check_approaching_deadlines",
             "schedule": 60.0,
+        },
+        "check-join-timeouts": {
+            "task": "app.tasks.join_timeout.check_join_timeouts",
+            "schedule": 15.0,
         },
     },
 )

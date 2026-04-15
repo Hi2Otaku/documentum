@@ -596,6 +596,7 @@ async def _advance_from_activity(
                 flow.target_activity_id,
                 target_at.trigger_type,
                 template.flow_templates,
+                activity_template=target_at,
             )
 
             if should_fire:
@@ -626,6 +627,13 @@ async def _advance_from_activity(
                 # Activate target
                 target_ai.state = ActivityState.ACTIVE
                 target_ai.started_at = datetime.now(timezone.utc)
+
+                # Cancelling join: cancel remaining incomplete branches
+                if target_at.trigger_type == TriggerType.CANCELLING_JOIN:
+                    await _cancel_remaining_branches(
+                        db, workflow.id, flow.target_activity_id,
+                        template.flow_templates, template_to_instance,
+                    )
 
                 # Handle by activity type
                 if target_at.activity_type in (ActivityType.START, ActivityType.END):
@@ -750,6 +758,12 @@ async def _advance_from_activity(
                             )
                             db.add(work_item)
 
+            # Timeout join: start the timeout clock on first token arrival
+            if not should_fire and target_at.trigger_type == TriggerType.TIMEOUT_JOIN:
+                target_ai = template_to_instance.get(flow.target_activity_id)
+                if target_ai and target_ai.join_timeout_started_at is None:
+                    target_ai.join_timeout_started_at = datetime.now(timezone.utc)
+
         # If no flows fired and current is END type, mark workflow FINISHED
         if not any_flow_fired:
             current_at = activity_template_map.get(current.activity_template_id)
@@ -811,11 +825,18 @@ async def _should_activate(
     target_activity_template_id: uuid.UUID,
     trigger_type: TriggerType,
     flow_templates: list[FlowTemplate],
+    activity_template: ActivityTemplate | None = None,
 ) -> bool:
     """Check whether a target activity should be activated based on token count.
 
+    Uses SELECT ... FOR UPDATE on token rows to prevent concurrent duplicate
+    activation (JOIN-04 race condition fix).
+
     AND-join: requires tokens from ALL incoming flows.
     OR-join: requires at least 1 token.
+    N_OF_M_JOIN: fires when token_count >= join_threshold.
+    CANCELLING_JOIN: same as N_OF_M_JOIN (defaults threshold to 1).
+    TIMEOUT_JOIN: same as AND_JOIN for normal firing; timeout handled by Celery task.
     """
     # Count incoming NORMAL flows for the target
     incoming_flows = [
@@ -826,20 +847,82 @@ async def _should_activate(
         and f.flow_type == FlowType.NORMAL
     ]
 
-    # Count unconsumed tokens targeting this activity
-    result = await db.execute(
+    # Count unconsumed tokens targeting this activity with FOR UPDATE locking
+    # to prevent concurrent duplicate activation. SQLite does not support
+    # FOR UPDATE, so we skip locking for test environments.
+    token_query = (
         select(func.count()).select_from(ExecutionToken).where(
             ExecutionToken.workflow_instance_id == workflow_id,
             ExecutionToken.target_activity_template_id == target_activity_template_id,
             ExecutionToken.is_consumed == False,  # noqa: E712
         )
     )
+    dialect_name = db.bind.dialect.name if db.bind else "sqlite"
+    if dialect_name != "sqlite":
+        token_query = token_query.with_for_update()
+
+    result = await db.execute(token_query)
     token_count = result.scalar_one()
 
     if trigger_type == TriggerType.AND_JOIN:
         return token_count >= len(incoming_flows)
-    else:  # OR_JOIN
+    elif trigger_type == TriggerType.OR_JOIN:
         return token_count >= 1
+    elif trigger_type == TriggerType.N_OF_M_JOIN:
+        threshold = (activity_template.join_threshold if activity_template else None) or len(incoming_flows)
+        return token_count >= threshold
+    elif trigger_type == TriggerType.CANCELLING_JOIN:
+        threshold = (activity_template.join_threshold if activity_template else None) or 1
+        return token_count >= threshold
+    elif trigger_type == TriggerType.TIMEOUT_JOIN:
+        # Normal firing uses AND_JOIN logic; timeout firing is handled by Celery task
+        return token_count >= len(incoming_flows)
+    else:
+        return token_count >= 1
+
+
+async def _cancel_remaining_branches(
+    db: AsyncSession,
+    workflow_id: uuid.UUID,
+    target_activity_template_id: uuid.UUID,
+    flow_templates: list[FlowTemplate],
+    template_to_instance: dict[uuid.UUID, ActivityInstance],
+) -> None:
+    """Cancel remaining incomplete branches feeding into a cancelling join.
+
+    After a cancelling join fires, any DORMANT or ACTIVE activities on branches
+    that have not yet produced a token for this join are cancelled.
+    """
+    # Find all source activities that feed into this join
+    incoming_source_ids = {
+        f.source_activity_id
+        for f in flow_templates
+        if not f.is_deleted
+        and f.target_activity_id == target_activity_template_id
+        and f.flow_type == FlowType.NORMAL
+    }
+
+    now = datetime.now(timezone.utc)
+    for source_template_id in incoming_source_ids:
+        ai = template_to_instance.get(source_template_id)
+        if ai is None:
+            continue
+        if ai.state in (ActivityState.DORMANT, ActivityState.ACTIVE):
+            ai.state = ActivityState.CANCELLED
+            ai.completed_at = now
+            # Cancel any non-terminal work items for this activity
+            wi_result = await db.execute(
+                select(WorkItem).where(
+                    WorkItem.activity_instance_id == ai.id,
+                    WorkItem.state.notin_([
+                        WorkItemState.COMPLETE,
+                        WorkItemState.REJECTED,
+                    ]),
+                )
+            )
+            for wi in wi_result.scalars().all():
+                wi.state = WorkItemState.COMPLETE
+                wi.completed_at = now
 
 
 # ---------------------------------------------------------------------------

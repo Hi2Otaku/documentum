@@ -1,8 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, Uuid
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, String, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import BaseModel
@@ -15,7 +14,7 @@ class IdentityProvider(BaseModel):
     provider_type: Mapped[str] = mapped_column(
         String(20), nullable=False
     )  # "ldap", "saml", "oidc"
-    config: Mapped[dict] = mapped_column(JSONB, default=dict, server_default="{}", nullable=False)
+    config: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
     is_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
 
