@@ -121,6 +121,8 @@ class ActivityTemplate(BaseModel):
     compensation_activity_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid(), ForeignKey("activity_templates.id"), nullable=True
     )
+    join_threshold: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    join_timeout_hours: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     process_template: Mapped["ProcessTemplate"] = relationship(
         back_populates="activity_templates", foreign_keys=[process_template_id]
@@ -216,6 +218,7 @@ class ActivityInstance(BaseModel):
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
     error_details: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     completed_order: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    join_timeout_started_at: Mapped[None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     workflow_instance: Mapped["WorkflowInstance"] = relationship(back_populates="activity_instances", foreign_keys=[workflow_instance_id])
     activity_template: Mapped["ActivityTemplate"] = relationship(foreign_keys=[activity_template_id])

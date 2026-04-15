@@ -25,6 +25,9 @@ class FlowType(str, enum.Enum):
 class TriggerType(str, enum.Enum):
     AND_JOIN = "and_join"
     OR_JOIN = "or_join"
+    N_OF_M_JOIN = "n_of_m_join"
+    CANCELLING_JOIN = "cancelling_join"
+    TIMEOUT_JOIN = "timeout_join"
 
 
 class WorkflowState(str, enum.Enum):
@@ -50,6 +53,7 @@ class ActivityState(str, enum.Enum):
     PAUSED = "paused"
     COMPLETE = "complete"
     ERROR = "error"
+    CANCELLED = "cancelled"
 
 
 class PerformerType(str, enum.Enum):

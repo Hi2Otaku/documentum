@@ -65,6 +65,8 @@ class ActivityTemplateCreate(BaseModel):
     warning_threshold_hours: float | None = None
     error_handler_activity_id: uuid.UUID | None = None
     compensation_activity_id: uuid.UUID | None = None
+    join_threshold: int | None = None
+    join_timeout_hours: float | None = None
 
 
 class ActivityTemplateUpdate(BaseModel):
@@ -88,6 +90,8 @@ class ActivityTemplateUpdate(BaseModel):
     warning_threshold_hours: float | None = None
     error_handler_activity_id: uuid.UUID | None = None
     compensation_activity_id: uuid.UUID | None = None
+    join_threshold: int | None = None
+    join_timeout_hours: float | None = None
 
 
 class ActivityTemplateResponse(BaseModel):
@@ -114,6 +118,8 @@ class ActivityTemplateResponse(BaseModel):
     warning_threshold_hours: float | None = None
     error_handler_activity_id: uuid.UUID | None = None
     compensation_activity_id: uuid.UUID | None = None
+    join_threshold: int | None = None
+    join_timeout_hours: float | None = None
     created_at: datetime
     updated_at: datetime
     is_deleted: bool
