@@ -200,7 +200,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 41-01-PLAN.md — Backend: schemas, service, Celery tasks, API endpoints for export/import
+- [x] 41-01-PLAN.md — Backend: schemas, service, Celery tasks, API endpoints for export/import
 - [ ] 41-02-PLAN.md — Frontend: API client, export dialog, import/export admin page, routing
 **UI hint**: yes
 
@@ -271,7 +271,7 @@ Note: Phase 43 (CMIS) depends on Phase 36 (SSO) but is sequenced after Phase 42 
 | 38. Workflow Versioning | v1.4 | 2/2 | Complete    | 2026-04-15 |
 | 39. Advanced Join Semantics | v1.4 | 2/2 | Complete    | 2026-04-15 |
 | 40. Bulk Operations | v1.4 | 2/2 | Complete    | 2026-04-15 |
-| 41. Import/Export | v1.4 | 0/? | Not started | - |
+| 41. Import/Export | v1.4 | 1/2 | In Progress|  |
 | 42. System Monitoring | v1.4 | 0/? | Not started | - |
 | 43. CMIS Standard API | v1.4 | 0/? | Not started | - |
 | 44. Process Analytics | v1.4 | 0/? | Not started | - |

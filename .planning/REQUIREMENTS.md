@@ -56,10 +56,10 @@ Requirements for Enterprise Completeness milestone. Each maps to roadmap phases.
 
 ### Import/Export
 
-- [ ] **IOEX-01**: Admin can export selected documents as a ZIP package including content files and metadata JSON
-- [ ] **IOEX-02**: Admin can export folder trees preserving hierarchy, ACLs, and document relationships
-- [ ] **IOEX-03**: Admin can import a ZIP package, recreating documents with metadata and filing into folders
-- [ ] **IOEX-04**: Import handles conflicts (duplicate names, missing references) with configurable strategy (skip/overwrite/rename)
+- [x] **IOEX-01**: Admin can export selected documents as a ZIP package including content files and metadata JSON
+- [x] **IOEX-02**: Admin can export folder trees preserving hierarchy, ACLs, and document relationships
+- [x] **IOEX-03**: Admin can import a ZIP package, recreating documents with metadata and filing into folders
+- [x] **IOEX-04**: Import handles conflicts (duplicate names, missing references) with configurable strategy (skip/overwrite/rename)
 
 ### System Monitoring
 
@@ -141,10 +141,10 @@ Requirements for Enterprise Completeness milestone. Each maps to roadmap phases.
 | BULK-02 | Phase 40 | Complete |
 | BULK-03 | Phase 40 | Complete |
 | BULK-04 | Phase 40 | Complete |
-| IOEX-01 | Phase 41 | Pending |
-| IOEX-02 | Phase 41 | Pending |
-| IOEX-03 | Phase 41 | Pending |
-| IOEX-04 | Phase 41 | Pending |
+| IOEX-01 | Phase 41 | Complete |
+| IOEX-02 | Phase 41 | Complete |
+| IOEX-03 | Phase 41 | Complete |
+| IOEX-04 | Phase 41 | Complete |
 | MON-01 | Phase 42 | Pending |
 | MON-02 | Phase 42 | Pending |
 | MON-03 | Phase 42 | Pending |
