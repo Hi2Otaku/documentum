@@ -15,6 +15,7 @@ from app.models.event import DomainEvent
 from app.models.rendition import Rendition
 from app.models.virtual_document import VirtualDocument, VirtualDocumentChild
 from app.models.retention import RetentionPolicy, DocumentRetention, LegalHold
+from app.models.bulk_job import BulkJob
 from app.models.saved_search import SavedSearch
 from app.models.workflow import (
     ActivityInstance,
@@ -78,4 +79,5 @@ __all__ = [
     "DocumentRetention",
     "LegalHold",
     "SavedSearch",
+    "BulkJob",
 ]
