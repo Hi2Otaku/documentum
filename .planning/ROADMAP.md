@@ -66,7 +66,7 @@ See `.planning/milestones/v1.3-ROADMAP.md` for full phase details.
 - [x] **Phase 41: Import/Export** - ZIP package export/import with hierarchy preservation and conflict resolution (completed 2026-04-15)
 - [x] **Phase 42: System Monitoring & Health** - Deep health checks, queue metrics, Prometheus endpoint, alerting (completed 2026-04-15)
 - [x] **Phase 43: CMIS Standard API** - OASIS CMIS 1.1 Browser Binding for content interoperability (completed 2026-04-15)
-- [ ] **Phase 44: Process Analytics & Mining** - Execution path discovery, cycle time analysis, bottleneck identification
+- [x] **Phase 44: Process Analytics & Mining** - Execution path discovery, cycle time analysis, bottleneck identification (completed 2026-04-15)
 
 ## Phase Details
 
@@ -249,7 +249,7 @@ Plans:
 
 Plans:
 - [x] 44-01-PLAN.md — Backend: analytics service, schemas, Celery refresh task, API endpoints, tests
-- [ ] 44-02-PLAN.md — Frontend: analytics API client, Recharts dashboard page, routing + sidebar nav
+- [x] 44-02-PLAN.md — Frontend: analytics API client, Recharts dashboard page, routing + sidebar nav
 **UI hint**: yes
 
 ## Progress
@@ -274,4 +274,4 @@ Note: Phase 43 (CMIS) depends on Phase 36 (SSO) but is sequenced after Phase 42 
 | 41. Import/Export | v1.4 | 2/2 | Complete    | 2026-04-15 |
 | 42. System Monitoring | v1.4 | 2/2 | Complete    | 2026-04-15 |
 | 43. CMIS Standard API | v1.4 | 2/2 | Complete    | 2026-04-15 |
-| 44. Process Analytics | v1.4 | 1/2 | In Progress|  |
+| 44. Process Analytics | v1.4 | 2/2 | Complete   | 2026-04-15 |
