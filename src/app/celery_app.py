@@ -11,7 +11,7 @@ celery_app = Celery(
     "documentum",
     broker=settings.redis_url,
     backend=settings.redis_url,
-    include=["app.tasks.auto_activity", "app.tasks.metrics_aggregation", "app.tasks.notification", "app.tasks.rendition", "app.tasks.extraction", "app.tasks.audit_chain", "app.tasks.join_timeout", "app.tasks.bulk_operations"],
+    include=["app.tasks.auto_activity", "app.tasks.metrics_aggregation", "app.tasks.notification", "app.tasks.rendition", "app.tasks.extraction", "app.tasks.audit_chain", "app.tasks.join_timeout", "app.tasks.bulk_operations", "app.tasks.import_export"],
 )
 
 celery_app.conf.update(
