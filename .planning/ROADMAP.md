@@ -233,7 +233,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 43-01-PLAN.md — CMIS service layer, schemas, Browser Binding router (document CRUD + folder navigation)
+- [x] 43-01-PLAN.md — CMIS service layer, schemas, Browser Binding router (document CRUD + folder navigation)
 - [ ] 43-02-PLAN.md — CMIS-QL query parser/executor + end-to-end smoke test
 
 ### Phase 44: Process Analytics & Mining
@@ -273,5 +273,5 @@ Note: Phase 43 (CMIS) depends on Phase 36 (SSO) but is sequenced after Phase 42 
 | 40. Bulk Operations | v1.4 | 2/2 | Complete    | 2026-04-15 |
 | 41. Import/Export | v1.4 | 2/2 | Complete    | 2026-04-15 |
 | 42. System Monitoring | v1.4 | 2/2 | Complete    | 2026-04-15 |
-| 43. CMIS Standard API | v1.4 | 0/2 | Not started | - |
+| 43. CMIS Standard API | v1.4 | 1/2 | In Progress|  |
 | 44. Process Analytics | v1.4 | 0/? | Not started | - |
