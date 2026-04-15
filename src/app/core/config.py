@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     smtp_from_email: str = "workflow@localhost"
     max_sub_workflow_depth: int = 5
     service_token_prefix: str = "svc_"
+    sso_session_secret: str = ""
+    frontend_url: str = "http://localhost:5173"
 
     model_config = {
         "env_file": ".env",
