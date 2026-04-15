@@ -299,3 +299,247 @@ class TestExecuteCmisQuery:
         assert len(result["objects"]) == 2
         assert result["hasMoreItems"] is True
         assert result["numItems"] == 3
+
+
+# ── HTTP integration tests for CMIS query endpoint ──────────────────────────
+
+
+@pytest.mark.asyncio
+class TestCmisQueryEndpoint:
+    """Test the CMIS-QL query via HTTP endpoints."""
+
+    async def _create_cabinet(self, async_client: AsyncClient, admin_token: str) -> str:
+        resp = await async_client.post(
+            "/api/v1/folders/",
+            json={"name": "Query Test Cabinet", "description": "Test"},
+            headers={"Authorization": f"Bearer {admin_token}"},
+        )
+        assert resp.status_code == 201
+        return resp.json()["data"]["id"]
+
+    async def _upload_doc(
+        self, async_client: AsyncClient, admin_token: str, cabinet_id: str, name: str
+    ) -> dict:
+        resp = await async_client.post(
+            f"/api/v1/cmis/browser/root/{cabinet_id}",
+            data={
+                "cmisaction": "createDocument",
+                "propertyId[0]": "cmis:name",
+                "propertyValue[0]": name,
+            },
+            files={"file": (name, f"content of {name}".encode(), "text/plain")},
+            headers={"Authorization": f"Bearer {admin_token}"},
+        )
+        assert resp.status_code == 200
+        return resp.json()
+
+    async def test_post_query_returns_documents(
+        self, async_client: AsyncClient, admin_token: str
+    ):
+        cabinet_id = await self._create_cabinet(async_client, admin_token)
+        await self._upload_doc(async_client, admin_token, cabinet_id, "query-test.txt")
+
+        resp = await async_client.post(
+            "/api/v1/cmis/browser/root",
+            data={
+                "cmisaction": "query",
+                "statement": "SELECT * FROM cmis:document",
+            },
+            headers={"Authorization": f"Bearer {admin_token}"},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "objects" in data
+        assert data["numItems"] >= 1
+
+    async def test_post_query_with_where(
+        self, async_client: AsyncClient, admin_token: str
+    ):
+        cabinet_id = await self._create_cabinet(async_client, admin_token)
+        await self._upload_doc(async_client, admin_token, cabinet_id, "findme.txt")
+        await self._upload_doc(async_client, admin_token, cabinet_id, "other.txt")
+
+        resp = await async_client.post(
+            "/api/v1/cmis/browser/root",
+            data={
+                "cmisaction": "query",
+                "statement": "SELECT * FROM cmis:document WHERE cmis:name = 'findme.txt'",
+            },
+            headers={"Authorization": f"Bearer {admin_token}"},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["numItems"] == 1
+        assert data["objects"][0]["succinctProperties"]["cmis:name"] == "findme.txt"
+
+    async def test_post_query_invalid_returns_400(
+        self, async_client: AsyncClient, admin_token: str
+    ):
+        resp = await async_client.post(
+            "/api/v1/cmis/browser/root",
+            data={
+                "cmisaction": "query",
+                "statement": "INVALID QUERY",
+            },
+            headers={"Authorization": f"Bearer {admin_token}"},
+        )
+        assert resp.status_code == 400
+        data = resp.json()
+        assert data["detail"]["exception"] == "invalidArgument"
+
+    async def test_get_query_returns_results(
+        self, async_client: AsyncClient, admin_token: str
+    ):
+        cabinet_id = await self._create_cabinet(async_client, admin_token)
+        await self._upload_doc(async_client, admin_token, cabinet_id, "get-query.txt")
+
+        resp = await async_client.get(
+            "/api/v1/cmis/browser",
+            params={
+                "cmisselector": "query",
+                "q": "SELECT * FROM cmis:document",
+            },
+            headers={"Authorization": f"Bearer {admin_token}"},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "objects" in data
+        assert data["numItems"] >= 1
+
+    async def test_query_requires_auth(self, async_client: AsyncClient):
+        resp = await async_client.post(
+            "/api/v1/cmis/browser/root",
+            data={
+                "cmisaction": "query",
+                "statement": "SELECT * FROM cmis:document",
+            },
+        )
+        assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+class TestCmisE2eWorkflow:
+    """End-to-end smoke test validating full CMIS client workflow (CMIS-05)."""
+
+    async def test_cmis_e2e_workflow(
+        self, async_client: AsyncClient, admin_token: str
+    ):
+        headers = {"Authorization": f"Bearer {admin_token}"}
+
+        # 1. GET repository info
+        resp = await async_client.get("/api/v1/cmis/browser", headers=headers)
+        assert resp.status_code == 200
+        repo_info = resp.json()
+        assert repo_info["repositoryId"] == "documentum-clone"
+        assert repo_info["cmisVersionSupported"] == "1.1"
+        root_id = repo_info["rootFolderId"]
+
+        # 2. POST createFolder in root
+        resp = await async_client.post(
+            f"/api/v1/cmis/browser/root/{root_id}",
+            data={
+                "cmisaction": "createFolder",
+                "propertyId[0]": "cmis:name",
+                "propertyValue[0]": "E2E Test Folder",
+            },
+            headers=headers,
+        )
+        assert resp.status_code == 200
+        folder_props = resp.json()["succinctProperties"]
+        folder_id = folder_props["cmis:objectId"]
+        assert folder_props["cmis:name"] == "E2E Test Folder"
+        assert folder_props["cmis:baseTypeId"] == "cmis:folder"
+
+        # 3. POST createDocument in test folder
+        doc_name = "e2e-test-doc.txt"
+        resp = await async_client.post(
+            f"/api/v1/cmis/browser/root/{folder_id}",
+            data={
+                "cmisaction": "createDocument",
+                "propertyId[0]": "cmis:name",
+                "propertyValue[0]": doc_name,
+            },
+            files={"file": (doc_name, b"Hello CMIS E2E", "text/plain")},
+            headers=headers,
+        )
+        assert resp.status_code == 200
+        doc_props = resp.json()["succinctProperties"]
+        doc_id = doc_props["cmis:objectId"]
+        assert doc_props["cmis:name"] == doc_name
+
+        # 4. GET object - retrieve document
+        resp = await async_client.get(
+            f"/api/v1/cmis/browser/root/{doc_id}",
+            params={"cmisselector": "object"},
+            headers=headers,
+        )
+        assert resp.status_code == 200
+        assert resp.json()["succinctProperties"]["cmis:name"] == doc_name
+
+        # 5. GET children of test folder - verify document appears
+        resp = await async_client.get(
+            f"/api/v1/cmis/browser/root/{folder_id}",
+            params={"cmisselector": "children"},
+            headers=headers,
+        )
+        assert resp.status_code == 200
+        children = resp.json()
+        child_names = [
+            o["succinctProperties"]["cmis:name"] for o in children["objects"]
+        ]
+        assert doc_name in child_names
+
+        # 6. POST query - find the document by name
+        resp = await async_client.post(
+            "/api/v1/cmis/browser/root",
+            data={
+                "cmisaction": "query",
+                "statement": f"SELECT * FROM cmis:document WHERE cmis:name = '{doc_name}'",
+            },
+            headers=headers,
+        )
+        assert resp.status_code == 200
+        query_result = resp.json()
+        assert query_result["numItems"] >= 1
+        found_names = [
+            o["succinctProperties"]["cmis:name"] for o in query_result["objects"]
+        ]
+        assert doc_name in found_names
+
+        # 7. POST checkOut
+        resp = await async_client.post(
+            f"/api/v1/cmis/browser/root/{doc_id}",
+            data={"cmisaction": "checkOut"},
+            headers=headers,
+        )
+        assert resp.status_code == 200
+        assert resp.json()["succinctProperties"]["cmis:isVersionSeriesCheckedOut"] is True
+
+        # 8. POST checkIn with new file
+        resp = await async_client.post(
+            f"/api/v1/cmis/browser/root/{doc_id}",
+            data={
+                "cmisaction": "checkIn",
+                "comment": "E2E checkin",
+            },
+            files={"file": (doc_name, b"Updated CMIS E2E content", "text/plain")},
+            headers=headers,
+        )
+        assert resp.status_code == 200
+        assert resp.json()["succinctProperties"]["cmis:isVersionSeriesCheckedOut"] is False
+
+        # 9. POST delete
+        resp = await async_client.post(
+            f"/api/v1/cmis/browser/root/{doc_id}",
+            data={"cmisaction": "delete"},
+            headers=headers,
+        )
+        assert resp.status_code == 200
+
+        # Verify deleted
+        resp = await async_client.get(
+            f"/api/v1/cmis/browser/root/{doc_id}",
+            params={"cmisselector": "object"},
+            headers=headers,
+        )
+        assert resp.status_code == 404

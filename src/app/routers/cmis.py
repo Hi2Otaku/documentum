@@ -23,7 +23,7 @@ from app.core.dependencies import get_current_user
 from app.models.document import Document, DocumentVersion
 from app.models.folder import Folder
 from app.models.user import User
-from app.services import cmis_service, document_service, folder_service
+from app.services import cmis_query_service, cmis_service, document_service, folder_service
 
 logger = logging.getLogger(__name__)
 
@@ -121,10 +121,27 @@ async def _get_descendants_tree(
 
 @router.get("")
 async def get_repository_info(
+    cmisselector: str | None = Query(None),
+    q: str | None = Query(None, description="CMIS-QL query statement (when cmisselector=query)"),
+    maxItems: int = Query(100, ge=1, le=10000),
+    skipCount: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Return CMIS 1.1 repository info."""
+    """Return CMIS 1.1 repository info, or execute a query if cmisselector=query."""
+    if cmisselector == "query":
+        if not q:
+            raise _cmis_error("invalidArgument", "Missing required parameter 'q' for query")
+        try:
+            result = await cmis_query_service.execute_cmis_query(
+                db, q, user_id=str(current_user.id),
+                is_superuser=current_user.is_superuser,
+                max_items=maxItems, skip_count=skipCount,
+            )
+            return result
+        except ValueError as e:
+            raise _cmis_error("invalidArgument", str(e))
+
     root = await _get_or_create_root_folder(db, str(current_user.id))
     info = cmis_service.get_repository_info(str(root.id))
     return info
@@ -319,10 +336,26 @@ async def create_object_in_root(
     propertyId_1_: str | None = Form(None, alias="propertyId[1]"),
     propertyValue_1_: str | None = Form(None, alias="propertyValue[1]"),
     properties: str | None = Form(None),
+    statement: str | None = Form(None),
+    maxItems: int | None = Form(None),
+    skipCount: int | None = Form(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Create a document or folder in the root folder."""
+    """Create a document or folder in the root folder, or execute a query."""
+    if cmisaction == "query":
+        if not statement:
+            raise _cmis_error("invalidArgument", "Missing required parameter 'statement' for query")
+        try:
+            result = await cmis_query_service.execute_cmis_query(
+                db, statement, user_id=str(current_user.id),
+                is_superuser=current_user.is_superuser,
+                max_items=maxItems or 100, skip_count=skipCount or 0,
+            )
+            return result
+        except ValueError as e:
+            raise _cmis_error("invalidArgument", str(e))
+
     root = await _get_or_create_root_folder(db, str(current_user.id))
     return await _handle_post_action(
         db, root.id, cmisaction, file, propertyId_0_, propertyValue_0_,
