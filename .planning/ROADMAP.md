@@ -120,7 +120,7 @@ Plans:
 
 Plans:
 - [x] 36-01-PLAN.md — Auth backend abstraction + service tokens + DB migration
-- [ ] 36-02-PLAN.md — LDAP/SAML/OIDC identity service + SSO endpoints
+- [x] 36-02-PLAN.md — LDAP/SAML/OIDC identity service + SSO endpoints
 - [ ] 36-03-PLAN.md — Admin SSO settings page + Login page SSO buttons
 
 **UI hint**: yes
@@ -232,7 +232,7 @@ Note: Phase 43 (CMIS) depends on Phase 36 (SSO) but is sequenced after Phase 42 
 | 27-33 | v1.3 | 19/19 | Complete | 2026-04-14 |
 | 34. Frontend Gap Closure | v1.4 | 0/4 | Complete    | 2026-04-15 |
 | 35. Tamper-Proof Audit | v1.4 | 2/2 | Complete    | 2026-04-15 |
-| 36. Identity & SSO | v1.4 | 1/3 | In Progress|  |
+| 36. Identity & SSO | v1.4 | 2/3 | In Progress|  |
 | 37. Error Handling & Compensation | v1.4 | 0/? | Not started | - |
 | 38. Workflow Versioning | v1.4 | 0/? | Not started | - |
 | 39. Advanced Join Semantics | v1.4 | 0/? | Not started | - |

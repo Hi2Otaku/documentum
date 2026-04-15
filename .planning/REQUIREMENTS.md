@@ -20,10 +20,10 @@ Requirements for Enterprise Completeness milestone. Each maps to roadmap phases.
 
 ### Identity & Access
 
-- [ ] **AUTH-01**: Admin can configure LDAP directory connection and map LDAP groups to system groups
-- [ ] **AUTH-02**: User can authenticate via SAML 2.0 SSO (redirect to IdP, consume assertion, create session)
-- [ ] **AUTH-03**: User can authenticate via OAuth2/OIDC (authorization code flow with PKCE)
-- [ ] **AUTH-04**: System provisions user accounts on first SSO login (JIT provisioning)
+- [x] **AUTH-01**: Admin can configure LDAP directory connection and map LDAP groups to system groups
+- [x] **AUTH-02**: User can authenticate via SAML 2.0 SSO (redirect to IdP, consume assertion, create session)
+- [x] **AUTH-03**: User can authenticate via OAuth2/OIDC (authorization code flow with PKCE)
+- [x] **AUTH-04**: System provisions user accounts on first SSO login (JIT provisioning)
 - [x] **AUTH-05**: Existing local authentication continues to work alongside SSO providers
 - [x] **AUTH-06**: Background services (Celery workers, Workflow Agent) authenticate via service tokens without browser flow
 
@@ -120,10 +120,10 @@ Requirements for Enterprise Completeness milestone. Each maps to roadmap phases.
 | AUDIT-01 | Phase 35 | Complete |
 | AUDIT-02 | Phase 35 | Complete |
 | AUDIT-03 | Phase 35 | Complete |
-| AUTH-01 | Phase 36 | Pending |
-| AUTH-02 | Phase 36 | Pending |
-| AUTH-03 | Phase 36 | Pending |
-| AUTH-04 | Phase 36 | Pending |
+| AUTH-01 | Phase 36 | Complete |
+| AUTH-02 | Phase 36 | Complete |
+| AUTH-03 | Phase 36 | Complete |
+| AUTH-04 | Phase 36 | Complete |
 | AUTH-05 | Phase 36 | Complete |
 | AUTH-06 | Phase 36 | Complete |
 | WFERR-01 | Phase 37 | Pending |
